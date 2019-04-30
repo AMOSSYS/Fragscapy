@@ -77,6 +77,30 @@ class PacketStruct:
             time.sleep(self._delay)
         scapy_sendp(self._pkt)
 
+    def display(self):
+        """display
+        Displays the delay (if any) followed by the details of the underlying
+        Scapy packet.
+        """
+        if self._delay > MIN_TIME_DELAY:
+            print("Delay of {} seconds".format(self._delay))
+        self._pkt.display()
+
+    def __str__(self):
+        ret = []
+        if self._delay > MIN_TIME_DELAY:
+            ret.append("{}s".format(self._delay))
+        ret.append(str(self._pkt))
+        return "\n".join(ret)
+
+    def __repr__(self):
+        ret = []
+        if self._delay > MIN_TIME_DELAY:
+            ret.append("{}s".format(self._delay))
+        ret.append(repr(self._pkt))
+        return "\n".join(ret)
+
+
 
 class PacketList:
     """PacketList
@@ -152,6 +176,13 @@ class PacketList:
         """
         for pkt in self.pkts:
             pkt.sendp()
+
+    def display(self):
+        """display
+        Displays the details of each packet of the packet list.
+        """
+        for pkt in self.pkts:
+            pkt.display()
 
     def __str__(self):
         ret = []

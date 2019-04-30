@@ -34,7 +34,8 @@ class Modification(ABC):
         Print the usage of the modification
         """
         print(self.name)
-        print(self.doc)
+        print("==========")
+        print("  ", self.doc.replace('\n', '\n  '), sep='')
 
     def __str__(self):
         return self.name
