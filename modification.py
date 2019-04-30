@@ -23,15 +23,15 @@ class Modification(ABC):
     @abstractmethod
     def apply(self, pkt_list):
         """apply
-        Apply the modification to a PacketList object
+        Applies the modification to a PacketList object.
 
-        :param pkt_list: A list of packet on which the apply the modification
+        :param pkt_list: A list of packet on which the apply the modification.
         """
         pass
 
     def usage(self):
         """usage
-        Print the usage of the modification
+        Prints the usage of the modification.
         """
         print(self.name)
         print("==========")
@@ -46,7 +46,7 @@ class Modification(ABC):
 
 class ModList(list):
     """ModList
-    A list of modifications used to gather some utility methods around it
+    A list of modifications used to gather some utility methods around it.
     """
     def __str__(self):
         ret = []
@@ -66,9 +66,9 @@ class ModList(list):
 
     def apply(self, pkt_list):
         """apply
-        Apply the modifications to a PacketList object
+        Applies the modifications to a PacketList object.
 
-        :param pkt_list: The PacketList object to modify
+        :param pkt_list: The PacketList object to modify.
         """
         for mod in self:
             mod.apply(pkt_list)
