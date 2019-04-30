@@ -10,8 +10,8 @@ from scapy.all import sendp as scapy_sendp
 # The minimum time (in seconds) a packet will be delayed
 MIN_TIME_DELAY = 0.01
 
-def __safe_delay(delay):
-    """__safe_delay
+def _safe_delay(delay):
+    """_safe_delay
     Check that a delay is a positive float number
 
     :param delay: The delay expression to check
@@ -35,7 +35,7 @@ class PacketStruct:
     """
     def __init__(self, pkt, delay):
         self._pkt = pkt
-        self._delay = __safe_delay(delay)
+        self._delay = _safe_delay(delay)
 
     @property
     def pkt(self):
@@ -57,7 +57,7 @@ class PacketStruct:
 
     @delay.setter
     def delay(self, val):
-        self._delay = __safe_delay(val)
+        self._delay = _safe_delay(val)
 
     def send(self):
         """send

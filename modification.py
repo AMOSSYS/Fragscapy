@@ -53,7 +53,7 @@ class ModList(list):
         for mod in self:
             ret.append(" - " + str(mod))
         ret.append("]")
-        return ret
+        return "\n".join(ret)
 
     def __repr__(self):
         ret = []
@@ -61,7 +61,7 @@ class ModList(list):
         for mod in self:
             ret.append(" - " + repr(mod))
         ret.append("]")
-        return ret
+        return "\n".join(ret)
 
     def apply(self, pkt_list):
         """apply
