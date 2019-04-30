@@ -88,27 +88,11 @@ class PacketList:
     """
     pkts = []
 
-    def __str__(self):
-        ret = []
-        for pkt in self.pkts:
-            ret.append(str(pkt))
-        return "\n".join(ret)
-
-    def __repr__(self):
-        ret = []
-        for pkt in self.pkts:
-            ret.append(repr(pkt))
-        return "\n".join(ret)
-
     def __getitem__(self, index):
         return self.pkts[index]
 
     def __iter__(self):
-        return self
-
-    def __next__(self):
-        for pkt in self.pkts:
-            yield pkt
+        return iter(self.pkts)
 
     def add_packet(self, pkt, delay=0):
         """add_packet
@@ -168,3 +152,19 @@ class PacketList:
         """
         for pkt in self.pkts:
             pkt.sendp()
+
+    def __str__(self):
+        ret = []
+        ret.append("PacketList [")
+        for pkt in self.pkts:
+            ret.append(str(pkt))
+        ret.append("]")
+        return "\n".join(ret)
+
+    def __repr__(self):
+        ret = []
+        ret.append("PacketList [")
+        for pkt in self.pkts:
+            ret.append(repr(pkt))
+        ret.append("]")
+        return "\n".join(ret)
