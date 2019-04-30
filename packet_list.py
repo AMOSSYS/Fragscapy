@@ -110,10 +110,14 @@ class PacketList:
     really sent. For each packet a delay can be specified. This delay will
     be respected and waited before actually sending the packet.
     """
-    pkts = []
+    def __init__(self):
+        self.pkts = []
 
     def __getitem__(self, index):
         return self.pkts[index]
+
+    def __len__(self):
+        return len(self.pkts)
 
     def __iter__(self):
         return iter(self.pkts)
