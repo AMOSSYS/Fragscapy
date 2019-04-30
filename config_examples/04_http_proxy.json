@@ -1,0 +1,30 @@
+{
+  "cmd": "/usr/bin/wget -T 5 http://www.example.com:8080",
+
+  "nfrules": [
+    {"host": "www.example.com", "port": 80, "output_chain": false},
+    {"host": "www.example.com", "port": 8080, "input_chain": false}
+  ],
+
+  "input": [
+    {
+      "mod_name": "field",
+      "mod_opts": ["TCP", "sport", 8080]
+    },
+    {
+      "mod_name": "field",
+      "mod_opts": ["TCP", "chksum", "none"]
+    }
+  ],
+
+  "output": [
+    {
+      "mod_name": "field",
+      "mod_opts": ["TCP", "dport", 80]
+    },
+    {
+      "mod_name": "field",
+      "mod_opts": ["TCP", "chksum", "none"]
+    }
+  ]
+}

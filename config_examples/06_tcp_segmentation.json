@@ -1,0 +1,17 @@
+{
+  "cmd": "/usr/bin/wget -T 2 -t 1 http://www.example.com -O run/results/index_{i}_{j}.html",
+
+  "nfrules": [
+    {"host": "www.example.com", "port": 80}
+  ],
+
+  "input": [
+  ],
+
+  "output": [
+    {
+      "mod_name": "tcp_segment",
+      "mod_opts": "range 4 200"
+    }
+  ]
+}

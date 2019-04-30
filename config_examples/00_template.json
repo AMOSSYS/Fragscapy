@@ -1,0 +1,82 @@
+{
+  "cmd": "The command to run everytime (absolute path prefered). {i} and {j} can be used in the command, they will be replace by the number of the current test and the number of the current iteration of this test",
+
+  "nfrules": [
+    "This contains 1 object per rule to add",
+    {
+      "output_chain": "Set to false to not add to the OUTPUT chain",
+      "input_chain": "Set to false to not add to the INPUT chain",
+      "proto": "The proto to filter on, see iptables doc for format",
+      "host": "The ipv4 or hostname to filter on, see iptables doc for format",
+      "host6": "The ipv6 to filter on, see iptables doc for format",
+      "port": "The tcp/udp port to filter on, see iptables doc for format",
+      "ipv4": "Set to false to disable rules on IPv4 (iptables)",
+      "ipv6": "Set to false to disable rules on IPv6 (ip6tables)",
+      "qnum": "The NFQUEUE number to use, should be even"
+    }
+  ],
+
+  "input": [
+    "This contains 1 object per modification to apply on the INPUT chain",
+    {
+      "mod_name": "Modification name (used to load the module)",
+      "mod_opts": "Some options to pass to the mod (see mod usage)",
+      "optional": "Set to true to make the mod optional. The mod is required if not specified."
+    },
+    {
+      "mod_name": "Mod with 1 integer as a parameter",
+      "mod_opts": 20
+    },
+    {
+      "mod_name": "Mod with 1 string as a parameter",
+      "mod_opts": "The string"
+    },
+    {
+      "mod_name": "Mod with 3 parameters",
+      "mod_opts": ["param1", 2, "param3"]
+    },
+    {
+      "mod_name": "Mod with 0 parameters"
+    }
+  ],
+
+  "output": [
+    "This contains 1 object per modification to apply on the OUTPUT chain",
+    {
+      "mod_name": "Use the python 'None' value.",
+      "mod_opts": "none"
+    },
+    {
+      "mod_name": "Force an integer as 1 parameter (same as using an int directly)",
+      "mod_opts": "int 42"
+    },
+    {
+      "mod_name": "Force a string as 1 parameter (same as using a str directly with no prefix)",
+      "mod_opts": "str string"
+    },
+    {
+      "mod_name": "Specify multiple possible integer as 1 parameter",
+      "mod_opts": "seq_int 0 2 4 6 8"
+    },
+    {
+      "mod_name": "Specify a range of possible integer as 1 parameter",
+      "mod_opts": "range <start> <stop> <step>"
+    },
+    {
+      "mod_name": "Specify a range of possible integer as 1 parameter",
+      "mod_opts": "range 10 18 2"
+    },
+    {
+      "mod_name": "Specify a range of possible integer as 1 parameter",
+      "mod_opts": "range 5"
+    },
+    {
+      "mod_name": "Specify multiple possible strings as 1 parameter",
+      "mod_opts": "seq_str string1 string2 string3"
+    },
+    {
+      "mod_name": "Mixing multiple parameters",
+      "mod_opts": ["range 5 10", "seq_str foo bar", 5, "int 423"]
+    }
+  ]
+}

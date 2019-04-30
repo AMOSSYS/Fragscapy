@@ -1,0 +1,17 @@
+{
+  "cmd": "/usr/bin/curl -6 -f -m 1 http://www.example.com -o results/index_{i}_{j}.html",
+
+  "nfrules": [
+    {"host": "www.example.com", "port": 80, "ipv4": false, "input_chain": false}
+  ],
+
+  "input": [
+  ],
+
+  "output": [
+    {
+      "mod_name": "ipv6_atomic_frag",
+      "mod_opts": 65535
+    }
+  ]
+}
