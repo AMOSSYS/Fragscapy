@@ -52,3 +52,5 @@ class ModDuplicate(Mod):
         else:
             duplicate_packet = pkt_list[i].copy()
             pkt_list.insert_packet(i, duplicate_packet)
+
+        return pkt_list

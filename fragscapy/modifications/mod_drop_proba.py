@@ -42,3 +42,5 @@ class ModDropProba(Mod):
         # Remove the indexes (in decreasing order)
         for i in to_remove:
             pkt_list.remove_packet(i)
+
+        return pkt_list

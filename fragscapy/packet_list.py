@@ -1,5 +1,4 @@
-"""
-packet_list.py
+"""packet_list.py
 The classes and methods used to represent a list of Scpay packet that will be
 sent. A delay can be specified between each packet.
 """
@@ -87,6 +86,11 @@ class PacketStruct:
         self._pkt.display()
 
     def copy(self):
+        """copy
+        Make a copy of the PacketStruct object
+
+        :return: A new and different PacketStruct object with the same data
+        """
         return PacketStruct(self._pkt, self._delay)
 
     def __str__(self):

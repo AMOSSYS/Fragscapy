@@ -23,9 +23,14 @@ class Mod(ABC):
     @abstractmethod
     def apply(self, pkt_list):
         """apply
-        Applies the modification to a PacketList object.
+        Applies the modification to a PacketList object. It returns a
+        PacketList object but might also modified the original. Actually
+        the returned object might even be the same "in-memory" original
+        object. There is no guarantee, the pkt_list will not be modified.
+        It depends on the implementation of the modification.
 
-        :param pkt_list: A list of packet on which the apply the modification.
+        :param pkt_list: A list of packet on which to apply the modifications.
+        :return: The new PacketList object resulting from the modfications.
         """
         pass
 
@@ -71,4 +76,5 @@ class ModList(list):
         :param pkt_list: The PacketList object to modify.
         """
         for mod in self:
-            mod.apply(pkt_list)
+            pkt_list = mod.apply(pkt_list)
+        return pkt_list

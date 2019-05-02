@@ -23,3 +23,5 @@ class ModEcho(Mod):
         :param pkt_list: The packet list (not used).
         """
         print(self.string)
+
+        return pkt_list

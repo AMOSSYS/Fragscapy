@@ -49,3 +49,5 @@ class ModDropOne(Mod):
                   "Passing the modification".format(i))
         else:
             pkt_list.remove_packet(i)
+
+        return pkt_list

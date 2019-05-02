@@ -20,3 +20,5 @@ class ModPrint(Mod):
         :param pkt_list: The packet list.
         """
         pkt_list.display()
+
+        return pkt_list
