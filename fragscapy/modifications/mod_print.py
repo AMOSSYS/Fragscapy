@@ -1,12 +1,12 @@
 """mod_print
 Print the content of a packet list.
 """
-from modification import Modification
+from fragscapy.modifications.mod import Mod
 
 MOD_NAME = "Print"
 MOD_DOC = "Print the content of the packet list.\nprint"
 
-class ModPrint(Modification):
+class ModPrint(Mod):
     """ModPrint
     Print the content of a packet list.
     """

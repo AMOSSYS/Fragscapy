@@ -2,12 +2,12 @@
 Echo a string when this modification is applied. Does not alter the packet
 list.
 """
-from modification import Modification
+from fragscapy.modifications.mod import Mod
 
 MOD_NAME = "Echo"
 MOD_DOC = "Echo a string.\necho <string>"
 
-class ModEcho(Modification):
+class ModEcho(Mod):
     """ModEcho
     Echo a string when this modification is applied. Does not alter the
     packet list.

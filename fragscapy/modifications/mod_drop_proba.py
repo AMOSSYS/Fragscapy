@@ -3,13 +3,13 @@ Modification to drop each packet (delete them from the packet list).
 The parameter is the probability for each packet to be dropped.
 """
 from random import random
-from modification import Modification
+from fragscapy.modifications.mod import Mod
 
 MOD_NAME = "DropProba"
 MOD_DOC = ("Drop each packet with a certain probability.\n"
            "dropmulti <proba>")
 
-class ModDropProba(Modification):
+class ModDropProba(Mod):
     """
     Drop each packet (delete it from the packet list).
     The parameter is the probability for each packet to be dropped.

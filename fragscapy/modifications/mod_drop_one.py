@@ -3,13 +3,13 @@ Modification to drop one packet (delete it from the packet list). Can be
 either the first one, the last one, a random one or a specific one (by id).
 """
 from random import randint
-from modification import Modification
+from fragscapy.modifications.mod import Mod
 
 MOD_NAME = "DropOne"
 MOD_DOC = ("Drop one of the packets.\n"
            "dropone {first|last|random|<id>}")
 
-class ModDropOne(Modification):
+class ModDropOne(Mod):
     """
     Drop a single packet (delete it from the packet list). Can be either the
     first one, the last one, a random one or a specific one (by id).

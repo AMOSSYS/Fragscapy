@@ -5,8 +5,8 @@ some transformation and then send the modified version of the packet list.
 """
 from abc import ABC, abstractmethod
 
-class Modification(ABC):
-    """Modification
+class Mod(ABC):
+    """Mod
     Abstract object for defining a modification of a packet list.
 
     Contains at least a name (default is the class name) and a documentation
