@@ -12,5 +12,7 @@ from fragscapy.modifications.mod_drop_one import ModDropOne
 from fragscapy.modifications.mod_drop_proba import ModDropProba
 from fragscapy.modifications.mod_echo import ModEcho
 from fragscapy.modifications.mod_print import ModPrint
+from fragscapy.modifications.mod_duplicate import ModDuplicate
 
-__all__ = ['ModList', 'ModDropOne', 'ModDropProba', 'ModEcho', 'ModPrint']
+__all__ = ['ModList', 'ModDropOne', 'ModDropProba', 'ModEcho', 'ModPrint',
+           'ModDuplicate']

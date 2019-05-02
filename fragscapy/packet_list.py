@@ -86,6 +86,9 @@ class PacketStruct:
             print("Delay of {} seconds".format(self._delay))
         self._pkt.display()
 
+    def copy(self):
+        return PacketStruct(self._pkt, self._delay)
+
     def __str__(self):
         ret = []
         if self._delay > MIN_TIME_DELAY:

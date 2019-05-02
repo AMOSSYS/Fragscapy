@@ -7,7 +7,7 @@ from fragscapy.modifications.mod import Mod
 
 MOD_NAME = "DropProba"
 MOD_DOC = ("Drop each packet with a certain probability.\n"
-           "dropmulti <proba>")
+           "dropproba <proba>")
 
 class ModDropProba(Mod):
     """
