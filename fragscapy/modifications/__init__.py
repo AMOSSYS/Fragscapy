@@ -15,6 +15,7 @@ from fragscapy.modifications.mod_print import ModPrint
 from fragscapy.modifications.mod_duplicate import ModDuplicate
 from fragscapy.modifications.mod_reorder import ModReorder
 from fragscapy.modifications.mod_select import ModSelect
+from fragscapy.modifications.mod_fragment import ModFragment6
 
 __all__ = ['ModList', 'ModDropOne', 'ModDropProba', 'ModEcho', 'ModPrint',
-           'ModDuplicate', 'ModReorder', 'ModSelect']
+           'ModDuplicate', 'ModReorder', 'ModSelect', 'ModFragment6']

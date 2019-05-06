@@ -6,8 +6,9 @@ series of Scapy packets modified according to the "modifications".
 """
 from fragscapy.modifications import (
     ModList, ModDropOne, ModDropProba, ModEcho, ModPrint, ModDuplicate,
-    ModReorder, ModSelect)
+    ModReorder, ModSelect, ModFragment6)
 from fragscapy.packet_list import PacketList
 
 __all__ = ['ModList', 'ModDropOne', 'ModDropProba', 'ModEcho', 'ModPrint',
-           'ModDuplicate', 'ModReorder', 'ModSelect', 'PacketList']
+           'ModDuplicate', 'ModReorder', 'ModSelect', 'ModFragment6',
+           'PacketList']
