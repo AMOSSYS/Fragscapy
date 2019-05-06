@@ -5,9 +5,12 @@ returns the server response.
 from random import randint
 from scapy.layers.inet6 import IPv6
 from scapy.layers.inet import TCP
+from scapy.packet import Raw
 from scapy.sendrecv import sniff
 from fragscapy.modifications.mod import ModList
 from fragscapy.packet_list import PacketList
+
+TCP_A_FLAG = 0b00010000
 
 class HTTP6:
     """HTTP6
@@ -21,7 +24,7 @@ class HTTP6:
     """
     def __init__(self, hostname, modlist=None, dport=80):
         self.hostname = hostname
-        self.http_host = ""
+        self.http_host = "localhost"
         self.dport = dport
         self.sport = randint(1025, 0xffff)
         if modlist is None:
@@ -40,28 +43,30 @@ class HTTP6:
 
         :param payload: The data to send. Can be Raw, TCP or IPv6
         """
+        if isinstance(payload, str):
+            payload = Raw(payload.encode())
         if not payload.haslayer('TCP'):
-            payload = TCP()/payload
+            payload = TCP(flags='A')/payload
         if not payload.haslayer('IPv6'):
             payload = IPv6()/payload
         payload['TCP'].sport = self.sport
         payload['TCP'].dport = self.dport
         payload['TCP'].seq = self.seq
-        if 'A' in payload['TCP'].flags:
+        if TCP_A_FLAG & payload['TCP'].flags:
             payload['TCP'].ack = self.ack
         payload['IPv6'].dst = self.hostname
 
         packet_list = PacketList()
         packet_list.add_packet(payload)
         packet_list = self.modlist.apply(packet_list)
-        packet_list.send()
+        packet_list.send_all()
 
     def sniff(self, count=1):
         """sniff
         Sniff the packets on the network for a maximum of 10 seconds and
         returns the results.
 
-        :param count: The number of packet match before stopping. `None` for
+        :param count: The number of packet match before stopping. `0` for
             no limit. (Default: 1)
         """
         http_filter = "ip6 and src {ip} and src port {sport} and dst port {dport}".format(
@@ -76,7 +81,7 @@ class HTTP6:
         """
         if self.state == 0:
             self.send(TCP(flags='S'))
-            synack = sniff()
+            synack = self.sniff()
             if synack:
                 self.state = 1
                 self.seq = synack[0]['TCP'].ack
@@ -104,7 +109,7 @@ class HTTP6:
             get = "GET {path} HTTP/1.1\r\nHost: {http_host}\r\n\r\n".format(
                 path=path, http_host=self.http_host)
             self.send(get)
-            replies = self.sniff(count=None)
+            replies = self.sniff()
             if replies:
                 for reply in replies:
                     if reply.haslayer('TCP'):
@@ -126,4 +131,5 @@ class HTTP6:
 if __name__ == '__main__':
     ip_dst = input("IPv6 dest [fd02::1]: ") or "fd02::1"
     url_path = input("URL Path [/]: ") or "/"
-    HTTP6(ip_dst).get(url_path)
+    for data in HTTP6(ip_dst).get(url_path):
+        print(data)

@@ -18,7 +18,7 @@ pip install -r requirements.txt
 
 _note : It might be useful to prevent your OS from sending RST packets because it is not aware a TCP connection is handled by Scapy in the user space. With iptables it can be done by adding the following rule:
 ```
-iptables -A OUTPUT -p tcp --tcp-flags RST RST -s <local_ip> -j DROP
+ip6tables -A OUTPUT -p tcp --tcp-flags RST RST -s <local_ip> -j DROP
 ```
 _
 
@@ -35,7 +35,7 @@ pl = PacketList
 pl.add_packet(IPv6()/TCP()/"DATA")
 pl.add_packet(IPv6()/TCP(dport=8080)/"OTHER DATA")
 pl.add_packet(IPv6()/TCP()/"DELAYED DATA", delay=10)
-pl.send()
+pl.send_all()
 ```
 
 The `ModList` is used to store in a specific order a set of modifications that are to apply on a `PacketList`
@@ -50,7 +50,7 @@ ml.append(ModEcho("START"))
 ml.append(ModDuplicate("random"))
 ml.append(ModEcho("END"))
 pl = ml.apply(pl)
-pl.send()
+pl.send_all()
 ```
 
 The possible modifications available so far are :
@@ -78,3 +78,4 @@ ml.append(ModEcho("End"))
 responses = HTTP6("www.exemple.com", modlist=ml).get()
 for response in responses:
     print(response)
+```
