@@ -23,8 +23,8 @@ def name(layer):
     """name
     Returns the class name of the object (supposed to be a protocol layer).
 
-    :param layer: The layer to examine
-    :return: The class name of this layer
+    :param layer: The layer to examine.
+    :return: The class name of this layer.
     """
     return layer.__class__.__name__
 
@@ -33,9 +33,9 @@ def get_per_frag_hdr(pkt):
     Returns the "Per-Fragment Headers" part of the packet i.e. the headers
     that must be repeated for each packet.
 
-    :param pkt: The Scpay packet to examine
+    :param pkt: The Scpay packet to examine.
     :return: A tuple of two references pointing to the first and the last
-        Scapy layer of the "Per-Fragment Headers"
+        Scapy layer of the "Per-Fragment Headers".
     """
     begin = pkt
     end = pkt
@@ -49,14 +49,14 @@ def get_ext_upper_layer_hdr(per_frag_hdr_end):
     part that must be in the first fragment.
 
     :param per_frag_hdr_end: A reference to the last Scapy layer of the
-        "Per-Fragment Headers"
+        "Per-Fragment Headers".
     :return: A 3-tuple with
         * The value of 'Next Header' field in the last Extension Header (the
-        one to use in the Fragmentation Header)
+        one to use in the Fragmentation Header),
         * A reference pointing to the first Scpay layer of the "Extension &
-        Upper-Layer Headers"
+        Upper-Layer Headers",
         * A reference pointing to the last Scpay layer of the "Extension &
-        Upper-Layer Headers"
+        Upper-Layer Headers".
     """
     begin = per_frag_hdr_end.payload
     end = per_frag_hdr_end.payload
@@ -66,16 +66,18 @@ def get_ext_upper_layer_hdr(per_frag_hdr_end):
         end = end.payload
     return frag_nh, begin, end
 
-def get_first_fragment(pkt, frag_id, frag_nh, frag_data):
+def get_first_fragment(pkt, frag_id, frag_nh, frag_data, frag_m=False):
     """get_first_fragment
     Build the first fragment (slightly different than the others) of a
     fragmented packet.
 
-    :param pkt: The packet to fragment
-    :param frag_id: The fragmentation 'Identification' field's value to use
-    :param frag_nh: The fragmentation 'Next Header' field's value to use
-    :param frag_data: The raw data to insert in the first fragment
-    :return: The first fragment of a fragmented packet
+    :param pkt: The packet to fragment.
+    :param frag_id: The fragmentation 'Identification' field's value to use.
+    :param frag_nh: The fragmentation 'Next Header' field's value to use.
+    :param frag_data: The raw data to insert in the first fragment.
+    :param frag_m: The fragmentation 'M' field's value to use. i.e. is there
+        more fragments after this one ? (default: False)
+    :return: The first fragment of a fragmented packet.
     """
     # Copy the packet as a reference
     new_pkt = pkt.copy()
@@ -94,21 +96,24 @@ def get_first_fragment(pkt, frag_id, frag_nh, frag_data):
     # Build the first fragment from calculated headers
     new_fragment = (
         new_pfh_begin
-        / IPv6ExtHdrFragment(nh=frag_nh, id=frag_id)
+        / IPv6ExtHdrFragment(nh=frag_nh, id=frag_id, m=frag_m, offset=0)
         / new_eulh_begin
         / frag_data
     )
     return new_fragment
 
-def get_other_fragment(pkt, frag_id, frag_nh, frag_data):
+def get_other_fragment(pkt, frag_id, frag_nh, frag_data, frag_m=False, frag_offset=0):
     """get_other_fragment
     Build one of the other (non-first) fragments of a fragmented packet.
 
-    :param pkt: The packet to fragment
-    :param frag_id: The fragmentation 'Identification' field's value to use
-    :param frag_nh: The fragmentation 'Next Header' field's value to use
-    :param frag_data: The raw data to insert in the first fragment
-    :return: One fragment of a fragmented packet with the frag_data
+    :param pkt: The packet to fragment.
+    :param frag_id: The fragmentation 'Identification' field's value to use.
+    :param frag_nh: The fragmentation 'Next Header' field's value to use.
+    :param frag_data: The raw data to insert in the first fragment.
+    :param frag_m: The fragmentation 'M' field's value to use. i.e. is there
+        more fragments after this one ? (default: False)
+    :param frag_offset: The fragmentation 'Offset' field's value to use.
+    :return: One fragment of a fragmented packet with the frag_data.
     """
     # Copy the old packet as a reference
     new_pkt = pkt.copy()
@@ -121,23 +126,25 @@ def get_other_fragment(pkt, frag_id, frag_nh, frag_data):
     # Assemble the new fragment
     new_fragment = (
         new_pfh_begin
-        / IPv6ExtHdrFragment(nh=frag_nh, id=frag_id)
+        / IPv6ExtHdrFragment(nh=frag_nh, id=frag_id, m=frag_m, offset=frag_offset)
         / frag_data
     )
     return new_fragment
 
 def get_fragments(pkt, size, frag_id):
     """get_fragments
+    Fragments a packet in multiple valid packets of maximum `size` bytes.
 
-    :param pkt: The packet to fragment
-    :param size: The maximum size of a fragment
-    :param frag_id: The fragmentation 'Identification' field's value to use
+    :param pkt: The packet to fragment.
+    :param size: The maximum size of a fragment.
+    :param frag_id: The fragmentation 'Identification' field's value to use.
 
-    :return: A list of Scapy packets that corresponds to the different fragments
+    :return: A list of Scapy packets that corresponds to the different fragments.
     """
     # Calculate the differente parts of the packet
     _, per_frag_hdr_end = get_per_frag_hdr(pkt)
-    frag_nh, _, ext_upper_layer_hdr_end = get_ext_upper_layer_hdr(per_frag_hdr_end)
+    tmp_infos = get_ext_upper_layer_hdr(per_frag_hdr_end)
+    frag_nh, ext_upper_layer_hdr_begin, ext_upper_layer_hdr_end = tmp_infos
     frag_part = ext_upper_layer_hdr_end.payload
 
     # Since this part will be in the first packet, the first packet must be at
@@ -153,11 +160,16 @@ def get_fragments(pkt, size, frag_id):
     # An index to mesure where are the beginning and the end of the next frag
     i, j = 0, 0
 
-    # The first fragment is special as it contains ext_upper_layer_hdr
-    j = i + size - (len(pkt) - len(frag_part))
+    # The data that can be inserted in the first fragment
+    data_size = size - (len(pkt) - len(frag_part))
+    data_size = data_size - data_size%8  # Make sure it is a multiple of 8
+    j = i + data_size
     frag_data = frag_dump[i:j]
 
-    fragments.append(get_first_fragment(pkt, frag_id, frag_nh, frag_data))
+    # The first fragment is special as it contains ext_upper_layer_hdr
+    fragments.append(get_first_fragment(
+        pkt, frag_id, frag_nh, frag_data, frag_m=j<len(frag_dump)
+    ))
 
     # consider the data as read
     i = j
@@ -165,10 +177,14 @@ def get_fragments(pkt, size, frag_id):
     # Then build all other fragments in a similar way
     while j < len(frag_dump):
         # The current fragment data
-        j = i + size
+        data_size = size - (len(pkt) - len(ext_upper_layer_hdr_begin))
+        data_size = data_size - data_size%8  # Make sure it is a multiple of 8
+        j = i + data_size
         frag_data = frag_dump[i:j]
 
-        fragments.append(get_other_fragment(pkt, frag_id, frag_nh, frag_data))
+        fragments.append(get_other_fragment(
+            pkt, frag_id, frag_nh, frag_data, frag_m=j<len(frag_dump), frag_offset=i//8
+        ))
 
         # Consider the data as read
         i = j
@@ -179,7 +195,7 @@ def get_fragments(pkt, size, frag_id):
 class ModFragment6(Mod):
     """ModFragment6
     Fragment each IPv6 packet. the fragmentation size must be specified. It
-    represents the maximum size of each packet (including headers)
+    represents the maximum size of each packet (including headers).
     """
     def __init__(self, *args):
         super().__init__(MOD_NAME, MOD_DOC)
