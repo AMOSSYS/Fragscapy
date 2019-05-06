@@ -1,45 +1,129 @@
-from scapy.all import IPv6, TCP, send, sr1, sniff
+"""http
+Performs all the requests necessary for a standard GET HTTP IPv6 request and
+returns the server response.
+"""
 from random import randint
+from scapy.layers.inet6 import IPv6
+from scapy.layers.inet import TCP
+from scapy.sendrecv import sniff
+from fragscapy.modifications.mod import ModList
+from fragscapy.packet_list import PacketList
 
-class HTTP:
-    def __init__(self, hostname, dport=80):
+class HTTP6:
+    """HTTP6
+    Performs all the requests necessary for a standard GET HTTP IPv6 request
+    and returns the server response.
+
+    :param hostname: The hostame or IPv6 of the server
+    :param modlist: A modification list to apply(default: None i.e.
+        no modifications)
+    :param dport: The destination port (default: 80)
+    """
+    def __init__(self, hostname, modlist=None, dport=80):
         self.hostname = hostname
         self.http_host = ""
-        self.dport = 80
+        self.dport = dport
         self.sport = randint(1025, 0xffff)
+        if modlist is None:
+            modlist = ModList()
+        self.modlist = modlist
 
         self.state = 0
         self.seq = 0
         self.ack = 0
 
-    def three_way_handshake(self):
-        if self.state == 0:
-           syn = IPv6(dst=self.hostname)/TCP(sport=self.sport, dport=self.dport, flags="S")
-           synack = sr1(syn)
-           self.state = 1
-           self.seq = synack['TCP'].ack
-           self.ack = synack['TCP'].seq + 1
+    def send(self, payload):
+        """send
+        Apply all the standard modification to the packet so it will go to the
+        right destination and apply the modification list and finally send the
+        packets
 
-    def get(self, path):
-        if (self.state == 0):
-            self.three_way_handshake()
-        http_req = "GET {path} HTTP/1.1\r\nHost: {http_host}\r\n\r\n".format(path=path, http_host=self.http_host)
+        :param payload: The data to send. Can be Raw, TCP or IPv6
+        """
+        if not payload.haslayer('TCP'):
+            payload = TCP()/payload
+        if not payload.haslayer('IPv6'):
+            payload = IPv6()/payload
+        payload['TCP'].sport = self.sport
+        payload['TCP'].dport = self.dport
+        payload['TCP'].seq = self.seq
+        if 'A' in payload['TCP'].flags:
+            payload['TCP'].ack = self.ack
+        payload['IPv6'].dst = self.hostname
+
+        packet_list = PacketList()
+        packet_list.add_packet(payload)
+        packet_list = self.modlist.apply(packet_list)
+        packet_list.send()
+
+    def sniff(self, count=1):
+        """sniff
+        Sniff the packets on the network for a maximum of 10 seconds and
+        returns the results.
+
+        :param count: The number of packet match before stopping. `None` for
+            no limit. (Default: 1)
+        """
         http_filter = "ip6 and src {ip} and src port {sport} and dst port {dport}".format(
-                ip=self.hostname, sport=self.dport, dport=self.sport)
-        get = IPv6(dst=self.hostname)/TCP(sport=self.sport, dport=self.dport, seq=self.seq, ack=self.ack, flags='A')/http_req
-        reply = sr1(get)
-        other_reply = sniff(filter=http_filter, timeout=10, count=1)
-        if len(other_reply) == 1:
-            if other_reply[0].haslayer('Raw'):
-                print(other_reply[0]['Raw'].load.decode())
+            ip=self.hostname, sport=self.dport, dport=self.sport)
+        replies = sniff(filter=http_filter, timeout=10, count=count)
+        return replies
+
+    def three_way_handshake(self):
+        """three_way_handshake
+        Performs the TCP three-way handshake if the connexion is not
+        established.
+        """
+        if self.state == 0:
+            self.send(TCP(flags='S'))
+            synack = sniff()
+            if synack:
+                self.state = 1
+                self.seq = synack[0]['TCP'].ack
+                self.ack = synack[0]['TCP'].seq + 1
+                self.send(TCP(flags='A'))
+
+    def reset(self):
+        """reset
+        Performs the TCP reset (RST) if the connexion is established
+        """
+        if self.state == 1:
+            self.send(TCP(flags='R'))
+
+    def get(self, path='/'):
+        """get
+        Performs a GET HTTP request to a given path. Handles the three-way
+        hanshake and reset automatically.
+
+        :param path: The URL path to query (default: '/')
+        :return: A list of HTTP payload responses.
+        """
+        ret = []
+        self.three_way_handshake()
+        if self.state == 1:
+            get = "GET {path} HTTP/1.1\r\nHost: {http_host}\r\n\r\n".format(
+                path=path, http_host=self.http_host)
+            self.send(get)
+            replies = self.sniff(count=None)
+            if replies:
+                for reply in replies:
+                    if reply.haslayer('TCP'):
+                        if reply.haslayer('Raw'):
+                            ret.append(reply['Raw'].load.decode())
+                        self.seq = reply['TCP'].ack
+                        self.ack = reply['TCP'].seq + 1
+                        self.send(TCP(flags='A'))
+                    else:
+                        print("Missing TCP layer.")
             else:
-                print("Missing Raw layer. See full packet")
-                other_reply[0].display()
+                print("No replies from server")
+            self.reset()
         else:
-            print("No response from server")
+            print("Unable to do the trhee-way handshake")
+        return ret
 
 
 if __name__ == '__main__':
     ip_dst = input("IPv6 dest [fd02::1]: ") or "fd02::1"
-    path = input("URL Path [/]: ") or "/"
-    HTTP(ip_dst).get(path)
+    url_path = input("URL Path [/]: ") or "/"
+    HTTP6(ip_dst).get(url_path)

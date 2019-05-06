@@ -63,3 +63,18 @@ The possible modifications available so far are :
 * _ModSelect_ : Keeps only a subset of the packets
 * _ModFragment6_ : Add some IPv6 fragmentation to each packet
 Of course this list can be extend by implementing `fragscapy.modifications.Mod`. Refers to each Modification documentation for a more detailed explanation on how to use them.
+
+## Exemples
+
+```python
+from fragscapy import ModList, ModEcho, ModFragment
+from requests.http import HTTP6
+
+ml = ModList()
+ml.append(ModEcho("Start"))
+ml.append(ModFragment(100))
+ml.append(ModEcho("End"))
+
+responses = HTTP6("www.exemple.com", modlist=ml).get()
+for response in responses:
+    print(response)
