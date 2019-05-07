@@ -88,12 +88,12 @@ class HTTP6:
                 self.ack = synack[0]['TCP'].seq + 1
                 self.send(TCP(flags='A'))
 
-    def reset(self):
-        """reset
-        Performs the TCP reset (RST) if the connexion is established
+    def finish(self):
+        """finish
+        Performs the TCP finish (FIN) if the connexion is established
         """
         if self.state == 1:
-            self.send(TCP(flags='R'))
+            self.send(TCP(flags='F'))
 
     def get(self, path='/'):
         """get
@@ -122,7 +122,7 @@ class HTTP6:
                         print("Missing TCP layer.")
             else:
                 print("No replies from server")
-            self.reset()
+            self.finish()
         else:
             print("Unable to do the trhee-way handshake")
         return ret
