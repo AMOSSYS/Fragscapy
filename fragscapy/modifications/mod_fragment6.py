@@ -56,13 +56,10 @@ class ModFragment6(Mod):
     name = "Fragment6"
     doc = ("Fragment the IPv6 packets at the L3-layer\n"
            "fragment <size>")
+    nb_args = 1
 
     def __init__(self, *args):
         super().__init__(*args)
-
-        if len(args) != 1:
-            raise ValueError("Incorrect number of parameters specified. "
-                             "Got {}, expected 1".format(len(args)))
 
         try:
             self.fragsize = int(args[0])

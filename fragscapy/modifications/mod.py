@@ -14,10 +14,15 @@ class Mod(ABC):
     """
     name = None
     doc = None
+    nb_args = -1
 
     @abstractmethod
     def __init__(self, *args):
-        pass
+        if self.nb_args >= 0 and len(args) != self.nb_args:
+            raise ValueError(
+                "Incorrect number of parameters specified. "
+                "Got {}, expected {}.".format(len(args), self.nb_args)
+            )
 
     @abstractmethod
     def apply(self, pkt_list):

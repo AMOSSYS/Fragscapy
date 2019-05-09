@@ -10,13 +10,10 @@ class ModPrint(Mod):
     name = "Print"
     doc = ("Print the content of the packet list.\n"
            "print")
+    nb_args = 0
 
     def __init__(self, *args):
         super().__init__(*args)
-
-        if args:
-            raise ValueError("Incorrect number of parameters specified. "
-                             "Got {}, expected 0".format(len(args)))
 
     def apply(self, pkt_list):
         """apply

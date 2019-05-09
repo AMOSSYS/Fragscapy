@@ -11,6 +11,7 @@ class ModEcho(Mod):
     """
     name = "Echo"
     doc = "Echo a string.\necho <string>"
+    nb_args = 1
 
     def __init__(self, *args):
         super().__init__(*args)

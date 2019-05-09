@@ -13,14 +13,11 @@ class ModDropProba(Mod):
     name = "DropProba"
     doc = ("Drop each packet with a certain probability.\n"
            "dropproba <proba>")
+    nb_args = 1
 
     def __init__(self, *args):
         super().__init__(*args)
 
-        # Check number of arguments
-        if len(args) != 1:
-            raise ValueError("Incorrect number of parameters specified. "
-                             "Got {}, expected 1".format(len(args)))
 
         # Check the content of the argument
         try:
