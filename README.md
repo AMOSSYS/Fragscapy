@@ -57,11 +57,16 @@ The possible modifications available so far are :
 * _ModDropOne_ : Drops one packet
 * _ModDropProba_ : Drops each packet with a certain probability
 * _ModEcho_ : Echoes a string
-* _ModPrint_ : Print the content of each packet
-* _ModDuplicate_ : Duplicate one of the packet
-* _ModReorder_ : Change the order of the packet list
+* _ModPrint_ : Prints the content of each packet
+* _ModDuplicate_ : Duplicates one of the packet
+* _ModReorder_ : Changes the order of the packet list
 * _ModSelect_ : Keeps only a subset of the packets
-* _ModFragment6_ : Add some IPv6 fragmentation to each packet
+* _ModFragment6_ : Adds some IPv6 fragmentation to each packet
+* _ModIPv6ExtHdrMixup_ : Randomly messes with the IPv6 Extension Header chain order
+* _ModIPv6Hop_ : Modifies the 'Hop Limit' field
+* _ModIPv6Length_ : Modifies the 'Payload Length' field
+* _ModIPv6NH_ : Modifies the 'Next Header' field
+
 Of course this list can be extend by implementing `fragscapy.modifications.Mod`. Refers to each Modification documentation for a more detailed explanation on how to use them.
 
 ## Exemples

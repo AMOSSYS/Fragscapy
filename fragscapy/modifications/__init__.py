@@ -16,6 +16,11 @@ from fragscapy.modifications.mod_duplicate import ModDuplicate
 from fragscapy.modifications.mod_reorder import ModReorder
 from fragscapy.modifications.mod_select import ModSelect
 from fragscapy.modifications.mod_fragment6 import ModFragment6
+from fragscapy.modifications.mod_ipv6_exthdr_mixup import ModIPv6ExtHdrMixup
+from fragscapy.modifications.mod_ipv6_hop import ModIPv6Hop
+from fragscapy.modifications.mod_ipv6_length import ModIPv6Length
+from fragscapy.modifications.mod_ipv6_nh import ModIPv6NH
 
 __all__ = ['ModList', 'ModDropOne', 'ModDropProba', 'ModEcho', 'ModPrint',
-           'ModDuplicate', 'ModReorder', 'ModSelect', 'ModFragment6']
+           'ModDuplicate', 'ModReorder', 'ModSelect', 'ModFragment6',
+           'ModIPv6ExtHdrMixup', 'ModIPv6Hop', 'ModIPv6Length', 'ModIPv6NH']

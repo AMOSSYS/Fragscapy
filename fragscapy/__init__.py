@@ -8,7 +8,8 @@ import logging
 from scapy.config import conf
 from fragscapy.modifications import (
     ModList, ModDropOne, ModDropProba, ModEcho, ModPrint, ModDuplicate,
-    ModReorder, ModSelect, ModFragment6)
+    ModReorder, ModSelect, ModFragment6, ModIPv6ExtHdrMixup, ModIPv6Hop,
+    ModIPv6Length, ModIPv6NH)
 from fragscapy.packet_list import PacketList
 
 # Removes warning messages
@@ -18,4 +19,5 @@ conf.verb = 0
 
 __all__ = ['ModList', 'ModDropOne', 'ModDropProba', 'ModEcho', 'ModPrint',
            'ModDuplicate', 'ModReorder', 'ModSelect', 'ModFragment6',
+           'ModIPv6ExtHdrMixup', 'ModIPv6Hop', 'ModIPv6Length', 'ModIPv6NH',
            'PacketList']
