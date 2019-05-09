@@ -68,7 +68,7 @@ Of course this list can be extend by implementing `fragscapy.modifications.Mod`.
 
 ```python
 from fragscapy import ModList, ModEcho, ModFragment
-from requests.http import HTTP6
+from examples.http import HTTP6
 
 ml = ModList()
 ml.append(ModEcho("Start"))

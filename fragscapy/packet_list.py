@@ -3,8 +3,8 @@ The classes and methods used to represent a list of Scpay packet that will be
 sent. A delay can be specified between each packet.
 """
 import time
-from scapy.all import send as scapy_send
-from scapy.all import sendp as scapy_sendp
+from scapy.sendrecv import send as scapy_send
+from scapy.sendrecv import sendp as scapy_sendp
 
 # The minimum time (in seconds) a packet will be delayed
 MIN_TIME_DELAY = 0.01

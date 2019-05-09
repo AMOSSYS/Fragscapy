@@ -4,10 +4,17 @@ The idea is to create a list of "modifications" (`ModList`) that can be
 applied to a series of Scapy packets (`PacketList`). The result is another
 series of Scapy packets modified according to the "modifications".
 """
+import logging
+from scapy.config import conf
 from fragscapy.modifications import (
     ModList, ModDropOne, ModDropProba, ModEcho, ModPrint, ModDuplicate,
     ModReorder, ModSelect, ModFragment6)
 from fragscapy.packet_list import PacketList
+
+# Removes warning messages
+logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
+# Removes verbose send messages
+conf.verb = 0
 
 __all__ = ['ModList', 'ModDropOne', 'ModDropProba', 'ModEcho', 'ModPrint',
            'ModDuplicate', 'ModReorder', 'ModSelect', 'ModFragment6',
