@@ -3,15 +3,20 @@ Print the content of a packet list.
 """
 from fragscapy.modifications.mod import Mod
 
-MOD_NAME = "Print"
-MOD_DOC = "Print the content of the packet list.\nprint"
-
 class ModPrint(Mod):
     """ModPrint
     Print the content of a packet list.
     """
-    def __init__(self, *_):
-        super().__init__(MOD_NAME, MOD_DOC)
+    name = "Print"
+    doc = ("Print the content of the packet list.\n"
+           "print")
+
+    def __init__(self, *args):
+        super().__init__(*args)
+
+        if args:
+            raise ValueError("Incorrect number of parameters specified. "
+                             "Got {}, expected 0".format(len(args)))
 
     def apply(self, pkt_list):
         """apply
@@ -22,3 +27,13 @@ class ModPrint(Mod):
         pkt_list.display()
 
         return pkt_list
+
+    def __str__(self):
+        return "{name}".format(
+            name=self.name
+        )
+
+    def __repr__(self):
+        return "{name}<>".format(
+            name=self.name
+        )

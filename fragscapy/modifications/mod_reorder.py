@@ -7,9 +7,6 @@ from enum import Enum
 from fragscapy.modifications.mod import Mod
 from fragscapy.packet_list import PacketList
 
-MOD_NAME = "Reorder"
-MOD_DOC = ("Reorder the packet list.\n"
-           "reorder {reverse|random}")
 METHOD = Enum("METHOD", "REVERSE RANDOM")
 
 class ModReorder(Mod):
@@ -17,8 +14,12 @@ class ModReorder(Mod):
     Reorder the packet list. The operation can either reverse the whole
     packet list or simply randomly rearrange them.
     """
+    name = "Reorder"
+    doc = ("Reorder the packet list.\n"
+           "reorder {reverse|random}")
+
     def __init__(self, *args):
-        super().__init__(MOD_NAME, MOD_DOC)
+        super().__init__(*args)
 
         # Check number of arguments
         if len(args) != 1:
@@ -44,3 +45,15 @@ class ModReorder(Mod):
         for i in sequence:
             new_pl.add_packet(pkt_list[i].pkt, pkt_list[i].delay)
         return new_pl
+
+    def __str__(self):
+        return "{name} {param}".format(
+            name=self.name,
+            param="reverse" if self.method == METHOD.REVERSE else "random"
+        )
+
+    def __repr__(self):
+        return "{name}<method: {method}>".format(
+            name=self.name,
+            method=self.method
+        )

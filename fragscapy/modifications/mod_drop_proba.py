@@ -5,17 +5,17 @@ The parameter is the probability for each packet to be dropped.
 from random import random
 from fragscapy.modifications.mod import Mod
 
-MOD_NAME = "DropProba"
-MOD_DOC = ("Drop each packet with a certain probability.\n"
-           "dropproba <proba>")
-
 class ModDropProba(Mod):
     """
     Drop each packet (delete it from the packet list).
     The parameter is the probability for each packet to be dropped.
     """
+    name = "DropProba"
+    doc = ("Drop each packet with a certain probability.\n"
+           "dropproba <proba>")
+
     def __init__(self, *args):
-        super().__init__(MOD_NAME, MOD_DOC)
+        super().__init__(*args)
 
         # Check number of arguments
         if len(args) != 1:
@@ -44,3 +44,15 @@ class ModDropProba(Mod):
             pkt_list.remove_packet(i)
 
         return pkt_list
+
+    def __str__(self):
+        return "{name} {param}".format(
+            name=self.name,
+            param=str(self.drop_proba)
+        )
+
+    def __repr__(self):
+        return "{name}<drop_proba: {drop_proba}>".format(
+            name=self.name,
+            drop_proba=self.drop_proba
+        )

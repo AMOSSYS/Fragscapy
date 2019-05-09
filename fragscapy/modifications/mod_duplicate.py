@@ -6,18 +6,18 @@ either the first one, the last one, a random one or a specific one (by id).
 from random import randint
 from fragscapy.modifications.mod import Mod
 
-MOD_NAME = "Duplicate"
-MOD_DOC = ("Duplicate one of the packets.\n"
-           "duplicate {first|last|random|<id>}")
-
 class ModDuplicate(Mod):
     """
     Duplicate one packet (delete it from the packet list). The duplicate is
     placed juste after the original one in the list. Can be either the first
     one, the last one, a random one or a specific one (by id).
     """
+    name = "Duplicate"
+    doc = ("Duplicate one of the packets.\n"
+           "duplicate {first|last|random|<id>}")
+
     def __init__(self, *args):
-        super().__init__(MOD_NAME, MOD_DOC)
+        super().__init__(*args)
 
         # Check number of arguments
         if len(args) != 1:
@@ -54,3 +54,16 @@ class ModDuplicate(Mod):
             pkt_list.insert_packet(i, duplicate_packet)
 
         return pkt_list
+
+    def __str__(self):
+        i = self.duplicate_index
+        return "{name} {param}".format(
+            name=self.name,
+            param="random" if i is None else str(i)
+        )
+
+    def __repr__(self):
+        return "{name}<duplicate_index: {duplicate_index}>".format(
+            name=self.name,
+            duplicate_index=self.duplicate_index
+        )

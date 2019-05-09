@@ -5,17 +5,18 @@ either the first one, the last one, a random one or a specific one (by id).
 from random import randint
 from fragscapy.modifications.mod import Mod
 
-MOD_NAME = "DropOne"
-MOD_DOC = ("Drop one of the packets.\n"
-           "dropone {first|last|random|<id>}")
 
 class ModDropOne(Mod):
     """
     Drop a single packet (delete it from the packet list). Can be either the
     first one, the last one, a random one or a specific one (by id).
     """
+    name = "DropOne"
+    doc = ("Drop one of the packets.\n"
+           "dropone {first|last|random|<id>}")
+
     def __init__(self, *args):
-        super().__init__(MOD_NAME, MOD_DOC)
+        super().__init__(*args)
 
         # Check number of arguments
         if len(args) != 1:
@@ -51,3 +52,15 @@ class ModDropOne(Mod):
             pkt_list.remove_packet(i)
 
         return pkt_list
+
+    def __str__(self):
+        return "{name} {param}".format(
+            name=self.name,
+            param="random" if self.drop_index is None else str(self.drop_index)
+        )
+
+    def __repr__(self):
+        return "{name}<drop_index: {drop_index}>".format(
+            name=self.name,
+            drop_index=self.drop_index
+        )

@@ -8,11 +8,6 @@ from scapy.packet import NoPayload
 from fragscapy.modifications.mod import Mod
 from fragscapy.packet_list import PacketList
 
-
-MOD_NAME = "Fragment6"
-MOD_DOC = ("Fragment the IPv6 packets at the L3-layer\n"
-           "fragment <size>")
-
 PROCESS_HEADERS = ("IPv6", "IPv6ExtHdrHopByHop", "IPv6ExtHdrRouting")
 
 def name(layer):
@@ -58,8 +53,12 @@ class ModFragment6(Mod):
     Fragment each IPv6 packet. the fragmentation size must be specified. It
     represents the maximum size of each packet (including headers).
     """
+    name = "Fragment6"
+    doc = ("Fragment the IPv6 packets at the L3-layer\n"
+           "fragment <size>")
+
     def __init__(self, *args):
-        super().__init__(MOD_NAME, MOD_DOC)
+        super().__init__(*args)
 
         if len(args) != 1:
             raise ValueError("Incorrect number of parameters specified. "
@@ -85,3 +84,15 @@ class ModFragment6(Mod):
             new_pl.edit_delay(index, pkt.delay)
 
         return new_pl
+
+    def __str__(self):
+        return "{name} {param}".format(
+            name=self.name,
+            param=self.fragsize
+        )
+
+    def __repr__(self):
+        return "{name}<fragsize: {fragsize}>".format(
+            name=self.name,
+            fragsize=self.fragsize
+        )

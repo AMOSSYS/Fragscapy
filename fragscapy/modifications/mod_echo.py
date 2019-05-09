@@ -4,16 +4,17 @@ list.
 """
 from fragscapy.modifications.mod import Mod
 
-MOD_NAME = "Echo"
-MOD_DOC = "Echo a string.\necho <string>"
-
 class ModEcho(Mod):
     """ModEcho
     Echo a string when this modification is applied. Does not alter the
     packet list.
     """
+    name = "Echo"
+    doc = "Echo a string.\necho <string>"
+
     def __init__(self, *args):
-        super().__init__(MOD_NAME, MOD_DOC)
+        super().__init__(*args)
+
         self.string = " ".join(args)
 
     def apply(self, pkt_list):
@@ -25,3 +26,15 @@ class ModEcho(Mod):
         print(self.string)
 
         return pkt_list
+
+    def __str__(self):
+        return "{name} {param}".format(
+            name=self.name,
+            param=self.string
+        )
+
+    def __repr__(self):
+        return "{name}<string: {string}>".format(
+            name=self.name,
+            string=self.string
+        )

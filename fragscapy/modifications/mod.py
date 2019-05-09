@@ -12,13 +12,12 @@ class Mod(ABC):
     Contains at least a name (default is the class name) and a documentation
     about the usage (default is a "no usage documented").
     """
-    def __init__(self, name=None, doc=None):
-        if name is None:
-            name = self.__class__.__name__.lower()
-        if doc is None:
-            doc = "No usage documented".format(name=name)
-        self.name = name
-        self.doc = doc
+    name = None
+    doc = None
+
+    @abstractmethod
+    def __init__(self, *args):
+        pass
 
     @abstractmethod
     def apply(self, pkt_list):
@@ -34,13 +33,20 @@ class Mod(ABC):
         """
         pass
 
-    def usage(self):
+    @classmethod
+    def usage(cls):
         """usage
         Prints the usage of the modification.
         """
-        print(self.name)
+        if cls.name is None:
+            print(cls.__class__.__name__.lower())
+        else:
+            print(cls.name)
         print("==========")
-        print("  ", self.doc.replace('\n', '\n  '), sep='')
+        if cls.doc is None:
+            print("No usage documented")
+        else:
+            print("  ", cls.doc.replace('\n', '\n  '), sep='')
 
     def __str__(self):
         return self.name
