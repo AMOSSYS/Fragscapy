@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from distutils.core import setup
+from setuptools import setup
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -16,6 +16,7 @@ setup(name='FragScapy',
       packages=['fragscapy', 'fragscapy.modifications'],
       requires=[
           'scapy',
+          'fnfqueue',
       ],
       classifiers=[
           "Development Status :: 3 - Alpha",

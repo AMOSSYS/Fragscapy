@@ -16,11 +16,10 @@ pip install -r requirements.txt
 
 ## Usage
 
-_note : It might be useful to prevent your OS from sending RST packets because it is not aware a TCP connection is handled by Scapy in the user space. With iptables it can be done by adding the following rule:
+_note : It might be useful to prevent your OS from sending RST packets because it is not aware a TCP connection is handled by Scapy in the user space. With iptables it can be done by adding the following rule:_
 ```
 ip6tables -A OUTPUT -p tcp --tcp-flags RST RST -s <local_ip> -j DROP
 ```
-_
 
 To use this package, you need to create two lists:
 * A `fragscapy.PacketList` that will contains the Scapy packets to modify and then send
@@ -58,6 +57,7 @@ The possible modifications available so far are :
 * _ModDropProba_ : Drops each packet with a certain probability
 * _ModEcho_ : Echoes a string
 * _ModPrint_ : Prints the content of each packet
+* _ModSummary_ : Prints a 1-line summary of each packet
 * _ModDuplicate_ : Duplicates one of the packet
 * _ModReorder_ : Changes the order of the packet list
 * _ModSelect_ : Keeps only a subset of the packets
