@@ -1,0 +1,14 @@
+{
+  "nfrules": [
+    {"host": "www.maelkervella.eu", "port": 8080},
+    {"host": "www.maelkervella.eu", "port": 80}
+  ],
+  "input": [
+    "echo \"input\"",
+    "print"
+  ],
+  "output": [
+    "echo \"output\"",
+    "print"
+  ]
+}
