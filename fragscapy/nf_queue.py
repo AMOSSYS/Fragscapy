@@ -24,6 +24,7 @@ import fnfqueue
 from scapy.data import ETH_P_IP, ETH_P_IPV6
 from scapy.layers.inet import IP as scapy_IP
 from scapy.layers.inet6 import IPv6 as scapy_IPv6
+from scapy.sendrecv import send as scapy_send
 
 from .utils import check_root
 
@@ -166,6 +167,8 @@ class NFQueueRule:
         self._insert_or_remove(insert=False)
 
 
+
+
 class NFQueue:
     """
     Queue object that contains the different packets in the NFQUEUE target.
@@ -262,6 +265,7 @@ class _PacketWrapper(ABC):
         self._fnfqueue_pkt.payload = bytes(self._scapy_pkt)
 
     def __dir__(self):
+
         ret = ['_scapy_pkt', '_fnfqueue_pkt', 'l3_layer', 'is_input',
                'is_output']
         ret.extend(dir(self._scapy_pkt))
@@ -279,6 +283,14 @@ class _PacketWrapper(ABC):
         # such as accept, mangle, verdict, ...)
         self._apply_modifications()
         return ret
+
+    def raw_send(self):
+        """
+        Send the scapy packet directly on a raw socket. The charge of dropping
+        the nfqueued packed is left to the user (if necessary).
+        """
+        scapy_send(self._scapy_pkt)
+
 
 
 class IP(_PacketWrapper):
