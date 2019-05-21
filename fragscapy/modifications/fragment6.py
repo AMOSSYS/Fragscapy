@@ -1,17 +1,17 @@
-"""ModFragment6
+"""
 Modification to fragment one packet. the fragmentation size must be
 specified. It represents the maximum size of each packet (including
 headers)
 """
 from scapy.layers.inet6 import IPv6ExtHdrFragment, fragment6
 from scapy.packet import NoPayload
-from fragscapy.modifications.mod import Mod
-from fragscapy.packet_list import PacketList
+from .mod import Mod
+from ..packet_list import PacketList
 
 PROCESS_HEADERS = ("IPv6", "IPv6ExtHdrHopByHop", "IPv6ExtHdrRouting")
 
 def name(layer):
-    """name
+    """
     Returns the class name of the object (supposed to be a protocol layer).
 
     :param layer: The layer to examine.
@@ -20,7 +20,7 @@ def name(layer):
     return layer.__class__.__name__
 
 def get_per_frag_hdr(pkt):
-    """get_per_frag_hdr
+    """
     Returns the last 'Scapy layer' of the "Per-Fragment Headers" part of the
     packet.
 
@@ -36,7 +36,7 @@ def get_per_frag_hdr(pkt):
     return ret
 
 def insert_frag_hdr(pkt):
-    """insert_frag_hdr
+    """
     Insert a "Fragment Extension Header" in a packet where right after the
     "Per-Fragment Headers" and the "Extension & Upper-Layer Headers"
 
@@ -48,8 +48,8 @@ def insert_frag_hdr(pkt):
     return pkt
 
 
-class ModFragment6(Mod):
-    """ModFragment6
+class Fragment6(Mod):
+    """
     Fragment each IPv6 packet. the fragmentation size must be specified. It
     represents the maximum size of each packet (including headers).
     """

@@ -1,11 +1,11 @@
-"""mod_ipv6_nh
+"""
 Modifies the `Next Header` field of the IPv6 packet.
 """
 from random import randint
-from fragscapy.modifications.mod import Mod
+from .mod import Mod
 
-class ModIPv6NH(Mod):
-    """ModIPv6NH
+class IPv6NH(Mod):
+    """
     Modifies the `Next Header` field of the IPv6 packet.
     """
     name = "IPv6NH"
@@ -30,7 +30,7 @@ class ModIPv6NH(Mod):
                                  "Got {}".format(self.proto))
 
     def apply(self, pkt_list):
-        """apply
+        """
         Fetches the IPv6 layer replace the nh parameter.
 
         :param pkt_list: The packet list.

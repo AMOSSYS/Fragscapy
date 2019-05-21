@@ -1,11 +1,11 @@
-"""mod_ipv6_hop
+"""
 Modifies the `Hop Limit` field of the IPv6 packet.
 """
 from random import randint
-from fragscapy.modifications.mod import Mod
+from .mod import Mod
 
-class ModIPv6Hop(Mod):
-    """ModIPv6Hop
+class IPv6Hop(Mod):
+    """
     Modifies the `Hop Limit` field of the IPv6 packet.
     """
     name = "IPv6Hop"
@@ -30,7 +30,7 @@ class ModIPv6Hop(Mod):
                                  "Got {}".format(self.hop))
 
     def apply(self, pkt_list):
-        """apply
+        """
         Fetches the IPv6 layer replace the hop parameter.
 
         :param pkt_list: The packet list.

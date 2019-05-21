@@ -1,10 +1,10 @@
-"""mod_print
+"""
 Print the content of a packet list.
 """
-from fragscapy.modifications.mod import Mod
+from .mod import Mod
 
-class ModPrint(Mod):
-    """ModPrint
+class Print(Mod):
+    """
     Print the content of a packet list.
     """
     name = "Print"
@@ -16,7 +16,7 @@ class ModPrint(Mod):
         super().__init__(*args)
 
     def apply(self, pkt_list):
-        """apply
+        """
         For each packet in the packet list, displays its content.
 
         :param pkt_list: The packet list.

@@ -1,11 +1,11 @@
-"""mod_select
+"""
 Select and keeps only some of the packets. The selection is specified by
 giving a sequence of the index to keep.
 """
-from fragscapy.modifications.mod import Mod
-from fragscapy.packet_list import PacketList
+from .mod import Mod
+from ..packet_list import PacketList
 
-class ModSelect(Mod):
+class Select(Mod):
     """
     Select and keeps only some of the packets. The selection is specified by
     giving a sequence of the index to keep.

@@ -1,11 +1,11 @@
-"""mod_echo
+"""
 Echo a string when this modification is applied. Does not alter the packet
 list.
 """
-from fragscapy.modifications.mod import Mod
+from .mod import Mod
 
-class ModEcho(Mod):
-    """ModEcho
+class Echo(Mod):
+    """
     Echo a string when this modification is applied. Does not alter the
     packet list.
     """
@@ -19,7 +19,7 @@ class ModEcho(Mod):
         self.string = " ".join(args)
 
     def apply(self, pkt_list):
-        """apply
+        """
         Prints the string.
 
         :param pkt_list: The packet list (not used).
