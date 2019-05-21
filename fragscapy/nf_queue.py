@@ -29,10 +29,8 @@ from .utils import check_root
 
 # Define a constant structure that holds the options for iptables together
 Chain = namedtuple('Chain', ['name', 'host_opt', 'port_opt', 'qnum'])
-CHAINS = [
-    Chain('OUTPUT', '-d', '--dport', 0),
-    Chain('INPUT', '-s', '--sport', 1),
-]
+OUTPUT = Chain('OUTPUT', '-d', '--dport', 0)
+INPUT = Chain('INPUT', '-s', '--sport', 1)
 
 class NFQueueRule:
     """
@@ -52,6 +50,10 @@ class NFQueueRule:
     >>> http_alt_rule.remove()
     >>> http_rule.remove()
 
+    :param output_chain: Apply the rule on the output chain if True. Default
+        is True.
+    :param input_chain: Apply the rule on the input chain if True. Default
+        is True.
     :param proto: The protocol name (iptables-style) to filter on. If set to
         None and `port` is set, defaults to 'tcp', else defaults to None and
         all protocols will match.
@@ -63,12 +65,23 @@ class NFQueueRule:
         resolves once and for all to IPv4 and IPv6 when the rules are created)
     :param port: The TCP/UDP port to filter on. If sets to None, which is the
         default, all ports will match.
+    :param ipv4: Enable IPv4. Default is True
+    :param ipv6: Enable IPv6. Default is True
     :param qnum: the Queue number for the NFQUEUE target. Default is 0. To
         respect, how this modules uses NFQUEUE, it should be even : qnum is
         used for OUTPUT and qnum+1 is used for INPUT. If qnum is odd, a
         `ValueError` is raised.
     """
-    def __init__(self, proto=None, host=None, host6=None, port=None, qnum=0):
+    def __init__(self, output_chain=True, input_chain=True, proto=None,
+                 host=None, host6=None, port=None, ipv4=True, ipv6=True,
+                 qnum=0):
+        if not output_chain and not input_chain:
+            raise ValueError("Can not deactivate both output_chain and "
+                             "input_chain")
+
+        if not ipv4 and not ipv6:
+            raise ValueError("Can not deactivate both IPv4 and IPv6")
+
         if qnum % 2:
             raise ValueError("qnum should be even")
 
@@ -79,10 +92,14 @@ class NFQueueRule:
             # host6 default to the same as host if not specified
             host6 = host
 
+        self.output_chain = output_chain
+        self.input_chain = input_chain
         self.proto = proto
-        self.host = host
-        self.host6 = host6
+        self.host = host if ipv4 else None
+        self.host6 = host6 if ipv6 else None
         self.port = port if proto.lower() in ('tcp', 'udp') else None
+        self.ipv4 = ipv4
+        self.ipv6 = ipv6
         self.qnum = qnum
 
     def _build_options(self, chain, h):
@@ -105,10 +122,21 @@ class NFQueueRule:
 
     @check_root
     def _insert_or_remove(self, insert=True):
-        for binary, h in (
-                ("/sbin/iptables", self.host),
-                ("/sbin/ip6tables", self.host6)):
-            for chain in CHAINS:
+        bin_host = []
+        if self.ipv4:
+            bin_host.append(("/sbin/iptables", self.host))
+        if self.ipv6:
+            bin_host.append(("/sbin/ip6tables", self.host6))
+
+        chains = []
+        if self.output_chain:
+            chains.append(OUTPUT)
+        if self.input_chain:
+            chains.append(INPUT)
+
+
+        for binary, h in bin_host:
+            for chain in chains:
                 # Build the iptables/ip6tables resulting command
                 cmd = []
                 cmd.append(binary)
