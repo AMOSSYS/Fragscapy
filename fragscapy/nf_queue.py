@@ -25,7 +25,7 @@ from scapy.data import ETH_P_IP, ETH_P_IPV6
 from scapy.layers.inet import IP as scapy_IP
 from scapy.layers.inet6 import IPv6 as scapy_IPv6
 
-from .utils import check_perm
+from .utils import check_root
 
 # Define a constant structure that holds the options for iptables together
 Chain = namedtuple('Chain', ['name', 'host_opt', 'port_opt', 'qnum'])
@@ -103,7 +103,7 @@ class NFQueueRule:
         opt.append(str(self.qnum + chain.qnum))  # <qnum> or <qnum>+1
         return opt
 
-    @check_perm(root=True)
+    @check_root
     def _insert_or_remove(self, insert=True):
         for binary, h in (
                 ("/sbin/iptables", self.host),
@@ -166,7 +166,6 @@ class NFQueue:
         `NFQueue`'s documentations, qnum should be even and will raise a
         `ValueError` exception if not.
     """
-    @check_perm()
     def __init__(self, qnum=0):
         if qnum % 2:
             raise ValueError('qnum should be even')
