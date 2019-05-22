@@ -3,12 +3,36 @@
     {"host": "www.maelkervella.eu", "port": 8080},
     {"host": "www.maelkervella.eu", "port": 80}
   ],
+
   "input": [
-    "echo \"input\"",
-    "print"
+    {
+      "mod_name": "echo",
+      "mod_opts": "input"
+    },
+    {
+      "mod_name": "fragment6",
+      "mod_opts": "range 1280 6000 50"
+    },
+    {
+      "mod_name": "select",
+      "mod_opts": ["int 0", "seq_int 2 4 6 8"]
+    },
+    {
+      "mod_name": "print"
+    }
   ],
+
   "output": [
-    "echo \"output\"",
-    "print"
+    {
+      "mod_name": "echo",
+      "mod_opts": "seq_str output output2"
+    },
+    {
+      "mod_name": "fragment6",
+      "mod_opts": "range 1280 6000 50"
+    },
+    {
+      "mod_name": "print"
+    }
   ]
 }
