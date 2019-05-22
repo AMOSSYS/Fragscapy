@@ -8,6 +8,7 @@ import json
 class ConfigError(ValueError):
     """ Raises a configuration error about `key`. """
     def __init__(self, key):
+        self.key = key
         super(ConfigError, self).__init__(
             "Error: Unable to read '{}'".format(key)
         )
@@ -80,10 +81,10 @@ class Config:
         try:
             user_data = self.parser(self.data)
         except Exception:
-            raise ConfigError('.')
+            raise ConfigError('.not_parsable')
 
         if not isinstance(user_data, dict):
-            raise ConfigError('.')
+            raise ConfigError('.not_dict')
 
         # Parse all the data coming from the user
         # and warn about unknown options
@@ -108,30 +109,58 @@ class Config:
 
     def _parse_nfrules(self, user_nfrules):
         if not isinstance(user_nfrules, list):
-            raise ConfigError('.nfrules')
+            raise ConfigError('.nfrules.not_list')
 
         self._nfrules = list()
         for i, user_nfrule in enumerate(user_nfrules):
             if not isinstance(user_nfrule, dict):
-                raise ConfigError('.nfrules.{}'.format(i))
+                raise ConfigError('.nfrules.{}.not_dict'.format(i))
             self._nfrules.append(user_nfrule)
 
     def _parse_input(self, user_input):
         if not isinstance(user_input, list):
-            raise ConfigError('.input')
+            raise ConfigError('.input.not_list')
 
         self._input = list()
-        for i, user_in in enumerate(user_input):
-            if not isinstance(user_in, str):
-                raise ConfigError('.input.{}'.format(i))
-            self._input.append(user_in)
+        for i, mod in enumerate(user_input):
+            try:
+                self._input.append(_parse_mod(mod))
+            except ConfigError as e:
+                raise ConfigError('.input.{}{}'.format(i, e.key))
 
     def _parse_output(self, user_output):
         if not isinstance(user_output, list):
-            raise ConfigError('.output')
+            raise ConfigError('.output.not_list')
 
         self._output = list()
-        for i, user_out in enumerate(user_output):
-            if not isinstance(user_out, str):
-                raise ConfigError('.output.{}'.format(i))
-            self._output.append(user_out)
+        for i, mod in enumerate(user_output):
+            try:
+                self._output.append(_parse_mod(mod))
+            except ConfigError as e:
+                raise ConfigError('.output.{}{}'.format(i, e.key))
+
+
+def _parse_mod(mod):
+    if not isinstance(mod, dict):
+        raise ConfigError('.not_dict')
+
+    mod_name = None
+    mod_opts = list()
+
+    for key, value in mod.items():
+        if key == "mod_name":
+            mod_name = value
+        elif key == "mod_opts":
+            if not isinstance(value, list):
+                value = [value]
+            mod_opts = value
+        else:
+            config_warning("Unrecognized option : {}".format(key))
+
+    if mod_name is None:
+        raise ConfigError('.missing_mod_name')
+
+    return {
+        "mod_name": mod_name,
+        "mod_opts": mod_opts
+    }
