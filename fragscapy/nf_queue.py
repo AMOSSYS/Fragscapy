@@ -182,8 +182,6 @@ class NFQueueRule:
         self._insert_or_remove(insert=False)
 
 
-
-
 class NFQueue:
     """
     Queue object that contains the different packets in the NFQUEUE target.
@@ -298,6 +296,15 @@ class _PacketWrapper(ABC):
         # such as accept, mangle, verdict, ...)
         self._apply_modifications()
         return ret
+
+    def set_scapy(self, scapy_pkt):
+        """
+        Replace the scapy packet with a completely different one. The
+        synchronization with the nfqueue should be automatically done later.
+
+        :param scapy_pkt: The new Scapy packet to use.
+        """
+        self._scapy_pkt = scapy_pkt
 
     def raw_send(self):
         """
