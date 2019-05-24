@@ -46,7 +46,7 @@ class Duplicate(Mod):
             print("Unable to duplicate packet n°{}. PacketList too small."
                   "Passing the modification".format(i))
         else:
-            duplicate_packet = pkt_list[i].copy()
+            duplicate_packet = pkt_list[i].pkt.copy()
             pkt_list.insert_packet(i, duplicate_packet)
 
         return pkt_list
