@@ -103,7 +103,7 @@ class NFQueueRule:
         self.ipv6 = ipv6
         self.qnum = qnum
 
-    def _build_options(self, chain, h):
+    def _build_filter(self, chain, h):
         opt = []    # A list of iptables options
         opt.append(chain.name)                   # OUTPUT or INPUT
         if h is not None:
@@ -115,10 +115,23 @@ class NFQueueRule:
             if self.port is not None:
                 opt.append(chain.port_opt)       # --dport or --sport
                 opt.append(str(self.port))       # <port>
+        return opt
+
+    def _build_nfqueue_opt(self, chain):
+        opt = []
         opt.append('-j')                         # -j
         opt.append('NFQUEUE')                    # NFQUEUE
         opt.append('--queue-num')                # --queue-num
         opt.append(str(self.qnum + chain.qnum))  # <qnum> or <qnum>+1
+        return opt
+
+    def _build_rst_opt(_self, _):
+        opt = []
+        opt.append("--tcp-flags")
+        opt.append("RST")
+        opt.append("RST")
+        opt.append("-j")
+        opt.append("DROP")
         return opt
 
     @check_root
@@ -138,17 +151,19 @@ class NFQueueRule:
 
         for binary, h in bin_host:
             for chain in chains:
-                # Build the iptables/ip6tables resulting command
-                cmd = []
-                cmd.append(binary)
-                if insert:
-                    cmd.append('-I')
-                else:
-                    cmd.append('-D')
-                cmd.extend(self._build_options(chain, h))
-
-                # Run the command and raise an exception if an error occurs
-                subprocess.run(cmd, check=True)
+                for opt_func in (self._build_nfqueue_opt,
+                                 self._build_rst_opt):
+                    # Build the iptables/ip6tables resulting command
+                    cmd = []
+                    cmd.append(binary)
+                    if insert:
+                        cmd.append('-I')
+                    else:
+                        cmd.append('-D')
+                    cmd.extend(self._build_filter(chain, h))
+                    cmd.extend(opt_func(chain))
+                    # Run the command and raise an exception if an error occurs
+                    subprocess.run(cmd, check=True)
 
     def insert(self):
         """
