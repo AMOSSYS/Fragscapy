@@ -13,17 +13,25 @@ class ConfigError(ValueError):
             "Error: Unable to read '{}'".format(key)
         )
 
+
+class ConfigWarning(Warning):
+    """ Warning during the configuration parsing. """
+    pass
+
+
 def config_warning(msg):
     """ Raises a warning about something, details in `msg`. """
     warnings.warn(
-        "Warning: {}".format(msg),
-        UserWarning
+        "{}".format(msg),
+        ConfigWarning
     )
+
 
 def json_loadf(filename):
     """ Wrapper arround `json.load` to load directly from filename. """
     f = open(filename)
     return json.load(f)
+
 
 class Config:
     """
