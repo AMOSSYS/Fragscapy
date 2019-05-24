@@ -1,4 +1,5 @@
 {
+  "cmd": "/usr/bin/wget http://www.maelkervella.eu",
   "nfrules": [
     {"host": "www.maelkervella.eu", "port": 8080},
     {"host": "www.maelkervella.eu", "port": 80}

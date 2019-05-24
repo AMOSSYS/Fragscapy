@@ -55,11 +55,17 @@ class Config:
         self.parser = parser
         self.data = data
 
+        self._cmd = ""
         self._nfrules = list()
         self._input = list()
         self._output = list()
 
         self._parse()
+
+    @property
+    def cmd(self):
+        """ The command to run for each test. """
+        return self._cmd
 
     @property
     def nfrules(self):
@@ -89,7 +95,9 @@ class Config:
         # Parse all the data coming from the user
         # and warn about unknown options
         for key, value in user_data.items():
-            if key == 'nfrules':
+            if key == 'cmd':
+                self._parse_cmd(value)
+            elif key == 'nfrules':
                 self._parse_nfrules(value)
             elif key == 'input':
                 self._parse_input(value)
@@ -106,6 +114,16 @@ class Config:
                 "No Netfilter rules configured, which means no data will be "
                 "intercepted. Be sure this is the intended behavior."
             )
+
+    def _parse_cmd(self, user_cmd):
+        if not isinstance(user_cmd, str):
+            raise ConfigError('.cmd.not_str')
+        if not user_cmd[0] == '/':
+            config_warning(
+                "The command is relative, you should consider using absolute "
+                "commands for better stability."
+            )
+        self._cmd = user_cmd
 
     def _parse_nfrules(self, user_nfrules):
         if not isinstance(user_nfrules, list):
