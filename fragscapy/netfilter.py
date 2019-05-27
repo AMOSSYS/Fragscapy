@@ -192,11 +192,11 @@ class NFQueue:
     Queue object that contains the different packets in the NFQUEUE target.
     It can be iterated over in a for-loop to access them one by one or call
     the `next_packet()` method to access only one packet. The packets are
-    either `fragscapy.nf_queue.IP` objects or `fragscapy.nf_queue.IPv6`
+    either `fragscapy.netfilter.IP` objects or `fragscapy.netfilter.IPv6`
     objects, depending on the `ethertype` parameters received from Layer-2.
 
     Here is an example of how to setup a proxy from port 8080 to port 80
-    (see `fragscapy.nf_queue.IP` documentation for how to use the packets):
+    (see `fragscapy.netfilter.IP` documentation for how to use the packets):
 
     >>> q = NFQueue()
     >>> for p in q:

@@ -9,7 +9,7 @@ from itertools import product
 from tqdm import tqdm
 
 from .modgenerator import ModListGenerator
-from .nf_queue import NFQueue, NFQueueRule
+from .netfilter import NFQueue, NFQueueRule
 from .packet_list import PacketList
 
 
