@@ -1,12 +1,12 @@
-"""mod_duplicate
+"""
 Modification to duplicate one packet (delete it from the packet list).
 The duplicate is placed juste after the original one in the list. Can be
 either the first one, the last one, a random one or a specific one (by id).
 """
 from random import randint
-from fragscapy.modifications.mod import Mod
+from .mod import Mod
 
-class ModDuplicate(Mod):
+class Duplicate(Mod):
     """
     Duplicate one packet (delete it from the packet list). The duplicate is
     placed juste after the original one in the list. Can be either the first
@@ -46,7 +46,7 @@ class ModDuplicate(Mod):
             print("Unable to duplicate packet n°{}. PacketList too small."
                   "Passing the modification".format(i))
         else:
-            duplicate_packet = pkt_list[i].copy()
+            duplicate_packet = pkt_list[i].pkt.copy()
             pkt_list.insert_packet(i, duplicate_packet)
 
         return pkt_list

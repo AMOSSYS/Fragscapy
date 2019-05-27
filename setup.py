@@ -17,6 +17,7 @@ setup(name='FragScapy',
       requires=[
           'scapy',
           'fnfqueue',
+          'tqdm',
       ],
       classifiers=[
           "Development Status :: 3 - Alpha",

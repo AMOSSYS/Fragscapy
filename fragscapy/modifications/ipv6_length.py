@@ -1,11 +1,11 @@
-"""mod_ipv6_length
+"""
 Modifies the `Payload Length` field of the IPv6 packet.
 """
 from random import randint
-from fragscapy.modifications.mod import Mod
+from .mod import Mod
 
-class ModIPv6Length(Mod):
-    """ModIPv6Length
+class Ipv6Length(Mod):
+    """
     Modifies the `Payload Length` field of the IPv6 packet.
     """
     name = "IPv6length"
@@ -30,7 +30,7 @@ class ModIPv6Length(Mod):
                                  "Got {}".format(self.length))
 
     def apply(self, pkt_list):
-        """apply
+        """
         Fetches the IPv6 layer replace the payload length parameter.
 
         :param pkt_list: The packet list.

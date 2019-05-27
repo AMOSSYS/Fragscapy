@@ -1,10 +1,10 @@
-"""mod_summary
+"""
 Prints a 1-line summary of the packet.
 """
-from fragscapy.modifications.mod import Mod
+from .mod import Mod
 
-class ModSummary(Mod):
-    """ModSummary
+class Summary(Mod):
+    """
     Prints a 1-line summary of the packet.
     """
     name = "Summary"
@@ -16,7 +16,7 @@ class ModSummary(Mod):
         super().__init__(*args)
 
     def apply(self, pkt_list):
-        """apply
+        """
         For each packet in the packet list, show the summary
 
         :param pkt_list: The packet list.

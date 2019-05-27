@@ -1,4 +1,4 @@
-"""packet_list.py
+"""
 The classes and methods used to represent a list of Scpay packet that will be
 sent. A delay can be specified between each packet.
 """
@@ -10,7 +10,7 @@ from scapy.sendrecv import sendp as scapy_sendp
 MIN_TIME_DELAY = 0.01
 
 def _safe_delay(delay):
-    """_safe_delay
+    """
     Checks that a delay is a positive float number.
 
     :param delay: The delay expression to check.
@@ -28,7 +28,7 @@ def _safe_delay(delay):
 
 
 class PacketStruct:
-    """PacketStruct
+    """
     A structure to hold the underlying Scapy packet along with a delay to wait
     before sending the packet.
     """
@@ -38,7 +38,7 @@ class PacketStruct:
 
     @property
     def pkt(self):
-        """pkt
+        """
         The underlying Scapy packet.
         """
         return self._pkt
@@ -49,7 +49,7 @@ class PacketStruct:
 
     @property
     def delay(self):
-        """delay
+        """
         The delay to wait before sending the packet.
         """
         return self._delay
@@ -59,7 +59,7 @@ class PacketStruct:
         self._delay = _safe_delay(val)
 
     def send(self):
-        """send
+        """
         Sends the packet as a Layer2 packet.
         """
         # Only sleep if above the min limit
@@ -68,7 +68,7 @@ class PacketStruct:
         scapy_send(self._pkt)
 
     def sendp(self):
-        """sendp
+        """
         Sends the packet as a Layer3 packet.
         """
         # Only sleep if above the min limit
@@ -77,7 +77,7 @@ class PacketStruct:
         scapy_sendp(self._pkt)
 
     def display(self):
-        """display
+        """
         Displays the delay (if any) followed by the details of the underlying
         Scapy packet.
         """
@@ -86,7 +86,7 @@ class PacketStruct:
         self._pkt.display()
 
     def copy(self):
-        """copy
+        """
         Make a copy of the PacketStruct object
 
         :return: A new and different PacketStruct object with the same data
@@ -110,7 +110,7 @@ class PacketStruct:
 
 
 class PacketList:
-    """PacketList
+    """
     Representation of a list of packet to send.
 
     This list can be altered (edit, append, insert, remove) before being
@@ -130,7 +130,7 @@ class PacketList:
         return iter(self.pkts)
 
     def add_packet(self, pkt, delay=0):
-        """add_packet
+        """
         Adds a new Scapy packet at the end of the list.
 
         :param pkt:   The Scapy packet to add.
@@ -139,7 +139,7 @@ class PacketList:
         self.pkts.append(PacketStruct(pkt, delay))
 
     def edit_delay(self, index, delay):
-        """edit_delay
+        """
         Changes the delay before packet emission.
 
         :param index: Position of the packet to change.
@@ -148,7 +148,7 @@ class PacketList:
         self.pkts[index].delay = delay
 
     def edit_packet(self, index, pkt):
-        """edit_packet
+        """
         Changes the underlying Scapy packet.
 
         :param index: Position of the packet to change.
@@ -157,7 +157,7 @@ class PacketList:
         self.pkts[index].pkt = pkt
 
     def remove_packet(self, index):
-        """remove_packet
+        """
         Removes a packet from the list.
 
         :param index: Position of the packet to remove.
@@ -165,7 +165,7 @@ class PacketList:
         del self.pkts[index]
 
     def insert_packet(self, index, pkt, delay=0):
-        """insert_packet
+        """
         Inserts a new packet in the list at the given index.
 
         :param index: Position to insert the new packet.
@@ -175,21 +175,21 @@ class PacketList:
         self.pkts.insert(index, PacketStruct(pkt, delay))
 
     def send_all(self):
-        """send_all
+        """
         Sends all packets in the list as Layer3 packets.
         """
         for pkt in self.pkts:
             pkt.send()
 
     def sendp_all(self):
-        """sendp_all
+        """
         Sends all packets in the list as Layer2 packets.
         """
         for pkt in self.pkts:
             pkt.sendp()
 
     def display(self):
-        """display
+        """
         Displays the details of each packet of the packet list.
         """
         for pkt in self.pkts:

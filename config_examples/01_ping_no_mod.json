@@ -1,0 +1,12 @@
+{
+  "cmd": "/bin/ping -c 10 www.example.com",
+
+  "nfrules": [
+  ],
+
+  "input": [
+  ],
+
+  "output": [
+  ]
+}

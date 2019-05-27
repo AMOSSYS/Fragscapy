@@ -1,15 +1,15 @@
-"""mod_reorder
+"""
 Modification to reorder the packet list. The operation can either
 reverse the whole packet list or simply randomly rearrange them.
 """
 from random import shuffle
 from enum import Enum
-from fragscapy.modifications.mod import Mod
-from fragscapy.packet_list import PacketList
+from .mod import Mod
+from ..packetlist import PacketList
 
 METHOD = Enum("METHOD", "REVERSE RANDOM")
 
-class ModReorder(Mod):
+class Reorder(Mod):
     """
     Reorder the packet list. The operation can either reverse the whole
     packet list or simply randomly rearrange them.

@@ -1,16 +1,16 @@
-"""mod_ipv6_exthdr_mixup
+"""
 Randomly changes the order to the Extension Headers of the IPv6 packet
 """
 from random import shuffle
 from scapy.packet import NoPayload
-from fragscapy.modifications.mod import Mod
+from .mod import Mod
 
 IPV6_EXTHDR = (
     "IPv6ExtHdrHopByHop", "IPv6ExtHdrRouting", "IPv6ExtHdrFragment", "ESP",
     "AH", "MobileIP", "IPv6ExtDestOpt")
 
 def name(layer):
-    """name
+    """
     Returns the class name of the object (supposed to be a protocol layer).
 
     :param layer: The layer to examine.
@@ -19,7 +19,7 @@ def name(layer):
     return layer.__class__.__name__
 
 def slice_exthdr(pkt):
-    """slice_exthdr
+    """
     Cuts the packet in three:
     * the 'before the Extension Headers' part
     * the chain of 'Extension Headers' as a list
@@ -48,7 +48,7 @@ def slice_exthdr(pkt):
     return before, chain, after
 
 def replace_exthdr(before, exthdr, after):
-    """replace_exthdr
+    """
     Takes a chain of Extension Headers and link them together in the given
     order. Then inserts this new chain in the packet 'in-place'.
 
@@ -72,8 +72,8 @@ def replace_exthdr(before, exthdr, after):
     # Add the 'after' after the last Extension Header
     current.payload = after
 
-class ModIPv6ExtHdrMixup(Mod):
-    """ModIPv6ExtHdrMixup
+class Ipv6ExthdrMixup(Mod):
+    """
     Randomly changes the order to the Extension Headers of the IPv6 packet
     """
     name = "IPv6ExtHdrMixup"
