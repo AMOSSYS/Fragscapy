@@ -4,7 +4,7 @@ Modifies the `Next Header` field of the IPv6 packet.
 from random import randint
 from .mod import Mod
 
-class IPv6NH(Mod):
+class Ipv6Nh(Mod):
     """
     Modifies the `Next Header` field of the IPv6 packet.
     """

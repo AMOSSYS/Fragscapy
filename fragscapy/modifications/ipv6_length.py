@@ -4,7 +4,7 @@ Modifies the `Payload Length` field of the IPv6 packet.
 from random import randint
 from .mod import Mod
 
-class IPv6Length(Mod):
+class Ipv6Length(Mod):
     """
     Modifies the `Payload Length` field of the IPv6 packet.
     """

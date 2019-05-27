@@ -72,7 +72,7 @@ def replace_exthdr(before, exthdr, after):
     # Add the 'after' after the last Extension Header
     current.payload = after
 
-class IPv6ExtHdrMixup(Mod):
+class Ipv6ExthdrMixup(Mod):
     """
     Randomly changes the order to the Extension Headers of the IPv6 packet
     """

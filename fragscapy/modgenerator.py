@@ -576,7 +576,7 @@ def get_mod(mod_name):
     Dynamically import a mod from its name using `importlib`.
     """
     pkg_name = "{}.{}".format(MOD_PACKAGE, mod_name.lower())
-    mod_name = mod_name.lower().title()
+    mod_name = mod_name.lower().title().replace('_', '')
 
     pkg = importlib.import_module(pkg_name)
     return getattr(pkg, mod_name)
