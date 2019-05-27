@@ -1,0 +1,17 @@
+{
+  "cmd": "/bin/ping -c 10 www.example.com",
+
+  "nfrules": [
+    {"host": "www.example.com"}
+  ],
+
+  "input": [
+  ],
+
+  "output": [
+    {
+      "mod_name": "duplicate",
+      "mod_opts": "first"
+    }
+  ]
+}

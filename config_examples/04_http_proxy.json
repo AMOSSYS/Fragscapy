@@ -1,0 +1,22 @@
+{
+  "cmd": "/usr/bin/wget http://www.example.com:8080",
+
+  "nfrules": [
+    {"host": "www.example.com", "port": 80},
+    {"host": "www.example.com", "port": 8080}
+  ],
+
+  "input": [
+    {
+      "mod_name": "tcp_sport",
+      "mod_opts": 80
+    }
+  ],
+
+  "output": [
+    {
+      "mod_name": "tcp_dport",
+      "mod_opts": 8080
+    }
+  ]
+}

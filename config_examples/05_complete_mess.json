@@ -1,0 +1,51 @@
+{
+  "cmd": "/usr/bin/wget http://www.example.com",
+
+  "nfrules": [
+    {"host": "www.example.com", "port": 80},
+    {"host": "www.example.com", "port": 443},
+    {"port": 22, "input_chain": "False", "ipv4": "False", "qnum":18}
+  ],
+
+  "input": [
+    {
+      "mod_name": "echo",
+      "mod_opts": "seq_str foo bar fuz"
+    },
+    {
+      "mod_name": "ipv6_nh",
+      "mod_opts": 20
+    },
+    {
+      "mod_name": "ipv6_length",
+      "mod_opts": "range 1 500"
+    },
+    {
+      "mod_name": "summary"
+    }
+  ],
+
+  "output": [
+    {
+      "mod_name": "print"
+    },
+    {
+      "mod_name": "fragment6",
+      "mod_opts": "range 1280 5000 50"
+    },
+    {
+      "mod_name": "drop_proba",
+      "mod_opts": "seq_int 0.1 0.25 0.5 0.75 0.9"
+    },
+    {
+      "mod_name": "reorder",
+      "mod_opts": "reverse"
+    },
+    {
+      "mod_name": "ipv6_exthdr_mixup"
+    },
+    {
+      "mod_name": "summary"
+    }
+  ]
+}

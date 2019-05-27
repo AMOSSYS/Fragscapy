@@ -1,0 +1,17 @@
+{
+  "cmd": "/usr/bin/wget http://www.example.com",
+
+  "nfrules": [
+    {"host": "www.example.com", "port": 80}
+  ],
+
+  "input": [
+  ],
+
+  "output": [
+    {
+      "mod_name": "fragment6",
+      "mod_opts": "range 50 10000 50"
+    }
+  ]
+}
