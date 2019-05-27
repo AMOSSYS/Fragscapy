@@ -8,7 +8,7 @@ class Ipv6Hop(Mod):
     """
     Modifies the `Hop Limit` field of the IPv6 packet.
     """
-    name = "IPv6Hop"
+    name = "Ipv6Hop"
     doc = ("Modifies the `Hop Limit` field of the IPv6 packet.\n"
            "ipv6_hop {random|<fixed_hop>}")
     nb_args = 1

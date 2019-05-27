@@ -5,6 +5,7 @@ modifications lists (`ModList`).
 import importlib
 import os
 from abc import ABC, abstractmethod
+from inflection import camelize, underscore
 
 from .modlist import ModList
 
@@ -698,8 +699,8 @@ def get_mod(mod_name):
     """
     Dynamically import a mod from its name using `importlib`.
     """
-    pkg_name = "{}.{}".format(MOD_PACKAGE, mod_name.lower())
-    mod_name = mod_name.lower().title().replace('_', '')
+    pkg_name = "{}.{}".format(MOD_PACKAGE, underscore(mod_name))
+    mod_name = camelize(mod_name)
 
     pkg = importlib.import_module(pkg_name)
     return getattr(pkg, mod_name)

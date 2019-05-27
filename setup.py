@@ -18,6 +18,7 @@ setup(name='FragScapy',
           'scapy',
           'fnfqueue',
           'tqdm',
+          'inflecion',
       ],
       classifiers=[
           "Development Status :: 3 - Alpha",

@@ -96,9 +96,13 @@ def start(args):
 
 
 def usage(args):
-    print("Usage of:")
-    for mod in args.mod:
-        print(mod)
+    for mod_name in args.mod:
+        try:
+            mod = get_mod(mod_name)
+            mod.usage()
+            print("")
+        except ModuleNotFoundError:
+            print("Unknown modification: '{}'".format(mod_name))
 
 
 if __name__ == '__main__':
