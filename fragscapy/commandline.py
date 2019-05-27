@@ -8,6 +8,7 @@ from scapy.config import conf
 from fragscapy import __author__ as author, __version__ as version
 from fragscapy.config import Config
 from fragscapy.engine import Engine
+from fragscapy.modgenerator import get_all_mods, get_mod
 
 PROG_NAME="Fragscapy"
 DESCRIPTION = ("Runs a series of tests on the network and modify the packets "
@@ -72,7 +73,13 @@ def command():
 
 
 def list_mods():
-    print("I'm listing the mods")
+    all_mods_name = sorted(map(
+        lambda x: x.name or x.__class__.__name__.lower(),
+        get_all_mods()
+    ))
+    print("Found {} available mods:".format(len(all_mods_name)))
+    for mod in all_mods_name:
+        print("  - {}".format(mod))
 
 
 def start(args):
