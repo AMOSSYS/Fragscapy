@@ -207,11 +207,14 @@ class Engine:
         # Populate the NFQUEUE-related objects
         self.nfrules = list()
         self.nfqueues = list()
+        self.qnums = set()
         for nfrule in config.nfrules:
             self.nfrules.append(NFQueueRule(**nfrule))
             qnum = nfrule.get('qnum', 0)
             if not qnum % 2:
-                self.nfqueues.append(NFQueue(qnum=qnum))
+                self.qnums.add(qnum)
+        for qnum in self.qnums:
+            self.nfqueues.append(NFQueue(qnum=qnum))
 
         # Prepare the threads that catches, modify and send the packets
         self.engine_threads = list()
