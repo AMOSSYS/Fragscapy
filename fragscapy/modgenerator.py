@@ -217,7 +217,7 @@ class ModOptionSequenceStr(ModOption):
 
     def nb_options(self):
         """
-        Calculate the i-th instance of the generation.
+        Calculate number of instances of the generation.
         See `ModOption.nb_options` for more info.
         """
         return len(self.seq)
@@ -265,7 +265,7 @@ class ModOptionSequenceInt(ModOption):
 
     def nb_options(self):
         """
-        Calculate the i-th instance of the generation.
+        Calculate the number of instances of the generation.
         See `ModOption.nb_options` for more info.
         """
         return len(self.seq)
@@ -275,6 +275,100 @@ class ModOptionSequenceInt(ModOption):
 
     def __repr__(self):
         return "ModOptionSequenceInt({}, {})".format(self.mod_name, self.seq)
+
+
+class ModOptionSequenceFloat(ModOption):
+    """
+    A modification option generator for a sequence of floats.
+    The argument is a list of floats which will be the different
+    values used in the same order.
+
+    >>> list(ModOptionSequenceFloat("foo", [1, 10.5, 2.4, 20, 3, 30.48]))
+    [1.0, 10.5, 2.4, 20, 3, 30.48]
+
+    :param mod_name: The name of the mod (used only for error messages).
+    :param args: The list of arguments to parametrize the generator.
+    """
+    def __init__(self, mod_name, args):
+        super(ModOptionSequenceFloat, self).__init__(mod_name, "seq_float")
+
+        # Verify there is at least 1 element
+        if not args:
+            self._raise_error("No number in sequence")
+
+        self.seq = list()
+        for arg in args:
+            try:
+                self.seq.append(float(arg))
+            except ValueError:
+                self._raise_error("Non-float argument, got '{}'".format(arg))
+
+    def get_option(self, i):
+        """
+        Calculate the i-th instance of the generation.
+        See `ModOption.get_option` for more info.
+        """
+        super(ModOptionSequenceFloat, self).get_option(i)
+        return self.seq[i]
+
+    def nb_options(self):
+        """
+        Calculate the number of instances of the generation.
+        See `ModOption.nb_options` for more info.
+        """
+        return len(self.seq)
+
+    def __str__(self):
+        return "seq_float {}".format(" ".join(str(n) for n in self.seq))
+
+    def __repr__(self):
+        return "ModOptionSequenceFloat({}, {})".format(self.mod_name, self.seq)
+
+
+class ModOptionStr(ModOption):
+    """
+    A modification option generator that generate only 1 option which is a
+    string.
+    The args is a list (for consistency with other mod options) with a single
+    element: the string.
+
+    >>> list(ModOptionStr("foo", ["bar"]))
+    ["bar"]
+
+    :param mod_name: The name of the mod (used only for error messages).
+    :param args: The list of arguments to parametrize the generator.
+    """
+    def __init__(self, mod_name, args):
+        super(ModOptionStr, self).__init__(mod_name, "str")
+
+        # Verify there is exactly 1 argument
+        if len(args) != 1:
+            self._raise_error(
+                "There should be only 1 element, got '{}'".format(args)
+            )
+
+        self.s = args[0]
+
+    def get_option(self, i):
+        """
+        Returns the string, i.e. the only instance possible.
+        See `ModOption.get_option` for more info.
+        """
+        super(ModOptionStr, self).get_option(i)
+        return self.s
+
+    def nb_options(self):
+        """
+        Returns always 1 because there is ony 1 instance possible.
+        See `ModOption.nb_options` for more info.
+        """
+        return 1
+
+    def __str__(self):
+        return "str {}".format(self.s)
+
+    def __repr__(self):
+        return "ModOptionStr({}, [{}])".format(self.mod_name, self.s)
 
 
 class ModOptionInt(ModOption):
@@ -326,21 +420,23 @@ class ModOptionInt(ModOption):
         return "ModOptionInt({}, [{}])".format(self.mod_name, self.n)
 
 
-class ModOptionStr(ModOption):
+class ModOptionFloat(ModOption):
     """
     A modification option generator that generate only 1 option which is a
-    string.
+    floating decimal number.
     The args is a list (for consistency with other mod options) with a single
-    element: the string.
+    element: the float.
 
-    >>> list(ModOptionStr("foo", ["bar"]))
-    ["bar"]
+    >>> list(ModOptionFloat("foo", [18]))
+    [18.0]
+    >>> list(ModOptionFloat("foo", [42.58]))
+    [42.58]
 
     :param mod_name: The name of the mod (used only for error messages).
     :param args: The list of arguments to parametrize the generator.
     """
     def __init__(self, mod_name, args):
-        super(ModOptionStr, self).__init__(mod_name, "str")
+        super(ModOptionFloat, self).__init__(mod_name, "float")
 
         # Verify there is exactly 1 argument
         if len(args) != 1:
@@ -348,15 +444,18 @@ class ModOptionStr(ModOption):
                 "There should be only 1 element, got '{}'".format(args)
             )
 
-        self.s = args[0]
+        try:
+            self.n = float(args[0])
+        except ValueError:
+            self._raise_error("Can't cast '{}' to a float".format(args[0]))
 
     def get_option(self, i):
         """
-        Returns the string, i.e. the only instance possible.
+        Returns the float, i.e. the only instance possible.
         See `ModOption.get_option` for more info.
         """
-        super(ModOptionStr, self).get_option(i)
-        return self.s
+        super(ModOptionFloat, self).get_option(i)
+        return self.n
 
     def nb_options(self):
         """
@@ -366,10 +465,10 @@ class ModOptionStr(ModOption):
         return 1
 
     def __str__(self):
-        return "str {}".format(self.s)
+        return "float {}".format(self.n)
 
     def __repr__(self):
-        return "ModOptionStr({}, [{}])".format(self.mod_name, self.s)
+        return "ModOptionFloat({}, [{}])".format(self.mod_name, self.n)
 
 
 class ModGenerator:
@@ -411,10 +510,14 @@ class ModGenerator:
                     self.mod_opts.append(ModOptionSequenceStr(mod_name, opt_args[1:]))
                 elif opt_type == "seq_int":
                     self.mod_opts.append(ModOptionSequenceInt(mod_name, opt_args[1:]))
-                elif opt_type == "int":
-                    self.mod_opts.append(ModOptionInt(mod_name, opt_args[1:]))
+                elif opt_type == "seq_float":
+                    self.mod_opts.append(ModOptionSequenceFloat(mod_name, opt_args[1:]))
                 elif opt_type == "str":
                     self.mod_opts.append(ModOptionStr(mod_name, opt_args[1:]))
+                elif opt_type == "int":
+                    self.mod_opts.append(ModOptionInt(mod_name, opt_args[1:]))
+                elif opt_type == "float":
+                    self.mod_opts.append(ModOptionFloat(mod_name, opt_args[1:]))
                 else:  # By default consider it as a string
                     self.mod_opts.append(ModOptionStr(mod_name, [opt]))
             else:  # By default consider it as an int
