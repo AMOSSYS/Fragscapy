@@ -89,7 +89,7 @@ class EngineThread(Thread):
         """ Apply the input modifications on `packet`. """
         # Put the packet in a packet list
         packetlist = PacketList()
-        packetlist.add_packet(packet._scapy_pkt)
+        packetlist.add_packet(packet.scapy_pkt)
 
         with self._input_lock:
             packetlist = self._input_modlist.apply(packetlist)
@@ -112,7 +112,7 @@ class EngineThread(Thread):
         else:
             # If there is at least 1 packet in the result, send it
             # Modify the initial packet with the new content
-            packet.set_scapy(packetlist[0].pkt)
+            packet.scapy_pkt = packetlist[0].pkt
             # Mangle the packet to the NFQUEUE (so it is sent
             # correctly to the local application)
             packet.mangle()
@@ -121,7 +121,7 @@ class EngineThread(Thread):
         """ Apply the output modifications on `packet`. """
         # Put the packet in a packet list
         packetlist = PacketList()
-        packetlist.add_packet(packet._scapy_pkt)
+        packetlist.add_packet(packet.scapy_pkt)
 
         with self._output_lock:
             packetlist = self._output_modlist.apply(packetlist)

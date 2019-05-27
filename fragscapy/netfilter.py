@@ -32,7 +32,7 @@ Chain = namedtuple('Chain', ['name', 'host_opt', 'port_opt', 'qnum'])
 OUTPUT = Chain('OUTPUT', '-d', '--dport', 0)
 INPUT = Chain('INPUT', '-s', '--sport', 1)
 
-class NFQueueRule:
+class NFQueueRule:  # pylint: disable=too-many-instance-attributes
     """
     Manipulates the iptables and ip6tables to make use of the NFQUEUE for the
     packets that are to be routed through python. It is used to insert and
@@ -72,6 +72,7 @@ class NFQueueRule:
         used for OUTPUT and qnum+1 is used for INPUT. If qnum is odd, a
         `ValueError` is raised.
     """
+    # pylint: disable=too-many-arguments
     def __init__(self, output_chain=True, input_chain=True, proto=None,
                  host=None, host6=None, port=None, ipv4=True, ipv6=True,
                  qnum=0):
@@ -124,7 +125,7 @@ class NFQueueRule:
         opt.append(str(self.qnum + chain.qnum))  # <qnum> or <qnum>+1
         return opt
 
-    def _build_rst_opt(_self, _):
+    def _build_rst_opt(self, _):   # pylint: disable=no-self-use
         opt = []
         opt.append("--tcp-flags")
         opt.append("RST")
@@ -187,7 +188,7 @@ class NFQueueRule:
         self._insert_or_remove(insert=False)
 
 
-class NFQueue:
+class NFQueue:  # pylint: disable=too-few-public-methods
     """
     Queue object that contains the different packets in the NFQUEUE target.
     It can be iterated over in a for-loop to access them one by one or call
@@ -256,8 +257,8 @@ class _PacketWrapper(ABC):
     """
 
     def __init__(self, pkt):
-        self._scapy_pkt = self.l3_layer(pkt.payload)
-        self._fnfqueue_pkt = pkt
+        self.scapy_pkt = self.l3_layer(pkt.payload)
+        self.fnfqueue_pkt = pkt
         self._output = pkt.packet.queue_id % 2 == 0
 
     @property
@@ -301,15 +302,6 @@ class _PacketWrapper(ABC):
         # such as accept, mangle, verdict, ...)
         self._apply_modifications()
         return ret
-
-    def set_scapy(self, scapy_pkt):
-        """
-        Replace the scapy packet with a completely different one. The
-        synchronization with the nfqueue should be automatically done later.
-
-        :param scapy_pkt: The new Scapy packet to use.
-        """
-        self._scapy_pkt = scapy_pkt
 
     def raw_send(self):
         """
