@@ -17,6 +17,7 @@ ip6tables rules and `NFQueue`, the queue that can be iterated over to access the
 packets in the NFQUEUE target.
 """
 
+import os
 import subprocess
 from collections import namedtuple
 from abc import ABC, abstractmethod
@@ -25,8 +26,6 @@ from scapy.data import ETH_P_IP, ETH_P_IPV6
 from scapy.layers.inet import IP as scapy_IP
 from scapy.layers.inet6 import IPv6 as scapy_IPv6
 from scapy.sendrecv import send as scapy_send
-
-from .utils import check_root
 
 # Define a constant structure that holds the options for iptables together
 Chain = namedtuple('Chain', ['name', 'host_opt', 'port_opt', 'qnum'])
@@ -134,20 +133,26 @@ class NFQueueRule:
         opt.append("DROP")
         return opt
 
-    @check_root
     def _insert_or_remove(self, insert=True):
+        # Pre-catch non root errors here instead of letting iptables fail.
+        # Because it returns an exitcode of 2 which can indicate something
+        # else.
+        if os.geteuid() != 0:
+            raise PermissionError("You should be root")
+
+        # The binaries to use (IPv4 and/or IPv6) with the associated hostname
         bin_host = []
         if self.ipv4:
             bin_host.append(("/sbin/iptables", self.host))
         if self.ipv6:
             bin_host.append(("/sbin/ip6tables", self.host6))
 
+        # The chains to use (OUTUT and/or INPUT)
         chains = []
         if self.output_chain:
             chains.append(OUTPUT)
         if self.input_chain:
             chains.append(INPUT)
-
 
         for binary, h in bin_host:
             for chain in chains:
