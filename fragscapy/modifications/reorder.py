@@ -5,7 +5,7 @@ reverse the whole packet list or simply randomly rearrange them.
 from random import shuffle
 from enum import Enum
 from .mod import Mod
-from ..packet_list import PacketList
+from ..packetlist import PacketList
 
 METHOD = Enum("METHOD", "REVERSE RANDOM")
 

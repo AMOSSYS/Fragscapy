@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 from .modgenerator import ModListGenerator
 from .netfilter import NFQueue, NFQueueRule
-from .packet_list import PacketList
+from .packetlist import PacketList
 
 
 class EngineError(ValueError):
@@ -88,13 +88,13 @@ class EngineThread(Thread):
     def _process_input(self, packet):
         """ Apply the input modifications on `packet`. """
         # Put the packet in a packet list
-        packet_list = PacketList()
-        packet_list.add_packet(packet._scapy_pkt)
+        packetlist = PacketList()
+        packetlist.add_packet(packet._scapy_pkt)
 
         with self._input_lock:
-            packet_list = self._input_modlist.apply(packet_list)
+            packetlist = self._input_modlist.apply(packetlist)
 
-        pl_len = len(packet_list)
+        pl_len = len(packetlist)
 
         # Warning if there is creation of a packet (more than 1)
         if pl_len > 1:
@@ -112,7 +112,7 @@ class EngineThread(Thread):
         else:
             # If there is at least 1 packet in the result, send it
             # Modify the initial packet with the new content
-            packet.set_scapy(packet_list[0].pkt)
+            packet.set_scapy(packetlist[0].pkt)
             # Mangle the packet to the NFQUEUE (so it is sent
             # correctly to the local application)
             packet.mangle()
@@ -120,14 +120,14 @@ class EngineThread(Thread):
     def _process_output(self, packet):
         """ Apply the output modifications on `packet`. """
         # Put the packet in a packet list
-        packet_list = PacketList()
-        packet_list.add_packet(packet._scapy_pkt)
+        packetlist = PacketList()
+        packetlist.add_packet(packet._scapy_pkt)
 
         with self._output_lock:
-            packet_list = self._output_modlist.apply(packet_list)
+            packetlist = self._output_modlist.apply(packetlist)
 
         # Send all the packets resulting
-        packet_list.send_all()
+        packetlist.send_all()
         # Drop the old packet in NFQUEUE
         packet.drop()
 

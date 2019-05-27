@@ -6,7 +6,7 @@ headers)
 from scapy.layers.inet6 import IPv6ExtHdrFragment, fragment6
 from scapy.packet import NoPayload
 from .mod import Mod
-from ..packet_list import PacketList
+from ..packetlist import PacketList
 
 PROCESS_HEADERS = ("IPv6", "IPv6ExtHdrHopByHop", "IPv6ExtHdrRouting")
 

@@ -3,7 +3,7 @@ Select and keeps only some of the packets. The selection is specified by
 giving a sequence of the index to keep.
 """
 from .mod import Mod
-from ..packet_list import PacketList
+from ..packetlist import PacketList
 
 class Select(Mod):
     """
