@@ -13,6 +13,8 @@ clean: buildclean pylintclean compileclean
 
 pylint:
 	pylint3 fragscapy
+pylint-reports:
+	pylint3 fragscapy --reports=y
 
 dependencies:
 	pip3 install wheel

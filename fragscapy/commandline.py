@@ -9,7 +9,8 @@ import traceback
 
 from scapy.config import conf
 
-from fragscapy import __author__ as author, __version__ as version
+from fragscapy._author import __author__ as author
+from fragscapy._version import __version__ as version
 from fragscapy.config import Config
 from fragscapy.engine import Engine
 from fragscapy.modgenerator import get_all_mods, get_mod
