@@ -42,7 +42,7 @@
       "mod_opts": "reverse"
     },
     {
-      "mod_name": "ipv6_exthdr_mixup"
+      "mod_name": "ipv6_ext_hdr_mixup"
     },
     {
       "mod_name": "summary"

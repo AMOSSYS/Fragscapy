@@ -50,6 +50,24 @@ def command():
         help="The config file to use"
     )
     parser_start.add_argument(
+        '--modif-file',
+        type=str,
+        metavar='<modif_file>',
+        help="Where to write the modifications, default is 'modifications.txt'"
+    )
+    parser_start.add_argument(
+        '--stdout-file',
+        type=str,
+        metavar='<stdout_file>',
+        help="Where to redirect stdout, default is 'stdout{i}.txt'"
+    )
+    parser_start.add_argument(
+        '--stderr-file',
+        type=str,
+        metavar='<stderr_file>',
+        help="Where to redirect stderr, default is 'stderr{i}.txt'"
+    )
+    parser_start.add_argument(
         '--scapy-output',
         action='store_true',
         help="Enable the standard scapy output for each packet sent"
@@ -69,7 +87,7 @@ def command():
     elif args.subcmd == 'start':
         start(args)
     else:
-        parser.print_help()
+        parser.print_usage()
 
 
 def list_mods():
@@ -83,7 +101,6 @@ def list_mods():
 
 
 def start(args):
-    print(args.scapy_output)
     if not args.scapy_output:
         # Removes warning messages
         logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
@@ -91,7 +108,8 @@ def start(args):
         conf.verb = 0
 
     config = Config(args.config_file)
-    engine = Engine(config, not args.no_progressbar)
+    kwargs = _filter_kwargs(args, ['modif_file', 'stdout_file', 'stderr_file'])
+    engine = Engine(config, progressbar=(not args.no_progressbar), **kwargs)
     engine.start()
 
 
@@ -103,6 +121,14 @@ def usage(args):
             print("")
         except ModuleNotFoundError:
             print("Unknown modification: '{}'".format(mod_name))
+
+
+def _filter_kwargs(args, keys):
+    kwargs = dict()
+    for k in keys:
+        if hasattr(args, k) and getattr(args, k) is not None:
+            kwargs[k] = getattr(args, k)
+    return kwargs
 
 
 if __name__ == '__main__':
