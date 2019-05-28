@@ -1,20 +1,43 @@
-.PHONY: clean
+.PHONY:
+	help
+	buildclean
+	pylintclean
+	compileclean
+	clean
+	pylint
+	pylint-reports
+	dependencies
+	installdev
+	install
+	build
+
+help:
+	@echo "Makefile for fragscapy. Most used commands:"
+	@echo "  make build"
+	@echo "  make install"
+	@echo "  make installdev"
+	@echo "  make clean"
+	@echo "  make pylint"
+	@echo "  make pylint-reports"
 
 buildclean:
-	rm -Rf build
-	rm -Rf dist
-	rm -Rf fragscapy.egg-info
+	@echo "Deleting build files"
+	@rm -Rf build
+	@rm -Rf dist
+	@rm -Rf fragscapy.egg-info
 pylintclean:
-	rm -Rf **/__pycache__
+	@echo "Deleting pylint files"
+	@rm -Rf **/__pycache__
 compileclean:
-	rm -f **.pyc
-	rm -f **.pyo
+	@echo "Deleting compiled files"
+	@rm -f **.pyc
+	@rm -f **.pyo
 clean: buildclean pylintclean compileclean
 
 pylint:
-	pylint3 fragscapy
+	@pylint3 fragscapy
 pylint-reports:
-	pylint3 fragscapy --reports=y
+	@pylint3 fragscapy --reports=y
 
 dependencies:
 	pip3 install wheel
