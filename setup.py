@@ -21,9 +21,9 @@ version_file = os.path.join(src_dir, 'fragscapy', '_version.py')
 with io_open(version_file, mode='r') as fd:
     exec(fd.read())
 
-requires = []
+requirements = []
 with io_open("requirements.txt", mode='r') as fh:
-    requires = [line.strip().split('#', 1)[0].strip()
+    requirement = [line.strip().split('#', 1)[0].strip()
                 for line in fd.readlines()]
 
 long_description = ""
@@ -37,9 +37,18 @@ setup(name='Fragscapy',
       description="Catch and modify network packets on the fly with Scapy",
       long_description=long_description,
       long_description_content_type="text/markdown",
+      license="MIT License",
       url='https://gitlab.amossys.fr/mka/fragscapy',
-      packages=find_packages(),
-      requires=requires
+      packages=['fragscapy'] + [i for i in find_packages('fragscapy')],
+      install_requires=requirements,
+      package_data={
+          'fragscapy': ['README.md', 'LICENSE.txt', 'config_examples/*'],
+      },
+      entry_points={
+          'console_scripts': [
+              'fragscapy=fragscapy:main',
+          ],
+      },
       classifiers=[
           "Development Status :: 4 - Beta",
           "Environment :: Console",
@@ -48,8 +57,9 @@ setup(name='Fragscapy',
           "Intended Audience :: Science/Research",
           "Intended Audience :: System Administrators",
           "Intended Audience :: Telecomunications Industry",
-          "Programming Laguage :: Python :: 3",
+          "License :: OSI Approved :: MIT License",
           "Operating System :: POSIX :: Linux",
+          "Programming Laguage :: Python :: 3",
           "Topic :: Internet",
           "Topic :: Security",
           "Topic :: System :: Networking",
