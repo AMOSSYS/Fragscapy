@@ -5,6 +5,6 @@ applied to a series of Scapy packets (`PacketList`). The result is another
 series of Scapy packets modified according to the "modifications".
 """
 __author__ = "Maël KERVELLA"
-__version__ = "v0.1"
+from fragscapy._version import __version__
 
 from fragscapy.commandline import command as main
