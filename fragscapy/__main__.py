@@ -5,5 +5,5 @@ instead of something clusmy as
 `python fragscapy/__main__.py`
 """
 
-from fragscapy.commandline import command
-command()
+from fragscapy import main
+main()

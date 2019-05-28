@@ -6,3 +6,5 @@ series of Scapy packets modified according to the "modifications".
 """
 __author__ = "Maël KERVELLA"
 __version__ = "v0.1"
+
+from fragscapy.commandline import command as main
