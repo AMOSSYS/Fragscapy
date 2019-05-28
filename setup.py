@@ -18,13 +18,13 @@ from io import open as io_open
 __version__ = None
 src_dir = os.path.abspath(os.path.dirname(__file__))
 version_file = os.path.join(src_dir, 'fragscapy', '_version.py')
-with io_open(version_file, mode='r') as fd:
-    exec(fd.read())
+with io_open(version_file, mode='r') as fh:
+    exec(fh.read())
 
 requirements = []
 with io_open("requirements.txt", mode='r') as fh:
     requirement = [line.strip().split('#', 1)[0].strip()
-                for line in fd.readlines()]
+                   for line in fh.readlines()]
 
 long_description = ""
 with io_open("README.md", mode='r') as fh:
@@ -39,7 +39,7 @@ setup(name='Fragscapy',
       long_description_content_type="text/markdown",
       license="MIT License",
       url='https://gitlab.amossys.fr/mka/fragscapy',
-      packages=['fragscapy'] + [i for i in find_packages('fragscapy')],
+      packages=['fragscapy'] + ['fragscapy.'+i for i in find_packages('fragscapy')],
       install_requires=requirements,
       package_data={
           'fragscapy': ['README.md', 'LICENSE.txt', 'config_examples/*'],
