@@ -30,7 +30,7 @@ long_description = ""
 with io_open("README.md", mode='r') as fh:
     long_description = fh.read()
 
-setup(name='Fragscapy',
+setup(name='fragscapy',
       version=__version__,
       author='Maël Kervella',
       author_email='dev@maelkervella.eu',
