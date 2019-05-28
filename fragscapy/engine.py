@@ -324,3 +324,14 @@ class Engine:
             iterator = tqdm(iterator, total=total)
 
         return iterator
+
+    def check_nfrules(self):
+        """ Check that the NF rules should work without errors. """
+        self._insert_nfrules()
+        self._remove_nfrules()
+
+    def check_modlist_generation(self):
+        """ Check that the ModListGenerator will generate all mods. """
+        iterator = self._get_modlist_iterator()
+        for i, (input_modlist, output_modlist) in iterator:
+            self._write_modlist_to_file(i, input_modlist, output_modlist)

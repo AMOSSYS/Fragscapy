@@ -2,6 +2,7 @@ import argparse
 import logging
 import importlib
 import os
+import traceback
 
 from scapy.config import conf
 
@@ -39,6 +40,34 @@ def command():
         type=str,
         nargs='+',
         help="The name of a mod to show the usage"
+    )
+
+    # fragscapy checkconfig
+    parser_checkconfig = subparsers.add_parser(
+        'checkconfig',
+        help="Parse and check a config file without running the test suite"
+    )
+    parser_checkconfig.add_argument(
+        'config_file',
+        type=str,
+        metavar='<config_file>',
+        help="The config file to use"
+    )
+    parser_checkconfig.add_argument(
+        '--modif-file',
+        type=str,
+        metavar='<modif_file>',
+        help="Where to write the modifications, default is 'modifications.txt'"
+    )
+    parser_checkconfig.add_argument(
+        '--traceback', '--tb',
+        action='store_true',
+        help="Show the traceback when an error occurs"
+    )
+    parser_checkconfig.add_argument(
+        '--no-progressbar',
+        action='store_true',
+        help="Disable the progressbar. Can be useful in non interactive terminals"
     )
 
     # fragscapy start
@@ -84,6 +113,8 @@ def command():
         list_mods()
     elif args.subcmd == 'usage':
         usage(args)
+    elif args.subcmd == 'checkconfig':
+        checkconfig(args)
     elif args.subcmd == 'start':
         start(args)
     else:
@@ -121,6 +152,23 @@ def usage(args):
             print("")
         except ModuleNotFoundError:
             print("Unknown modification: '{}'".format(mod_name))
+
+
+def checkconfig(args):
+    try:
+        print(">>> Loading config file")
+        config = Config(args.config_file)
+        print(">>> Loading engine")
+        kwargs = _filter_kwargs(args, ['modif_file'])
+        engine = Engine(config, progressbar=(not args.no_progressbar), **kwargs)
+        print(">>> Checking Netfilter rules")
+        engine.check_nfrules()
+        print(">>> Checking mod list generation")
+        engine.check_modlist_generation()
+    except Exception as e:
+        if args.traceback:
+            traceback.print_tb(e.__traceback__)
+        print("{name}: {msg}".format(name=e.__class__.__name__, msg=e))
 
 
 def _filter_kwargs(args, keys):
