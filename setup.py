@@ -11,7 +11,6 @@ except ImportError:
         return [folder.replace("/", ".").lstrip(".")
                 for (folder, _, fils) in os.walk(where)
                 if "__init__.py" in fils]
-import sys
 from io import open as io_open
 
 # Get version from fragscapy/_version.py
@@ -67,4 +66,4 @@ setup(name='fragscapy',
           "Topic :: System :: Networking :: Monitoring",
       ],
       keywords='scapy fragroute nfqueue firewall evaluation network packets',
-      )
+     )
