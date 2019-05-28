@@ -49,6 +49,7 @@ setup(name='Fragscapy',
               'fragscapy=fragscapy:main',
           ],
       },
+      platforms=['Linux'],
       classifiers=[
           "Development Status :: 4 - Beta",
           "Environment :: Console",
