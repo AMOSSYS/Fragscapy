@@ -29,8 +29,8 @@ def config_warning(msg):
 
 def json_loadf(filename):
     """ Wrapper arround `json.load` to load directly from filename. """
-    f = open(filename)
-    return json.load(f)
+    with open(filename) as f:
+        return json.load(f)
 
 
 class Config:

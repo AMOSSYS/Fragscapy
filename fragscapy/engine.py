@@ -13,6 +13,11 @@ from .netfilter import NFQueue, NFQueueRule
 from .packetlist import PacketList
 
 
+STDOUT_FILE = "stdout{i}.txt"     # Redirect stdout to this file
+STDERR_FILE = "stderr{i}.txt"     # Redirect stderr to this file
+MODIF_FILE = "modifications.txt"  # Details of each mod on this file
+
+
 class EngineError(ValueError):
     """ An Error during the execution of the engine. """
     pass
@@ -154,7 +159,7 @@ class EngineThread(Thread):
         return None
 
 
-
+# pylint: disable=too-many-instance-attributes
 class Engine:
     """
     Main engine to run fragscapy, given a `Config` object.
@@ -179,10 +184,15 @@ class Engine:
 
     :param config: The `Config` object to use to get all the necessary data.
     :param progressbar: Show a progressbar during the process. Default: True.
+    :param modif_file: The filename where to write the modifications.
+        Default is 'modifications.txt'.
+    :param stdout_file: The filename where to redirect stdout. Use the
+        formating '{i}' to have a different file for each test. Default is
+        'stdout{i}.txt'.
+    :param stderr_file: The filename where to redirect stderr. Use the
+        formating '{i}' to have a different file for each test. Default is
+        'stderr{i}.txt'.
     """
-    STDOUT_FILE = "stdout{i}.txt"     # Redirect stdout to this file
-    STDERR_FILE = "stderr{i}.txt"     # Redirect stderr to this file
-    MODIF_FILE = "modifications.txt"  # Details of each mod on this file
     # Template of the infos for each modification
     MODIF_TEMPLATE = ("Modification n°{i}:\n"
                       "> INPUT:\n"
@@ -194,8 +204,13 @@ class Engine:
                       "\n"
                       "\n")
 
-    def __init__(self, config, progressbar=True):
+    # pylint: disable=too-many-arguments
+    def __init__(self, config, progressbar=True, modif_file=MODIF_FILE,
+                 stdout_file=STDOUT_FILE, stderr_file=STDERR_FILE):
         self.progressbar = progressbar
+        self.modif_file = modif_file
+        self.stdout_file = stdout_file
+        self.stderr_file = stderr_file
 
         # The cartesian product of the input and output `ModListGenerator`
         self.modlist_input_generator = ModListGenerator(config.input)
@@ -225,47 +240,59 @@ class Engine:
                 output_modlist=self.modlist_output_generator[0]
             ))
 
-    def _update_modlists(self, i, input_modlist, output_modlist):
-        """ Change the modlist in all the threads. """
-        for engine_thread in self.engine_threads:
-            engine_thread.input_modlist = input_modlist
-            engine_thread.output_modlist = output_modlist
-        # Write the modification details to the MODIF_FILE
-        with open(self.MODIF_FILE, "w+") as mod_file:
+    def _write_modlist_to_file(self, i, input_modlist, output_modlist):
+        """ Write the modification details to the 'modif_file'. """
+        with open(self.modif_file, "a") as mod_file:
             mod_file.write(self.MODIF_TEMPLATE.format(
                 i=i,
                 input_modlist=input_modlist,
                 output_modlist=output_modlist
             ))
 
+    def _update_modlists(self, i, input_modlist, output_modlist):
+        """ Change the modlist in all the threads. """
+        for engine_thread in self.engine_threads:
+            engine_thread.input_modlist = input_modlist
+            engine_thread.output_modlist = output_modlist
+        self._write_modlist_to_file(i, input_modlist, output_modlist)
+
     def _run_cmd(self, i):
         """
         Launch the user command in a sub-process and redirect stdout and
         stderr to the corresponding files.
         """
-        fout = self.STDOUT_FILE.format(i=i)
-        ferr = self.STDERR_FILE.format(i=i)
-        with open(fout, "wb") as out, open(ferr, "wb") as err:
+        fout = self.stdout_file.format(i=i)
+        ferr = self.stderr_file.format(i=i)
+        with open(fout, "ab") as out, open(ferr, "ab") as err:
             subprocess.run(self.cmd, stdout=out, stderr=err, shell=True)
+
+    def _insert_nfrules(self):
+        for nfrule in self.nfrules:
+            nfrule.insert()
+
+    def _remove_nfrules(self):
+        for nfrule in self.nfrules:
+            nfrule.remove()
+
+    def _start_threads(self):
+        for engine_thread in self.engine_threads:
+            engine_thread.start()
+
+    def _join_threads(self):
+        for engine_thread in self.engine_threads:
+            engine_thread.join()
 
     def pre_run(self):
         """ All the actions that need to be run before the Engine starts. """
-        for nfrule in self.nfrules:
-            nfrule.insert()
-        for engine_thread in self.engine_threads:
-            engine_thread.start()
+        self._insert_nfrules()
+        self._start_threads()
 
     def run(self):
         """
         The main action of the engine. Generates a modlist, run the command
         and do it over and over until all the modlists are exhausted.
         """
-        iterator = enumerate(product(
-            self.modlist_input_generator,
-            self.modlist_output_generator
-        ))
-        if self.progressbar:  # Use tqdm for showing progressbar
-            iterator = tqdm(iterator)
+        iterator = self._get_modlist_iterator()
 
         for i, (input_modlist, output_modlist) in iterator:
             # Change the modlist in the threads
@@ -275,13 +302,36 @@ class Engine:
 
     def post_run(self):
         """ All the actions that need to be run after the Engine stops. """
-        for nfrule in self.nfrules:
-            nfrule.remove()
-        for engine_thread in self.engine_threads:
-            engine_thread.join()
+        self._remove_nfrules()
+        self._join_threads()
 
     def start(self):
         """ Start the testing with .pre_run(), .run() and .post_run(). """
         self.pre_run()
         self.run()
         self.post_run()
+
+    def _get_modlist_iterator(self):
+        iterator = enumerate(product(
+            self.modlist_input_generator,
+            self.modlist_output_generator
+        ))
+        if self.progressbar:  # Use tqdm for showing progressbar
+            # Need to manually specify the total size as enumerate and
+            # product fucntion prevent from getting it automatically
+            total = (len(self.modlist_input_generator)
+                     * len(self.modlist_output_generator))
+            iterator = tqdm(iterator, total=total)
+
+        return iterator
+
+    def check_nfrules(self):
+        """ Check that the NF rules should work without errors. """
+        self._insert_nfrules()
+        self._remove_nfrules()
+
+    def check_modlist_generation(self):
+        """ Check that the ModListGenerator will generate all mods. """
+        iterator = self._get_modlist_iterator()
+        for i, (input_modlist, output_modlist) in iterator:
+            self._write_modlist_to_file(i, input_modlist, output_modlist)

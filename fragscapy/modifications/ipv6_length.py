@@ -8,7 +8,7 @@ class Ipv6Length(Mod):
     """
     Modifies the `Payload Length` field of the IPv6 packet.
     """
-    name = "IPv6length"
+    name = "Ipv6Length"
     doc = ("Modifies the `Payload Length` field of the IPv6 packet.\n"
            "ipv6_length {random|<fixed_length>}")
     nb_args = 1

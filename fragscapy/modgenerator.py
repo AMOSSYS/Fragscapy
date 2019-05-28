@@ -3,12 +3,16 @@ Creates different generator objects for modifications (`Mod`) and
 modifications lists (`ModList`).
 """
 import importlib
+import os
 from abc import ABC, abstractmethod
+from inflection import camelize, underscore
 
 from .modlist import ModList
 
-# Package where the modifications are store (and loaded from)
+# Package where the modifications are stored (and loaded from)
 MOD_PACKAGE = 'fragscapy.modifications'
+# Directory where the modifications are stored
+MOD_DIR = 'modifications'
 
 
 class ModGeneratorError(ValueError):
@@ -674,12 +678,29 @@ class ModListGenerator:
         )
 
 
+def get_all_mods():
+    """
+    Retrieve all the available mods using `importlib` and `os.listdir`.
+    """
+    dirname = os.path.dirname(__file__)
+    all_mods = list()
+    for mod_name in os.listdir(os.path.join(dirname, MOD_DIR)):
+        if not mod_name.endswith('.py'):
+            continue
+        if mod_name in ('__init__.py', 'mod.py'):
+            continue
+        mod_name = mod_name[:-3]
+        all_mods.append(get_mod(mod_name))
+
+    return all_mods
+
+
 def get_mod(mod_name):
     """
     Dynamically import a mod from its name using `importlib`.
     """
-    pkg_name = "{}.{}".format(MOD_PACKAGE, mod_name.lower())
-    mod_name = mod_name.lower().title().replace('_', '')
+    pkg_name = "{}.{}".format(MOD_PACKAGE, underscore(mod_name))
+    mod_name = camelize(mod_name)
 
     pkg = importlib.import_module(pkg_name)
     return getattr(pkg, mod_name)

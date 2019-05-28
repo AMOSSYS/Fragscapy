@@ -8,7 +8,7 @@ class Ipv6Nh(Mod):
     """
     Modifies the `Next Header` field of the IPv6 packet.
     """
-    name = "IPv6NH"
+    name = "Ipv6Nh"
     doc = ("Modifies the `Next Header` field of the IPv6 packet.\n"
            "ipv6_nh {random|<protocol_number>}")
     nb_args = 1

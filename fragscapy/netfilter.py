@@ -98,7 +98,10 @@ class NFQueueRule:  # pylint: disable=too-many-instance-attributes
         self.proto = proto
         self.host = host if ipv4 else None
         self.host6 = host6 if ipv6 else None
-        self.port = port if proto.lower() in ('tcp', 'udp') else None
+        self.port = (
+            port if proto is not None and proto.lower() in ('tcp', 'udp')
+            else None
+        )
         self.ipv4 = ipv4
         self.ipv6 = ipv6
         self.qnum = qnum
@@ -155,10 +158,15 @@ class NFQueueRule:  # pylint: disable=too-many-instance-attributes
         if self.input_chain:
             chains.append(INPUT)
 
+        # The options to use (nfqueue and/or tcp RST drop)
+        opt_funcs = []
+        opt_funcs.append(self._build_nfqueue_opt)
+        if self.proto is not None and self.proto.lower() == 'tcp':
+            opt_funcs.append(self._build_rst_opt)
+
         for binary, h in bin_host:
             for chain in chains:
-                for opt_func in (self._build_nfqueue_opt,
-                                 self._build_rst_opt):
+                for opt_func in opt_funcs:
                     # Build the iptables/ip6tables resulting command
                     cmd = []
                     cmd.append(binary)
