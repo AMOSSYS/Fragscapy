@@ -1,7 +1,5 @@
-"""
-The classes and methods used to represent a list of Scpay packet that will be
-sent. A delay can be specified between each packet.
-"""
+"""A list of wrappers around Scapy packets and metadata (e.g. delay)."""
+
 import time
 from scapy.sendrecv import send as scapy_send
 from scapy.sendrecv import sendp as scapy_sendp

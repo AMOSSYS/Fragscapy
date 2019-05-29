@@ -1,7 +1,5 @@
-"""
-Echo a string when this modification is applied. Does not alter the packet
-list.
-"""
+"""Echoes a string."""
+
 from .mod import Mod
 
 class Echo(Mod):

@@ -1,7 +1,10 @@
+"""Configuration parser and helper for fragscapy.
+
+The `config module` is responsible for sanitizing, checking and parsing a
+configfile provided by the user. It raises `ConfigError` and `ConfigWarning`
+if wrong parameters are detected.
 """
-Configuration parser and helper for fragscapy. It is responsible for
-sanitizing, checking and parsing a configfile provided by the user.
-"""
+
 import warnings
 import json
 

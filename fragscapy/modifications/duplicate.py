@@ -1,8 +1,5 @@
-"""
-Modification to duplicate one packet (delete it from the packet list).
-The duplicate is placed juste after the original one in the list. Can be
-either the first one, the last one, a random one or a specific one (by id).
-"""
+"""Duplicates one of the packets."""
+
 from random import randint
 from .mod import Mod
 

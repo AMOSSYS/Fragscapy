@@ -1,8 +1,10 @@
+"""Command-line specific operations and parsing.
+
+Handles everything related to the command line and its many options. The main
+entry point is `command()` which will parse the arguments from `sys.args` and
+triggers the correct function depending on the arguments given.
 """
-Handle everything related to the command line and its many options. The main
-entry point is `command()` which will parse the arguments and triggers the
-correct function depending on the arguments given.
-"""
+
 import argparse
 import logging
 import traceback

@@ -1,7 +1,5 @@
-"""
-Modification to drop each packet (delete them from the packet list).
-The parameter is the probability for each packet to be dropped.
-"""
+"""Drops each packet with a certain probability."""
+
 from random import random
 from .mod import Mod
 

@@ -1,7 +1,13 @@
+"""Runs the test suite based on the config of the user.
+
+The `Engine` is the main engine for fragscapy. It is used to setup the
+Netfilter rules, generate the mod lists, run the test suite and cleanup
+everything at the end.
+
+The `EngineThread` is a thread in charge of modifying the intercept packets
+and sending them back to the network.
 """
-The main engine for fragscapy. It is used to start everything in order to
-intercept packet, modify them and send the modified version.
-"""
+
 from threading import Thread, Lock
 import warnings
 import subprocess

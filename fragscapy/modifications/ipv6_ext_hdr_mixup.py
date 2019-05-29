@@ -1,6 +1,5 @@
-"""
-Randomly changes the order to the Extension Headers of the IPv6 packet
-"""
+"""Mixup the order of the IPv6 Extension Header of an IPv6 packet."""
+
 from random import shuffle
 from scapy.packet import NoPayload
 from .mod import Mod

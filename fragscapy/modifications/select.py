@@ -1,7 +1,5 @@
-"""
-Select and keeps only some of the packets. The selection is specified by
-giving a sequence of the index to keep.
-"""
+"""Select only some packets and drop the other ones."""
+
 from .mod import Mod
 from ..packetlist import PacketList
 

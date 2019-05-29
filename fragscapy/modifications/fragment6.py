@@ -1,8 +1,5 @@
-"""
-Modification to fragment one packet. the fragmentation size must be
-specified. It represents the maximum size of each packet (including
-headers)
-"""
+"""Fragments the IPv6 packets at the L3-layer."""
+
 from scapy.layers.inet6 import IPv6ExtHdrFragment, fragment6
 from scapy.packet import NoPayload
 from .mod import Mod

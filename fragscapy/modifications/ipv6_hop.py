@@ -1,6 +1,5 @@
-"""
-Modifies the `Hop Limit` field of the IPv6 packet.
-"""
+"""Modifies the `Hop Limit` field of the IPv6 packet."""
+
 from random import randint
 from .mod import Mod
 

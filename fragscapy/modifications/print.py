@@ -1,6 +1,5 @@
-"""
-Print the content of a packet list.
-"""
+"""Print the content of a packet list."""
+
 from .mod import Mod
 
 class Print(Mod):

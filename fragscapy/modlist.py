@@ -1,6 +1,4 @@
-"""
-A list of modifications used to gather some utility methods around it.
-"""
+"""Defines a list of `Mod` objects."""
 
 class ModList(list):
     """

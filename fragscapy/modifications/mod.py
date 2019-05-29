@@ -1,8 +1,10 @@
+"""Abstract definition of a modification.
+
+A modification is a transformation that can be applied to a list of packet.
+The `Mod` class defines the abstract base class that should be subclassed and
+concretized in order to create a new modification.
 """
-The modification-related objects. A modification is a transformation applied
-to a list of packet. The idea is to prepare a list of packet to send, apply
-some transformation and then send the modified version of the packet list.
-"""
+
 from abc import ABC, abstractmethod
 
 class Mod(ABC):

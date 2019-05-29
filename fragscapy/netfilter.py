@@ -1,5 +1,4 @@
-"""
-Groups the different objects used to manipulate the NFQueue packets in userland.
+"""Netfilter-related manipulations (i.e. NF rules and packets in NFQUEUE).
 
 NFQUEUE is a special Netfilter target that can be used to send packet to
 userland and modify them before sending them. To access them, this module uses

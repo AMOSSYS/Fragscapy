@@ -1,7 +1,5 @@
-"""
-Modification to reorder the packet list. The operation can either
-reverse the whole packet list or simply randomly rearrange them.
-"""
+"""Reorder the packet listing."""
+
 from random import shuffle
 from enum import Enum
 from .mod import Mod

@@ -1,9 +1,11 @@
-"""
+"""Fetches the version of Fragscapy from the commit hash.
+
 Defines the contant `__version__` based on a version number and the current
 commit hash (if it can be found).
 This script was mostly "inspired" from `tdqm`'s own script to determine the
 version.
 """
+
 import os
 from io import open as io_open
 

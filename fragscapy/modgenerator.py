@@ -1,7 +1,19 @@
+"""Generator for modifications and modifications lists.
+
+The objects in this module are generator used to generate the `Mod`
+and the `ModList` based on precise parametrization.
+
+The `ModOption`-derived classes are used to generates 1 option (e.g. an
+integer, a string, ...) based on a type of option (e.g. a sequence, a range,
+...).
+
+The  `ModGenerator` contains multiple `ModOption`s and generates 1 `Mod`
+object by enumerating all the different combination of options.
+
+The `ModListGenerator` contains multiple `ModGenerator`s and generates 1
+`ModList` object by enumerating all the different combination of mods.
 """
-Creates different generator objects for modifications (`Mod`) and
-modifications lists (`ModList`).
-"""
+
 import importlib
 import os
 from abc import ABC, abstractmethod

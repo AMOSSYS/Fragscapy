@@ -1,6 +1,5 @@
-"""
-Prints a 1-line summary of the packet.
-"""
+"""Prints a 1-line summary of the packet."""
+
 from .mod import Mod
 
 class Summary(Mod):

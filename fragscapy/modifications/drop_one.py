@@ -1,7 +1,5 @@
-"""
-Modification to drop one packet (delete it from the packet list). Can be
-either the first one, the last one, a random one or a specific one (by id).
-"""
+"""Drops one of the packets."""
+
 from random import randint
 from .mod import Mod
 
