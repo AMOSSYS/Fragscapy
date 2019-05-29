@@ -166,7 +166,7 @@ class EngineThread(Thread):
 
 
 # pylint: disable=too-many-instance-attributes
-class Engine:
+class Engine(object):
     """
     Main engine to run fragscapy, given a `Config` object.
 

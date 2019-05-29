@@ -31,7 +31,7 @@ Chain = namedtuple('Chain', ['name', 'host_opt', 'port_opt', 'qnum'])
 OUTPUT = Chain('OUTPUT', '-d', '--dport', 0)
 INPUT = Chain('INPUT', '-s', '--sport', 1)
 
-class NFQueueRule:  # pylint: disable=too-many-instance-attributes
+class NFQueueRule(object):  # pylint: disable=too-many-instance-attributes
     """
     Manipulates the iptables and ip6tables to make use of the NFQUEUE for the
     packets that are to be routed through python. It is used to insert and
@@ -195,7 +195,7 @@ class NFQueueRule:  # pylint: disable=too-many-instance-attributes
         self._insert_or_remove(insert=False)
 
 
-class NFQueue:  # pylint: disable=too-few-public-methods
+class NFQueue(object):  # pylint: disable=too-few-public-methods
     """
     Queue object that contains the different packets in the NFQUEUE target.
     It can be iterated over in a for-loop to access them one by one or call

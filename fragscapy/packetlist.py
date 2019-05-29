@@ -25,7 +25,7 @@ def _safe_delay(delay):
     return delay
 
 
-class PacketStruct:
+class PacketStruct(object):
     """
     A structure to hold the underlying Scapy packet along with a delay to wait
     before sending the packet.
@@ -107,7 +107,7 @@ class PacketStruct:
 
 
 
-class PacketList:
+class PacketList(object):
     """
     Representation of a list of packet to send.
 

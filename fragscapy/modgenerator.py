@@ -487,7 +487,7 @@ class ModOptionFloat(ModOption):
         return "ModOptionFloat({}, [{}])".format(self.mod_name, self.n)
 
 
-class ModGenerator:
+class ModGenerator(object):
     """
     A generator for a modification. For dynamic and evolution purposes, the
     `Mod` object is imported based on the `mod_name` given. It can then be
@@ -600,7 +600,7 @@ class ModGenerator:
         )
 
 
-class ModListGenerator:
+class ModListGenerator(object):
     """
     A generator for a `ModList`. The modlist is created based on the
     specifications for each of its mods as it come from the `Config` object.

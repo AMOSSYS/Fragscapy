@@ -36,7 +36,7 @@ def json_loadf(filename):
         return json.load(f)
 
 
-class Config:
+class Config(object):
     """
     Configuration parser wrapper.
     Parse some given data to load the configuration to run fragscapy with.
