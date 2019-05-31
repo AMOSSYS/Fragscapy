@@ -1,4 +1,4 @@
-"""Mixup the order of the IPv6 Extension Header of an IPv6 packet."""
+"""Mixes-up the order of the IPv6 Extension Header of an IPv6 packet."""
 
 import random
 
@@ -79,13 +79,24 @@ def replace_exthdr(before, exthdr, after):
 
 
 class Ipv6ExtHdrMixup(Mod):
-    """
+    """Mixes-up the order of the extension headers in an IPv6 packet.
+
     Randomly changes the order to the Extension Headers of the IPv6 packet
+
+    Args:
+        *args: The arguments of the mods.
+
+    Raises:
+        ValueError: Unrecognized or incorrect number of parameters.
+
+    Examples:
+        >>> Ipv6ExtHdrMixup()
     """
+
     name = "Ipv6ExtHdrMixup"
-    doc = ("Mixup the order of the extension headers in an IPv6 packet\n"
+    doc = ("Mixes-up the order of the extension headers in an IPv6 packet\n"
            "ipv6_ext_hdr_mixup")
-    nb_args = 0
+    _nb_args = 0
 
     def __init__(self, *args):
         super().__init__(*args)

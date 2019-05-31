@@ -4,13 +4,22 @@ from fragscapy.modifications.mod import Mod
 
 
 class Summary(Mod):
+    """Prints a 1-line summary of the packet.
+
+    Args:
+        *args: The arguments of the mods.
+
+    Raises:
+        ValueError: Unrecognized or incorrect number of parameters.
+
+    Examples:
+        >>> Summary()
     """
-    Prints a 1-line summary of the packet.
-    """
+
     name = "Summary"
-    doc = ("Print a 1-line summary of the packet.\n"
+    doc = ("Prints a 1-line summary of the packet.\n"
            "summary")
-    nb_args = 0
+    _nb_args = 0
 
     def __init__(self, *args):
         super().__init__(*args)

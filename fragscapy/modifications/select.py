@@ -1,14 +1,30 @@
-"""Select only some packets and drop the other ones."""
+"""Selects only some packets and drop the other ones."""
 
 from fragscapy.modifications.mod import Mod
 from fragscapy.packetlist import PacketList
 
 
 class Select(Mod):
+    """Selects only some packets and drop the other ones.
+
+    The selection is specified by giving a sequence of the index to keep.
+
+    Args:
+        *args: The arguments of the mods.
+
+    Attributes:
+        sequence: A list of the index to keep.
+
+    Raises:
+        ValueError: Unrecognized or incorrect number of parameters.
+
+    Examples:
+        >>> Select(0, 2, 4, 6, 8).sequence
+        [0, 2, 4, 6, 8]
+        >>> Select().sequence
+        []
     """
-    Select and keeps only some of the packets. The selection is specified by
-    giving a sequence of the index to keep.
-    """
+
     name = "Select"
     doc = ("Select only some packet.\n"
            "select [id1 [id2 [id3 ...]]]")

@@ -6,15 +6,32 @@ from fragscapy.modifications.mod import Mod
 
 
 class Duplicate(Mod):
+    """Duplicates one of the packets.
+
+    The duplicate is placed juste after the original one in the list. Can be
+    either the first one, the last one, a random one or a specific one (by
+    id).
+
+    Args:
+        *args: The arguments of the mods.
+
+    Attributes:
+        duplicate_index: The index to duplicate. None if random.
+
+    Raises:
+        ValueError: Unrecognized or incorrect number of parameters.
+
+    Examples:
+        >>> Duplicate("first").duplicate_index
+        0
+        >>> Duplicate(18).duplicate_index
+        18
     """
-    Duplicate one packet (delete it from the packet list). The duplicate is
-    placed juste after the original one in the list. Can be either the first
-    one, the last one, a random one or a specific one (by id).
-    """
+
     name = "Duplicate"
     doc = ("Duplicate one of the packets.\n"
            "duplicate {first|last|random|<id>}")
-    nb_args = 1
+    _nb_args = 1
 
     def __init__(self, *args):
         super().__init__(*args)

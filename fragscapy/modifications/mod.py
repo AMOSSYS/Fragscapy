@@ -8,22 +8,43 @@ concretized in order to create a new modification.
 import abc
 
 class Mod(abc.ABC):
-    """
-    Abstract object for defining a modification of a packet list.
+    """Abstract object for defining a modification of a packet list.
 
-    Contains at least a name (default is the class name) and a documentation
-    about the usage (default is a "no usage documented").
+    This the base class for defining a modification. Any subclass should
+    redefine the __init__ method to parse the arguments. If the class'
+    attribute `_nb_args` is redefined, `Mod.__init__()` automatically
+    check the number of parameters and raises a ValueError if this is not
+    the right number.
+
+    In addition, any subclass should also redefine the `.apply()` method
+    to define the behavior of the mod.
+
+    For an even better implementation one could redefine the `.name` and
+    `.doc` attribute in order to get cleaner usage. But defaults are provided
+    (respectively the class name and "No usage documented").
+
+    Args:
+        *args: The arguments of the mods.
+
+    Attributes:
+        name: The name of the modification.
+        doc: A string that describes the goal and the syntax of the
+            modification. It is displayed when requesting the usage.
+
+    Raises:
+        ValueError: incorrect number of parameters.
     """
+
     name = None
     doc = None
-    nb_args = -1
+    _nb_args = -1
 
     @abc.abstractmethod
     def __init__(self, *args):
-        if self.nb_args >= 0 and len(args) != self.nb_args:
+        if self._nb_args >= 0 and len(args) != self._nb_args:
             raise ValueError(
                 "Incorrect number of parameters specified. "
-                "Got {}, expected {}.".format(len(args), self.nb_args)
+                "Got {}, expected {}.".format(len(args), self._nb_args)
             )
 
     @abc.abstractmethod

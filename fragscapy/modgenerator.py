@@ -30,29 +30,38 @@ MOD_DIR = 'modifications'
 
 
 class ModGeneratorError(ValueError):
-    """ Error with the mods generation. """
+    """Error with the mods generation."""
+
     pass
 
 
 class ModOption(abc.ABC):
-    """
-    Abstract class of a single option generator in a mod (i.e. 1 of the
-    parameter passed to the constructor of the mod). It should implement a
-    `.get_option(i)` and a `.nb_options()` methods. It can then be used to
-    generate 1 instance of the option (based on the parameter given on init).
+    """Abstract generator for an option in a modification.
+
+    This class can generates a single option in a mod (i.e. 1 of the
+    parameter passed to the constructor of the mod). Any subclass should
+    implement a `.get_option(i)` and a `.nb_options()` methods. It can then
+    be used to generate 1 instance of the option (based on the parameter
+    given on init).
 
     It can be used as a generator or as list-like object.
 
-    >>> for opt in mod_option:  # Used in for-loops
-    ...     print(opt)
-    >>> n = len(mod_option)     # Size = number of different instances
-    >>> opt = mod_option[n-1]   # Retrieve last instance
+    Args:
+        mod_name: The name of the modification (used only for errors
+            messages).
+        opt_name: The name of this option (used only for errors messages).
 
-    :param mod_name: the name of this modification (used only for errors
-        messages).
-    :param opt_name: the name of this option of this modification (used only
-        for errors messages).
+    Attributes:
+        mod_name: The name of the modification.
+        opt_name: The name of this option.
+
+    Examples:
+        >>> for opt in mod_option:  # Used in for-loops
+        ...     print(opt)
+        >>> n = len(mod_option)     # Size = number of different instances
+        >>> opt = mod_option[n-1]   # Retrieve last instance
     """
+
     def __init__(self, mod_name, opt_name):
         self.opt_name = opt_name
         self.mod_name = mod_name
@@ -113,27 +122,40 @@ class ModOption(abc.ABC):
 
 
 class ModOptionRange(ModOption):
-    """
-    A modification option generator for range of integer. It's behavior is
-    the same as the built-in python function `range`.
+    """Modification option generator for range of integer.
+
+    Its behavior is the same as the built-in python function `range`.
     The argument is a list of 1, 2 or 3 integers (positives or negatives are
     supported). If 1 integer is passed, the range goes from 0 to arg[0] with a
     step of 1. If 2 integers are passed, the range goes from arg[0] to arg[1]
     with a step of 1. If 3 integers are passed, the range goes from arg[0] to
     arg[1] with a step of arg[2].
 
-    >>> list(ModOptionRange("foo", [1]))
-    [0, 1]
-    >>> list(ModOptionRange("foo", [5,8]))
-    [5, 6, 7, 8]
-    >>> list(ModOptionRange("foo", [-10,-1]))
-    [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1]
-    >>> list(ModOptionRange("foo", [-10,-1, 3]))
-    [-10, -7, -4, -1]
+    Args:
+        mod_name: The name of the mod (used only for error messages).
+        args: A list of 1, 2 or 3 integers.
 
-    :param mod_name: The name of the mod (used only for error messages).
-    :param args: The list of arguments to parametrize the generator.
+    Attributes:
+        mod_name: The name of the modification.
+        opt_name: The name of this option ('range').
+        start: The start of the range.
+        stop: The stop of the range.
+        step: The step if the range.
+
+    Raises:
+        ModGeneratorError: See the message for details.
+
+    Examples:
+        >>> list(ModOptionRange("foo", [1]))
+        [0, 1]
+        >>> list(ModOptionRange("foo", [5,8]))
+        [5, 6, 7, 8]
+        >>> list(ModOptionRange("foo", [-10,-1]))
+        [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1]
+        >>> list(ModOptionRange("foo", [-10,-1, 3]))
+        [-10, -7, -4, -1]
     """
+
     def __init__(self, mod_name, args):
         super(ModOptionRange, self).__init__(mod_name, "range")
 
@@ -205,17 +227,28 @@ class ModOptionRange(ModOption):
 
 
 class ModOptionSequenceStr(ModOption):
-    """
-    A modification option generator for a sequence of strings.
+    """Modification option generator for a sequence of strings.
+
     The argument is a list of strings which will be the different
     values used in the same order.
 
-    >>> list(ModOptionSequenceStr("foo", ["a", "b", "c", "d"]))
-    ['a', 'b', 'c', 'd']
+    Args:
+        mod_name: The name of the mod (used only for error messages).
+        args: The list of arguments to parametrize the generator.
 
-    :param mod_name: The name of the mod (used only for error messages).
-    :param args: The list of arguments to parametrize the generator.
+    Attributes:
+        mod_name: The name of the modification.
+        opt_name: The name of this option ('seq_str').
+        seq: The sequence of strings.
+
+    Raises:
+        ModGeneratorError: See the message for details.
+
+    Example:
+        >>> list(ModOptionSequenceStr("foo", ["a", "b", "c", "d"]))
+        ['a', 'b', 'c', 'd']
     """
+
     def __init__(self, mod_name, args):
         super(ModOptionSequenceStr, self).__init__(mod_name, "seq_str")
 
@@ -248,17 +281,28 @@ class ModOptionSequenceStr(ModOption):
 
 
 class ModOptionSequenceInt(ModOption):
-    """
-    A modification option generator for a sequence of integers.
+    """Modification option generator for a sequence of integers.
+
     The argument is a list of integers which will be the different
     values used in the same order.
 
-    >>> list(ModOptionSequenceInt("foo", [1, 10, 2, 20, 3, 30]))
-    [1, 10, 2, 20, 3, 30]
+    Args:
+        mod_name: The name of the mod (used only for error messages).
+        args: A list of integers.
 
-    :param mod_name: The name of the mod (used only for error messages).
-    :param args: The list of arguments to parametrize the generator.
+    Attributes:
+        mod_name: The name of the modification.
+        opt_name: The name of this option ('seq_int').
+        seq: The sequence of integers.
+
+    Raises:
+        ModGeneratorError: See the message for details.
+
+    Examples:
+        >>> list(ModOptionSequenceInt("foo", [1, 10, 2, 20, 3, 30]))
+        [1, 10, 2, 20, 3, 30]
     """
+
     def __init__(self, mod_name, args):
         super(ModOptionSequenceInt, self).__init__(mod_name, "seq_int")
 
@@ -296,17 +340,28 @@ class ModOptionSequenceInt(ModOption):
 
 
 class ModOptionSequenceFloat(ModOption):
-    """
-    A modification option generator for a sequence of floats.
+    """Modification option generator for a sequence of floats.
+
     The argument is a list of floats which will be the different
     values used in the same order.
 
-    >>> list(ModOptionSequenceFloat("foo", [1, 10.5, 2.4, 20, 3, 30.48]))
-    [1.0, 10.5, 2.4, 20, 3, 30.48]
+    Args:
+        mod_name: The name of the mod (used only for error messages).
+        args: A list of floats.
 
-    :param mod_name: The name of the mod (used only for error messages).
-    :param args: The list of arguments to parametrize the generator.
+    Attributes:
+        mod_name: The name of the modification.
+        opt_name: The name of this option ('seq_float').
+        seq: The sequence of floats.
+
+    Raises:
+        ModGeneratorError: See the message for details.
+
+    Examples:
+        >>> list(ModOptionSequenceFloat("foo", [1, 10.5, 2.4, 20, 3, 30.48]))
+        [1.0, 10.5, 2.4, 20, 3, 30.48]
     """
+
     def __init__(self, mod_name, args):
         super(ModOptionSequenceFloat, self).__init__(mod_name, "seq_float")
 
@@ -344,18 +399,28 @@ class ModOptionSequenceFloat(ModOption):
 
 
 class ModOptionStr(ModOption):
-    """
-    A modification option generator that generate only 1 option which is a
-    string.
+    """Modification option generator with 1 possibility: a string.
+
     The args is a list (for consistency with other mod options) with a single
     element: the string.
 
-    >>> list(ModOptionStr("foo", ["bar"]))
-    ["bar"]
+    Args:
+        mod_name: The name of the mod (used only for error messages).
+        args: A list with 1 string.
 
-    :param mod_name: The name of the mod (used only for error messages).
-    :param args: The list of arguments to parametrize the generator.
+    Attributes:
+        mod_name: The name of the modification.
+        opt_name: The name of this option ('str').
+        s: The string.
+
+    Raises:
+        ModGeneratorError: See the message for details.
+
+    Examples:
+        >>> list(ModOptionStr("foo", ["bar"]))
+        ["bar"]
     """
+
     def __init__(self, mod_name, args):
         super(ModOptionStr, self).__init__(mod_name, "str")
 
@@ -390,18 +455,28 @@ class ModOptionStr(ModOption):
 
 
 class ModOptionInt(ModOption):
-    """
-    A modification option generator that generate only 1 option which is an
-    integer.
+    """Modification option generator with 1 possibility: an int.
+
     The args is a list (for consistency with other mod options) with a single
     element: the integer.
 
-    >>> list(ModOptionInt("foo", [18]))
-    [18]
+    Args:
+        mod_name: The name of the mod (used only for error messages).
+        args: A list with 1 int.
 
-    :param mod_name: The name of the mod (used only for error messages).
-    :param args: The list of arguments to parametrize the generator.
+    Attributes:
+        mod_name: The name of the modification.
+        opt_name: The name of this option ('int').
+        n: The integer.
+
+    Raises:
+        ModGeneratorError: See the message for details.
+
+    Examples:
+        >>> list(ModOptionInt("foo", [18]))
+        [18]
     """
+
     def __init__(self, mod_name, args):
         super(ModOptionInt, self).__init__(mod_name, "int")
 
@@ -439,20 +514,30 @@ class ModOptionInt(ModOption):
 
 
 class ModOptionFloat(ModOption):
-    """
-    A modification option generator that generate only 1 option which is a
-    floating decimal number.
+    """Modification option generator with 1 possibility: a float.
+
     The args is a list (for consistency with other mod options) with a single
     element: the float.
 
-    >>> list(ModOptionFloat("foo", [18]))
-    [18.0]
-    >>> list(ModOptionFloat("foo", [42.58]))
-    [42.58]
+    Args:
+        mod_name: The name of the mod (used only for error messages).
+        args: A list with 1 float.
 
-    :param mod_name: The name of the mod (used only for error messages).
-    :param args: The list of arguments to parametrize the generator.
+    Attributes:
+        mod_name: The name of the modification.
+        opt_name: The name of this option ('float').
+        n: The integer.
+
+    Raises:
+        ModGeneratorError: See the message for details.
+
+    Examples:
+        >>> list(ModOptionFloat("foo", [18]))
+        [18.0]
+        >>> list(ModOptionFloat("foo", [42.58]))
+        [42.58]
     """
+
     def __init__(self, mod_name, args):
         super(ModOptionFloat, self).__init__(mod_name, "float")
 
@@ -490,56 +575,64 @@ class ModOptionFloat(ModOption):
 
 
 class ModGenerator(object):
+    """Generator for a modification.
+
+    For dynamic and evolution purposes, the `Mod` object is imported based on
+    the `mod_name` given. It can then be used to generate all the possible
+    mods with all the possible combinations for the options, as described in
+    `mod_opts`.
+
+    Args:
+        mod_name: The name of the modification (for importing the correct mod
+            and improve error messages).
+        mod_opts: A list with the options to use to build `ModOption`s
+            objects.
+
+    Attributes:
+        mod_name: The name of the modification (for importing the correct mod
+            and improve error messages).
+
+    Examples:
+        It can be used as a generator or as list-like object.
+
+        >>> for mod in ModGenerator("echo", ["seq_str foo bar"]):
+        ...     print(repr(mod))
+        Echo<string: foo>
+        Echo<string: bar>
+        >>> print(ModGenerator("fragment6", ["range 1280 6000 50"])[50])
+        Fragment6 3780
+        >>> len(ModGenerator("select", [0, 2, "seq_int 3 4 5", "range 7 20"]))
+        42
     """
-    A generator for a modification. For dynamic and evolution purposes, the
-    `Mod` object is imported based on the `mod_name` given. It can then be
-    used to generate all the possible mods with all the possible combinations
-    for the options, as described in mod_opts.
 
-    It can be used as a generator or as list-like object.
-
-    >>> for mod in ModGenerator("echo", ["seq_str foo bar"]):
-    ...     print(repr(mod))
-    Echo<string: foo>
-    Echo<string: bar>
-    >>> print(ModGenerator("fragment6", ["range 1280 6000 50"])[50])
-    Fragment6 3780
-    >>> len(ModGenerator("select", [0, 2, "seq_int 3 4 5", "range 7 20"]))
-    42
-
-    :param mod_name: The name of the modification (for importing the correct
-        mod and improve error messages).
-    :param mod_opts: A list with the options to use to build `ModOption`s
-        objects.
-    """
     def __init__(self, mod_name, mod_opts):
         self.mod_name = mod_name
-        self.mod = get_mod(mod_name)
+        self._mod = get_mod(mod_name)
 
-        self.mod_opts = list()
+        self._mod_opts = list()
         for opt in mod_opts:
             # Find the right ModOption or default to Str or Int
             if isinstance(opt, str):
                 opt_args = opt.split()
                 opt_type = opt_args[0]
                 if opt_type == "range":
-                    self.mod_opts.append(ModOptionRange(mod_name, opt_args[1:]))
+                    self._mod_opts.append(ModOptionRange(mod_name, opt_args[1:]))
                 elif opt_type == "seq_str":
-                    self.mod_opts.append(ModOptionSequenceStr(mod_name, opt_args[1:]))
+                    self._mod_opts.append(ModOptionSequenceStr(mod_name, opt_args[1:]))
                 elif opt_type == "seq_int":
-                    self.mod_opts.append(ModOptionSequenceInt(mod_name, opt_args[1:]))
+                    self._mod_opts.append(ModOptionSequenceInt(mod_name, opt_args[1:]))
                 elif opt_type == "seq_float":
-                    self.mod_opts.append(ModOptionSequenceFloat(mod_name, opt_args[1:]))
+                    self._mod_opts.append(ModOptionSequenceFloat(mod_name, opt_args[1:]))
                 elif opt_type == "str":
-                    self.mod_opts.append(ModOptionStr(mod_name, opt_args[1:]))
+                    self._mod_opts.append(ModOptionStr(mod_name, opt_args[1:]))
                 elif opt_type == "int":
-                    self.mod_opts.append(ModOptionInt(mod_name, opt_args[1:]))
+                    self._mod_opts.append(ModOptionInt(mod_name, opt_args[1:]))
                 elif opt_type == "float":
-                    self.mod_opts.append(ModOptionFloat(mod_name, opt_args[1:]))
+                    self._mod_opts.append(ModOptionFloat(mod_name, opt_args[1:]))
                 else:  # By default consider it as a string
-                    self.mod_opts.append(ModOptionStr(mod_name, [opt]))
+                    self._mod_opts.append(ModOptionStr(mod_name, [opt]))
             else:  # By default consider it as an int
-                self.mod_opts.append(ModOptionInt(mod_name, [opt]))
+                self._mod_opts.append(ModOptionInt(mod_name, [opt]))
 
 
     def get_mod(self, i):
@@ -558,11 +651,11 @@ class ModGenerator(object):
                 .format(self.mod_name, self.nb_mods()-1, i)
             )
         opts = list()
-        for opt in self.mod_opts:
+        for opt in self._mod_opts:
             opts.append(opt[i % len(opt)])
             i -= i % len(opt)
             i //= len(opt)
-        return self.mod(*opts)
+        return self._mod(*opts)
 
     def nb_mods(self):
         """
@@ -571,7 +664,7 @@ class ModGenerator(object):
         composed of.
         """
         ret = 1
-        for opt in self.mod_opts:
+        for opt in self._mod_opts:
             ret *= len(opt)
         return ret
 
@@ -592,51 +685,54 @@ class ModGenerator(object):
             "}}"
         ).format(
             self.mod_name,
-            ", ".join("\""+str(opt)+"\"" for opt in self.mod_opts)
+            ", ".join("\""+str(opt)+"\"" for opt in self._mod_opts)
         )
 
     def __repr__(self):
         return "ModGenerator({}, opts=[{}])".format(
             self.mod_name,
-            ", ".join(opt.opt_name for opt in self.mod_opts)
+            ", ".join(opt.opt_name for opt in self._mod_opts)
         )
 
 
 class ModListGenerator(object):
-    """
-    A generator for a `ModList`. The modlist is created based on the
-    specifications for each of its mods as it come from the `Config` object.
+    """Generator for a modification list.
+
+    The `ModList` object is created based on the specifications for each of
+    its mods as it come from the `Config` object.
 
     It simply creates a `ModGenerator` for each of the defined mod, store
     them and use them to generate 1 modlist instance (i.e. A ModList with
     1 mod instance from the ModGenerator for each mod).
 
-    >>> modlist_gen = ModListGenerator([
-    ...     {"mod_name": "fragment6", "mod_opts": ["seq_str 1280 1500 1800"]},
-    ...     {"mod_name": "echo", "mod_opts": ["seq_str foo bar fuz ball"]},
-    ...     {"mod_name": "select", "mod_opts": [1, 2, 3, 4, 5]}
-    ... ])
-    >>> print(repr(modlist_gen))
-    ModListGenerator(mods=[fragment6, echo, select])
-    >>> len(modlist_gen)
-    12
-    >>> modlist_gen[5]
-    ModList [
-     - Fragment6<fragsize: 1800>
-     - Echo<string: bar>
-     - Select<sequence: [1, 2, 3, 4, 5]>
-    ]
+    Args:
+        mods: A list of mods where each element is a dictionary containing the
+            key 'mod_name' with the name of the mod and the key 'mod_opts'
+            with the list of options to use to build the ModGenerator.
 
-    :param mods: A list of mods where each element is a dictionary containing
-        the key 'mod_name' with the name of the mod and the key 'mod_opts'
-        with the list of options to use to build the ModGenerator.
+    Examples:
+        >>> modlist_gen = ModListGenerator([
+        ...     {"mod_name": "fragment6", "mod_opts": ["seq_str 1280 1500 1800"]},
+        ...     {"mod_name": "echo", "mod_opts": ["seq_str foo bar fuz ball"]},
+        ...     {"mod_name": "select", "mod_opts": [1, 2, 3, 4, 5]}
+        ... ])
+        >>> print(repr(modlist_gen))
+        ModListGenerator(mods=[fragment6, echo, select])
+        >>> len(modlist_gen)
+        12
+        >>> modlist_gen[5]
+        ModList [
+         - Fragment6<fragsize: 1800>
+         - Echo<string: bar>
+         - Select<sequence: [1, 2, 3, 4, 5]>
+        ]
     """
+
     def __init__(self, mods):
-        self.mod_generators = list()
-        for mod in mods:
-            self.mod_generators.append(
-                ModGenerator(mod['mod_name'], mod['mod_opts'])
-            )
+        self._mod_generators = [
+            ModGenerator(mod['mod_name'], mod['mod_opts'])
+            for mod in mods
+        ]
 
     def get_modlist(self, i):
         """
@@ -654,7 +750,7 @@ class ModListGenerator(object):
                 .format(self.nb_modlists()-1, i)
             )
         modlist = ModList()
-        for mod_generator in self.mod_generators:
+        for mod_generator in self._mod_generators:
             modlist.append(mod_generator[i % len(mod_generator)])
             i -= i % len(mod_generator)
             i //= len(mod_generator)
@@ -667,7 +763,7 @@ class ModListGenerator(object):
         composed of.
         """
         ret = 1
-        for mod_generator in self.mod_generators:
+        for mod_generator in self._mod_generators:
             ret *= len(mod_generator)
         return ret
 
@@ -683,12 +779,12 @@ class ModListGenerator(object):
     def __str__(self):
         return "[\n  {}\n]".format(
             ",\n  ".join(str(mod_gen).replace('\n', '\n  ')
-                         for mod_gen in self.mod_generators)
+                         for mod_gen in self._mod_generators)
         )
 
     def __repr__(self):
         return "ModListGenerator(mods=[{}])".format(
-            ", ".join(mod_gen.mod_name for mod_gen in self.mod_generators)
+            ", ".join(mod_gen.mod_name for mod_gen in self._mod_generators)
         )
 
 

@@ -11,14 +11,31 @@ METHOD = enum.Enum("METHOD", "REVERSE RANDOM")
 
 
 class Reorder(Mod):
+    """Reorder the packet listing.
+
+    The operation can either reverse the whole packet list or simply
+    randomly rearrange them.
+
+    Args:
+        *args: The arguments of the mods.
+
+    Attributes:
+        method: The method to use (reverse or random)
+
+    Raises:
+        ValueError: Unrecognized or incorrect number of parameters.
+
+    Examples:
+        >>> Reorder("reverse").method
+        REVERSE
+        >>> Reorder("random").method
+        RANDOM
     """
-    Reorder the packet list. The operation can either reverse the whole
-    packet list or simply randomly rearrange them.
-    """
+
     name = "Reorder"
     doc = ("Reorder the packet list.\n"
            "reorder {reverse|random}")
-    nb_args = 1
+    _nb_args = 1
 
     def __init__(self, *args):
         super().__init__(*args)

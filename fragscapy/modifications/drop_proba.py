@@ -6,14 +6,30 @@ from fragscapy.modifications.mod import Mod
 
 
 class DropProba(Mod):
+    """Drops each packet with a certain probability.
+
+    Delete the packet from the packet list. The parameter is the
+    probability for each packet to be dropped.
+
+    Args:
+        *args: The arguments of the mods.
+
+    Attributes:
+        drop_proba: The probability with which a packet is to be dropped.
+            None if random.
+
+    Raises:
+        ValueError: Unrecognized or incorrect number of parameters.
+
+    Examples:
+        >>> DropProba(0.25).drop_proba
+        0.25
     """
-    Drop each packet (delete it from the packet list).
-    The parameter is the probability for each packet to be dropped.
-    """
+
     name = "DropProba"
     doc = ("Drop each packet with a certain probability.\n"
            "dropproba <proba>")
-    nb_args = 1
+    _nb_args = 1
 
     def __init__(self, *args):
         super().__init__(*args)

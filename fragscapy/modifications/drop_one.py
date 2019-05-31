@@ -6,14 +6,31 @@ from fragscapy.modifications.mod import Mod
 
 
 class DropOne(Mod):
+    """Drops one of the packets.
+
+    Delete the packet from the packet list. Can be either the first one, the
+    last one, a random one or a specific one (by id).
+
+    Args:
+        *args: The arguments of the mods.
+
+    Attributes:
+        drop_index: The index to drop. None if random.
+
+    Raises:
+        ValueError: Unrecognized or incorrect number of parameters.
+
+    Examples:
+        >>> DropOne("first").drop_index
+        0
+        >>> DropOne(42).drop_index
+        42
     """
-    Drop a single packet (delete it from the packet list). Can be either the
-    first one, the last one, a random one or a specific one (by id).
-    """
+
     name = "DropOne"
     doc = ("Drop one of the packets.\n"
            "dropone {first|last|random|<id>}")
-    nb_args = 1
+    _nb_args = 1
 
     def __init__(self, *args):
         super().__init__(*args)

@@ -1,4 +1,4 @@
-"""Modifies the `Next Header` field of the IPv6 packet."""
+"""Modifies the 'Next Header' field of the IPv6 packet."""
 
 import random
 
@@ -6,13 +6,26 @@ from fragscapy.modifications.mod import Mod
 
 
 class Ipv6Nh(Mod):
+    """Modifies the 'Next Header' field of the IPv6 packet.
+
+    Args:
+        *args: The arguments of the mods.
+
+    Attributes:
+        proto: The new value for the 'Next Header' field. None if random.
+
+    Raises:
+        ValueError: Unrecognized or incorrect number of parameters.
+
+    Examples:
+        >>> Ipv6NextHeader(4).proto
+        4
     """
-    Modifies the `Next Header` field of the IPv6 packet.
-    """
+
     name = "Ipv6Nh"
-    doc = ("Modifies the `Next Header` field of the IPv6 packet.\n"
+    doc = ("Modifies the 'Next Header' field of the IPv6 packet.\n"
            "ipv6_nh {random|<protocol_number>}")
-    nb_args = 1
+    _nb_args = 1
 
     def __init__(self, *args):
         super().__init__(*args)

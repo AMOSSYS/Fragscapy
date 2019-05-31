@@ -1,4 +1,4 @@
-"""Modifies the `Hop Limit` field of the IPv6 packet."""
+"""Modifies the 'Hop Limit' field of the IPv6 packet."""
 
 import random
 
@@ -6,13 +6,26 @@ from fragscapy.modifications.mod import Mod
 
 
 class Ipv6Hop(Mod):
+    """Modifies the 'Hop Limit' field of the IPv6 packet.
+
+    Args:
+        *args: The arguments of the mods.
+
+    Attributes:
+        hop: The new value for the 'Hop Limit' field. None if random.
+
+    Raises:
+        ValueError: Unrecognized or incorrect number of parameters.
+
+    Examples:
+        >>> Ipv6Hop(0x01).hop
+        1
     """
-    Modifies the `Hop Limit` field of the IPv6 packet.
-    """
+
     name = "Ipv6Hop"
-    doc = ("Modifies the `Hop Limit` field of the IPv6 packet.\n"
+    doc = ("Modifies the 'Hop Limit' field of the IPv6 packet.\n"
            "ipv6_hop {random|<fixed_hop>}")
-    nb_args = 1
+    _nb_args = 1
 
     def __init__(self, *args):
         super().__init__(*args)

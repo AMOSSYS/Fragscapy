@@ -37,44 +37,68 @@ INPUT = Chain('INPUT', '-s', '--sport', 1)
 
 
 class NFQueueRule(object):  # pylint: disable=too-many-instance-attributes
-    """
+    """A Netfilter rule to enable/disable the NFQUEUE.
+
     Manipulates the iptables and ip6tables to make use of the NFQUEUE for the
     packets that are to be routed through python. It is used to insert and
     remove the correct iptables/ip6tables rules with the correct optional
     filters that configure netfilter to send the matching packets to the
     NFQUEUE target.
 
-    >>> # Prepare the rules with the correct filter
-    >>> http_alt_rule = NFQueueRule(host="www.lmddgtfy.com", port=8080)
-    >>> http_rule = NFQueueRule(host="www.lmddgtfy.com", port=80)
-    >>> # Insert those rules
-    >>> http_alt_rule.insert()
-    >>> http_rule.insert()
-    >>> # Remove the rules when finished
-    >>> http_alt_rule.remove()
-    >>> http_rule.remove()
+    Args:
+        output_chain: Apply the rule on the output chain if 'True'. Default is
+            'True'.
+        input_chain: Apply the rule on the input chain if 'True'. Default is
+            'True'.
+        proto: The protocol name (iptables-style) to filter on. If set to
+            'None' and `port` is set, defaults to 'tcp', else defaults to
+            'None' and all protocols will match.
+        host: The hostname or IPv4 to filter on. Default is 'None', which
+            means all hosts will match.
+        host6: The IPv6 to filter on. Default is 'None'. If `host` is also set
+            to 'None', all hosts (IPv4 and IPv6) will match, else, if `host`
+            is set to a hostname, the same hostname is used for IPv6 (iptables
+            resolves once and for all to IPv4 and IPv6 when the rules are
+            created).
+        port: The TCP/UDP port to filter on. If sets to 'None', which is the
+            default, all ports will match.
+        ipv4: Enable IPv4 if 'True'. Default is 'True'.
+        ipv6: Enable IPv6 if 'True'. Default is 'True'.
+        qnum: The Queue number for the NFQUEUE target. Default is '0'. To
+            respect, how this modules uses NFQUEUE, it should be even: qnum is
+            used for OUTPUT and qnum+1 is used for INPUT. If qnum is odd, a
+            `ValueError` is raised.
 
-    :param output_chain: Apply the rule on the output chain if True. Default
-        is True.
-    :param input_chain: Apply the rule on the input chain if True. Default
-        is True.
-    :param proto: The protocol name (iptables-style) to filter on. If set to
-        None and `port` is set, defaults to 'tcp', else defaults to None and
-        all protocols will match.
-    :param host: The hostname or IPv4 to filter on. Default is None, which
-        means all hosts will match.
-    :param host6: The IPv6 to filter on. Default is None. If `host` is also
-        set to None, all hosts (IPv4 and IPv6) will match, else, if `host`
-        is set to a hostname, the same hostname is used for IPv6 (iptables
-        resolves once and for all to IPv4 and IPv6 when the rules are created)
-    :param port: The TCP/UDP port to filter on. If sets to None, which is the
-        default, all ports will match.
-    :param ipv4: Enable IPv4. Default is True
-    :param ipv6: Enable IPv6. Default is True
-    :param qnum: the Queue number for the NFQUEUE target. Default is 0. To
-        respect, how this modules uses NFQUEUE, it should be even : qnum is
-        used for OUTPUT and qnum+1 is used for INPUT. If qnum is odd, a
-        `ValueError` is raised.
+    Attributes:
+        output_chain: Apply the rule on the output chain if 'True'.
+        input_chain: Apply the rule on the input chain if 'True'.
+        proto: The protocol name (iptables-style) to filter on. 'None' means
+            all proto will match.
+        host: The hostname or IPv4 to filter on. 'None' means all hosts will
+            match.
+        host6: The IPv6 to filter on. 'None' means all hosts will match.
+        port: The TCP/UDP port to filter on. 'None' means all ports will
+            match.
+        ipv4: Enable IPv4 if 'True'.
+        ipv6: Enable IPv6 if 'True'.
+        qnum: The Queue number for the NFQUEUE target.
+
+    Raises:
+        ValueError: See the message for details. Wrong combination of
+            parameters.
+
+    Examples:
+        >>> # Prepare the rules with the correct filter
+        >>> http_alt_rule = NFQueueRule(
+        ...     input_chain=False, host="www.lmddgtfy.com", port=8080)
+        >>> http_rule = NFQueueRule(
+        ...     output_chain=False, host="www.lmddgtfy.com", port=80)
+        >>> # Insert those rules
+        >>> http_alt_rule.insert()
+        >>> http_rule.insert()
+        >>> # Remove the rules when finished
+        >>> http_alt_rule.remove()
+        >>> http_rule.remove()
     """
     # pylint: disable=too-many-arguments
     def __init__(self, output_chain=True, input_chain=True, proto=None,

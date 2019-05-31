@@ -1,4 +1,4 @@
-"""Modifies the `Payload Length` field of the IPv6 packet."""
+"""Modifies the 'Payload Length' field of the IPv6 packet."""
 
 import random
 
@@ -6,13 +6,26 @@ from fragscapy.modifications.mod import Mod
 
 
 class Ipv6Length(Mod):
+    """Modifies the 'Payload Length' field of the IPv6 packet.
+
+    Args:
+        *args: The arguments of the mods.
+
+    Attributes:
+        length: The new value for the 'Payload Length' field. None if random.
+
+    Raises:
+        ValueError: Unrecognized or incorrect number of parameters.
+
+    Examples:
+        >>> Ipv6Length(0xff).length
+        255
     """
-    Modifies the `Payload Length` field of the IPv6 packet.
-    """
+
     name = "Ipv6Length"
-    doc = ("Modifies the `Payload Length` field of the IPv6 packet.\n"
+    doc = ("Modifies the 'Payload Length' field of the IPv6 packet.\n"
            "ipv6_length {random|<fixed_length>}")
-    nb_args = 1
+    _nb_args = 1
 
     def __init__(self, *args):
         super().__init__(*args)

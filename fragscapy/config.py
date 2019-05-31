@@ -9,7 +9,7 @@ import json
 import warnings
 
 class ConfigError(ValueError):
-    """ Raises a configuration error about `key`. """
+    """Raises a configuration error about `key`."""
     def __init__(self, key):
         self.key = key
         super(ConfigError, self).__init__(
@@ -18,12 +18,12 @@ class ConfigError(ValueError):
 
 
 class ConfigWarning(Warning):
-    """ Warning during the configuration parsing. """
+    """Warning during the configuration parsing."""
     pass
 
 
 def config_warning(msg):
-    """ Raises a warning about something, details in `msg`. """
+    """Raises a warning about something, details in `msg`."""
     warnings.warn(
         "{}".format(msg),
         ConfigWarning
@@ -37,27 +37,36 @@ def json_loadf(filename):
 
 
 class Config(object):
-    """
-    Configuration parser wrapper.
+    """Configuration parser wrapper.
+
     Parse some given data to load the configuration to run fragscapy with.
     This is a wrapper that checks the correct format of the data and raises
     errors or warning when an anomaly is found. If everything is alright, it
     exposes the configuration as read-only data.
 
-    >>> config = Config('config.json')
-    >>> config.nfrules
-    [{'host': 'www.lmddgtfy.com', 'port': 8080},
-     {'host': 'www.lmddgtfy.com', 'port': 80}]
-    >>> config.input
-    ['tcp_sport 8080', 'echo "80 -> 8080"']
-    >>> config.output
-    ['tcp_dport 8080', 'echo "8080 -> 80"']
+    Args:
+        data: The data to parse. It may be a file or a string depending on
+            the parser used. If the default parser is used, it should be a
+            filename.
+        parser: The parser to use. It should respect the data types
+            expected in the configuration. Default is `json_loadf`.
 
-    :param data: The data to parse. It may be a file or a string depending on
-        the parser used. If the default parser is used, it should be a
-        filename.
-    :param parser: The parser to use. It should respect the data types
-        expected in the configuration. Default is `json_loadf`.
+    Attributes:
+        data: The data to parse. It may be a file or a string depending on
+            the parser used. If the default parser is used, it should be a
+            filename.
+        parser: The parser to use. It should respect the data types
+            expected in the configuration. Default is `json_loadf`.
+
+    Examples:
+        >>> config = Config('config.json')
+        >>> config.nfrules
+        [{'host': 'www.lmddgtfy.com', 'port': 8080},
+         {'host': 'www.lmddgtfy.com', 'port': 80}]
+        >>> config.input
+        ['tcp_sport 8080', 'echo "80 -> 8080"']
+        >>> config.output
+        ['tcp_dport 8080', 'echo "8080 -> 80"']
     """
     def __init__(self, data, parser=None):
         if parser is None:

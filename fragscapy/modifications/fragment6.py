@@ -54,14 +54,30 @@ def insert_frag_hdr(pkt):
 
 
 class Fragment6(Mod):
-    """
+    """Fragments the IPv6 packets at the L3-layer.
+
     Fragment each IPv6 packet. the fragmentation size must be specified. It
-    represents the maximum size of each packet (including headers).
+    represents the maximum size of each packet (including headers). It uses
+    the scapy's fragmentation function.
+
+    Args:
+        *args: The arguments of the mods.
+
+    Attributes:
+        fragsize: The fragmentation size (maximum length of a fragment).
+
+    Raises:
+        ValueError: Unrecognized or incorrect number of parameters.
+
+    Examples:
+        >>> Fragment6(1280).fragsize  # Minimum MTU for IPv6
+        1280
     """
+
     name = "Fragment6"
     doc = ("Fragment the IPv6 packets at the L3-layer\n"
            "fragment <size>")
-    nb_args = 1
+    _nb_args = 1
 
     def __init__(self, *args):
         super().__init__(*args)
