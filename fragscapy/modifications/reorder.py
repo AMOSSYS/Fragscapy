@@ -1,11 +1,14 @@
 """Reorder the packet listing."""
 
-from random import shuffle
-from enum import Enum
-from .mod import Mod
-from ..packetlist import PacketList
+import enum
+import random
 
-METHOD = Enum("METHOD", "REVERSE RANDOM")
+from fragscapy.modifications.mod import Mod
+from fragscapy.packetlist import PacketList
+
+
+METHOD = enum.Enum("METHOD", "REVERSE RANDOM")
+
 
 class Reorder(Mod):
     """
@@ -34,7 +37,7 @@ class Reorder(Mod):
             sequence = list(range(len(pkt_list)-1, -1, -1))
         elif self.method == METHOD.RANDOM:
             sequence = list(range(len(pkt_list)))
-            shuffle(sequence)
+            random.shuffle(sequence)
         new_pl = PacketList()
         for i in sequence:
             new_pl.add_packet(pkt_list[i].pkt, pkt_list[i].delay)

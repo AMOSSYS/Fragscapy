@@ -1,6 +1,7 @@
 """Print the content of a packet list."""
 
-from .mod import Mod
+from fragscapy.modifications.mod import Mod
+
 
 class Print(Mod):
     """

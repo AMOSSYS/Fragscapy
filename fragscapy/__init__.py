@@ -28,5 +28,4 @@ might require some deep knowledge of the code to create a new one.
 
 from fragscapy._author import __author__
 from fragscapy._version import __version__
-
 from fragscapy.commandline import command as main

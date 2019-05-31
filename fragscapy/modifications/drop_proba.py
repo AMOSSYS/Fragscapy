@@ -1,7 +1,9 @@
 """Drops each packet with a certain probability."""
 
-from random import random
-from .mod import Mod
+import random
+
+from fragscapy.modifications.mod import Mod
+
 
 class DropProba(Mod):
     """
@@ -31,7 +33,7 @@ class DropProba(Mod):
 
     def apply(self, pkt_list):
         # The function to determine if the packet should be kept
-        condition = lambda _: random() < self.drop_proba
+        condition = lambda _: random.random() < self.drop_proba
         # A list of decreasing indexes that should be removed
         to_remove = [i for i in range(len(pkt_list)-1, -1, -1) if condition(pkt_list[i])]
         # Remove the indexes (in decreasing order)

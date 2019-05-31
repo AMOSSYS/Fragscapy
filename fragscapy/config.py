@@ -5,8 +5,8 @@ configfile provided by the user. It raises `ConfigError` and `ConfigWarning`
 if wrong parameters are detected.
 """
 
-import warnings
 import json
+import warnings
 
 class ConfigError(ValueError):
     """ Raises a configuration error about `key`. """

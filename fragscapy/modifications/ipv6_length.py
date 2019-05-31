@@ -1,7 +1,9 @@
 """Modifies the `Payload Length` field of the IPv6 packet."""
 
-from random import randint
-from .mod import Mod
+import random
+
+from fragscapy.modifications.mod import Mod
+
 
 class Ipv6Length(Mod):
     """
@@ -36,7 +38,7 @@ class Ipv6Length(Mod):
         """
         l = self.length
         if l is None:
-            l = randint(0, 0xffff)
+            l = random.randint(0, 0xffff)
 
         for pkt in pkt_list:
             pkt['Ipv6'].plen = l

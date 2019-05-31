@@ -5,9 +5,9 @@ The `Mod` class defines the abstract base class that should be subclassed and
 concretized in order to create a new modification.
 """
 
-from abc import ABC, abstractmethod
+import abc
 
-class Mod(ABC):
+class Mod(abc.ABC):
     """
     Abstract object for defining a modification of a packet list.
 
@@ -18,7 +18,7 @@ class Mod(ABC):
     doc = None
     nb_args = -1
 
-    @abstractmethod
+    @abc.abstractmethod
     def __init__(self, *args):
         if self.nb_args >= 0 and len(args) != self.nb_args:
             raise ValueError(
@@ -26,7 +26,7 @@ class Mod(ABC):
                 "Got {}, expected {}.".format(len(args), self.nb_args)
             )
 
-    @abstractmethod
+    @abc.abstractmethod
     def apply(self, pkt_list):
         """
         Applies the modification to a PacketList object. It returns a

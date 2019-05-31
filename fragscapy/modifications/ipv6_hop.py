@@ -1,7 +1,9 @@
 """Modifies the `Hop Limit` field of the IPv6 packet."""
 
-from random import randint
-from .mod import Mod
+import random
+
+from fragscapy.modifications.mod import Mod
+
 
 class Ipv6Hop(Mod):
     """
@@ -36,7 +38,7 @@ class Ipv6Hop(Mod):
         """
         h = self.hop
         if h is None:
-            h = randint(0, 0xff)
+            h = random.randint(0, 0xff)
 
         for pkt in pkt_list:
             pkt['Ipv6'].hlim = h

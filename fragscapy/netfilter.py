@@ -16,20 +16,25 @@ ip6tables rules and `NFQueue`, the queue that can be iterated over to access the
 packets in the NFQUEUE target.
 """
 
+import abc
+import collections
 import os
 import subprocess
-from collections import namedtuple
-from abc import ABC, abstractmethod
+
 import fnfqueue
-from scapy.data import ETH_P_IP, ETH_P_IPV6
-from scapy.layers.inet import IP as scapy_IP
-from scapy.layers.inet6 import IPv6 as scapy_IPv6
-from scapy.sendrecv import send as scapy_send
+
+import scapy.data
+import scapy.layers.inet
+import scapy.layers.inet6
+import scapy.sendrecv
+
 
 # Define a constant structure that holds the options for iptables together
-Chain = namedtuple('Chain', ['name', 'host_opt', 'port_opt', 'qnum'])
+Chain = collections.namedtuple('Chain',
+                               ['name', 'host_opt', 'port_opt', 'qnum'])
 OUTPUT = Chain('OUTPUT', '-d', '--dport', 0)
 INPUT = Chain('INPUT', '-s', '--sport', 1)
+
 
 class NFQueueRule(object):  # pylint: disable=too-many-instance-attributes
     """
@@ -242,15 +247,15 @@ class NFQueue(object):  # pylint: disable=too-few-public-methods
         Returns only one packet from the queue.
         """
         for p in self._conn:
-            if p.hw_protocol == ETH_P_IP:
+            if p.hw_protocol == scapy.data.ETH_P_IP:
                 return IP(p)
-            if p.hw_protocol == ETH_P_IPV6:
+            if p.hw_protocol == scapy.data.ETH_P_IPV6:
                 return IPv6(p)
             p.accept()
         return None
 
 
-class _PacketWrapper(ABC):
+class _PacketWrapper(abc.ABC):
     """
     A Scapy representation of the data received from the NFQUEUE target.
     In depth, it is the junction of a `scapy` IP (or IPv6) packet and a
@@ -269,7 +274,7 @@ class _PacketWrapper(ABC):
         self._output = pkt.packet.queue_id % 2 == 0
 
     @property
-    @abstractmethod
+    @abc.abstractmethod
     def l3_layer(self):
         """
         The `scapy` l3-layer constructor to use (e.g. `scapy.layers.inet.IP`
@@ -315,17 +320,17 @@ class _PacketWrapper(ABC):
         Send the scapy packet directly on a raw socket. The charge of dropping
         the nfqueued packed is left to the user (if necessary).
         """
-        scapy_send(self._scapy_pkt)
+        scapy.sendrecv.send(self._scapy_pkt)
 
 
 
 class IP(_PacketWrapper):
     """ See _PacketWrapper documentation """
-    l3_layer = scapy_IP
+    l3_layer = scapy.layers.inet.IP
     __doc__ = _PacketWrapper.__doc__
 
 
 class IPv6(_PacketWrapper):
     """ See _PacketWrapper documentation """
-    l3_layer = scapy_IPv6
+    l3_layer = scapy.layers.inet6.IPv6
     __doc__ = _PacketWrapper.__doc__

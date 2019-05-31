@@ -7,7 +7,8 @@ version.
 """
 
 import os
-from io import open as io_open
+import io
+
 
 __all__ = ["__version__"]
 
@@ -27,10 +28,10 @@ def get_version():
     if os.path.isdir(gitdir):
         extra = None
         # Open config file to check if we are in tqdm project
-        with io_open(os.path.join(gitdir, "config"), 'r') as fh_config:
+        with io.open(os.path.join(gitdir, "config"), 'r') as fh_config:
             if 'fragscapy' in fh_config.read():
                 # Open the HEAD file
-                with io_open(os.path.join(gitdir, "HEAD"), 'r') as fh_head:
+                with io.open(os.path.join(gitdir, "HEAD"), 'r') as fh_head:
                     extra = fh_head.readline().strip()
                 # in a branch => HEAD points to file containing last commit
                 if 'ref:' in extra:
@@ -47,7 +48,7 @@ def get_version():
                         extra = None
                     else:
                         # open the ref file
-                        with io_open(ref_file_path, 'r') as fh_branch:
+                        with io.open(ref_file_path, 'r') as fh_branch:
                             commit_hash = fh_branch.readline().strip()
                             extra = commit_hash[:8]
                             if branch_name != "master":
@@ -60,8 +61,8 @@ def get_version():
         # Append commit hash (and branch) to version string if not tagged
         if extra is not None:
             try:
-                with io_open(os.path.join(gitdir, "refs", "tags",
-                                          'v' + __version__)) as fdv:
+                with io.open(os.path.join(gitdir, "refs", "tags",
+                                          'v' + version)) as fdv:
                     if fdv.readline().strip()[:8] != extra[:8]:
                         version += '-' + extra
             except FileNotFoundError:

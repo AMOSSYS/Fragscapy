@@ -1,7 +1,9 @@
 """Modifies the `Next Header` field of the IPv6 packet."""
 
-from random import randint
-from .mod import Mod
+import random
+
+from fragscapy.modifications.mod import Mod
+
 
 class Ipv6Nh(Mod):
     """
@@ -36,7 +38,7 @@ class Ipv6Nh(Mod):
         """
         nh = self.proto
         if nh is None:
-            nh = randint(0, 0xff)
+            nh = random.randint(0, 0xff)
 
         for pkt in pkt_list:
             pkt['Ipv6'].nh = nh

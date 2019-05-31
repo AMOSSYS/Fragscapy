@@ -1,7 +1,8 @@
 """Select only some packets and drop the other ones."""
 
-from .mod import Mod
-from ..packetlist import PacketList
+from fragscapy.modifications.mod import Mod
+from fragscapy.packetlist import PacketList
+
 
 class Select(Mod):
     """

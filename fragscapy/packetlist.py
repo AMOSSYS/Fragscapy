@@ -1,11 +1,13 @@
 """A list of wrappers around Scapy packets and metadata (e.g. delay)."""
 
 import time
-from scapy.sendrecv import send as scapy_send
-from scapy.sendrecv import sendp as scapy_sendp
+
+import scapy.sendrecv
+
 
 # The minimum time (in seconds) a packet will be delayed
 MIN_TIME_DELAY = 0.01
+
 
 def _safe_delay(delay):
     """
@@ -63,7 +65,7 @@ class PacketStruct(object):
         # Only sleep if above the min limit
         if self._delay > MIN_TIME_DELAY:
             time.sleep(self._delay)
-        scapy_send(self._pkt)
+        scapy.sendrecv.send(self._pkt)
 
     def sendp(self):
         """
@@ -72,7 +74,7 @@ class PacketStruct(object):
         # Only sleep if above the min limit
         if self._delay > MIN_TIME_DELAY:
             time.sleep(self._delay)
-        scapy_sendp(self._pkt)
+        scapy.sendrecv.sendp(self._pkt)
 
     def display(self):
         """

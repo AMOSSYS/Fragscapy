@@ -1,7 +1,9 @@
 """Duplicates one of the packets."""
 
-from random import randint
-from .mod import Mod
+import random
+
+from fragscapy.modifications.mod import Mod
+
 
 class Duplicate(Mod):
     """
@@ -37,7 +39,7 @@ class Duplicate(Mod):
         i = self.duplicate_index
 
         if i is None:  # Random
-            i = randint(-l, l-1)
+            i = random.randint(-l, l-1)
 
         if i < -l or i > l-1:
             print("Unable to duplicate packet n°{}. PacketList too small."

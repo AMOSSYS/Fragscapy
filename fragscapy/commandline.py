@@ -9,19 +9,22 @@ import argparse
 import logging
 import traceback
 
-from scapy.config import conf
+import scapy.config
 
-from fragscapy._author import __author__ as author
-from fragscapy._version import __version__ as version
+from fragscapy._author import __author__
+from fragscapy._version import __version__
 from fragscapy.config import Config
 from fragscapy.engine import Engine
 from fragscapy.modgenerator import get_all_mods, get_mod
+
 
 PROG_NAME = "Fragscapy"
 DESCRIPTION = ("Runs a series of tests on the network and modify the packets "
                "on the fly in order to test the behavior of the machines on "
                "the network")
-EPILOG = "Fragscapy {version} - {author}".format(version=version, author=author)
+EPILOG = "Fragscapy {version} - {author}".format(
+    version=__version__, author=__author__)
+
 
 def command():
     """
@@ -39,7 +42,7 @@ def command():
     parser.add_argument(
         '-V', '--version',
         action='version',
-        version="Fragscapy {version}".format(version=version)
+        version="Fragscapy {version}".format(version=__version__)
     )
 
     subparsers = parser.add_subparsers(dest='subcmd')
@@ -152,7 +155,7 @@ def start(args):
         # Removes warning messages
         logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
         # Removes verbose send messages
-        conf.verb = 0
+        scapy.config.conf.verb = 0
 
     config = Config(args.config_file)
     kwargs = _filter_kwargs(args, ['modif_file', 'stdout_file', 'stderr_file'])

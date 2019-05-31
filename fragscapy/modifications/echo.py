@@ -1,6 +1,6 @@
 """Echoes a string."""
 
-from .mod import Mod
+from fragscapy.modifications.mod import Mod
 
 class Echo(Mod):
     """

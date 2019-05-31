@@ -8,15 +8,16 @@ The `EngineThread` is a thread in charge of modifying the intercept packets
 and sending them back to the network.
 """
 
-from threading import Thread, Lock
-import warnings
+import itertools
 import subprocess
-from itertools import product
-from tqdm import tqdm
+import threading
+import warnings
 
-from .modgenerator import ModListGenerator
-from .netfilter import NFQueue, NFQueueRule
-from .packetlist import PacketList
+import tqdm
+
+from fragscapy.modgenerator import ModListGenerator
+from fragscapy.netfilter import NFQueue, NFQueueRule
+from fragscapy.packetlist import PacketList
 
 
 STDOUT_FILE = "stdout{i}.txt"     # Redirect stdout to this file
@@ -42,7 +43,7 @@ def engine_warning(msg):
     )
 
 
-class EngineThread(Thread):
+class EngineThread(threading.Thread):
     """
     A thread that, once started, catches and transform the packet in the
     NFQUEUE. The thread applies the `input_modlist` (resp. the
@@ -71,8 +72,8 @@ class EngineThread(Thread):
         self.nfqueue = nfqueue
         self._input_modlist = input_modlist
         self._output_modlist = output_modlist
-        self._input_lock = Lock()
-        self._output_lock = Lock()
+        self._input_lock = threading.Lock()
+        self._output_lock = threading.Lock()
 
     @property
     def input_modlist(self):
@@ -318,7 +319,7 @@ class Engine(object):
         self.post_run()
 
     def _get_modlist_iterator(self):
-        iterator = enumerate(product(
+        iterator = enumerate(itertools.product(
             self.modlist_input_generator,
             self.modlist_output_generator
         ))

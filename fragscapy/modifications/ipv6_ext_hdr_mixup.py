@@ -1,12 +1,16 @@
 """Mixup the order of the IPv6 Extension Header of an IPv6 packet."""
 
-from random import shuffle
-from scapy.packet import NoPayload
-from .mod import Mod
+import random
+
+import scapy.packet
+
+from fragscapy.modifications.mod import Mod
+
 
 IPV6_EXTHDR = (
     "IPv6ExtHdrHopByHop", "IPv6ExtHdrRouting", "IPv6ExtHdrFragment", "ESP",
     "AH", "MobileIP", "IPv6ExtDestOpt")
+
 
 def name(layer):
     """
@@ -16,6 +20,7 @@ def name(layer):
     :return: The class name of this layer.
     """
     return layer.__class__.__name__
+
 
 def slice_exthdr(pkt):
     """
@@ -28,9 +33,9 @@ def slice_exthdr(pkt):
     :return: A 3-tuple with the 3 parts described above.
     """
     current = pkt
-    before = NoPayload()
+    before = scapy.packet.NoPayload()
     chain = []
-    while current.payload is not NoPayload():
+    while current.payload is not scapy.packet.NoPayload():
         if name(current.payload) in IPV6_EXTHDR:
             if not chain:
                 # If this is the first Extension Header, store the 'before'
@@ -38,13 +43,14 @@ def slice_exthdr(pkt):
             chain.append(current.payload)
         current = current.payload
     # The 'after' is the payload of the last Extension Header
-    after = chain[-1].payload if chain else NoPayload()
+    after = chain[-1].payload if chain else scapy.packet.NoPayload()
 
     # Removes the dependency between the Headers
     for hdr in chain:
-        hdr.payload = NoPayload()
+        hdr.payload = scapy.packet.NoPayload()
 
     return before, chain, after
+
 
 def replace_exthdr(before, exthdr, after):
     """
@@ -71,6 +77,7 @@ def replace_exthdr(before, exthdr, after):
     # Add the 'after' after the last Extension Header
     current.payload = after
 
+
 class Ipv6ExtHdrMixup(Mod):
     """
     Randomly changes the order to the Extension Headers of the IPv6 packet
@@ -91,7 +98,7 @@ class Ipv6ExtHdrMixup(Mod):
         """
         for pkt in pkt_list:
             before, chain, after = slice_exthdr(pkt.pkt)
-            shuffle(chain)
+            random.shuffle(chain)
             replace_exthdr(before, chain, after)
 
         return pkt_list

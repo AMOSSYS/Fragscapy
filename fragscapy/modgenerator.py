@@ -14,12 +14,14 @@ The `ModListGenerator` contains multiple `ModGenerator`s and generates 1
 `ModList` object by enumerating all the different combination of mods.
 """
 
+import abc
 import importlib
 import os
-from abc import ABC, abstractmethod
-from inflection import camelize, underscore
 
-from .modlist import ModList
+import inflection
+
+from fragscapy.modlist import ModList
+
 
 # Package where the modifications are stored (and loaded from)
 MOD_PACKAGE = 'fragscapy.modifications'
@@ -32,7 +34,7 @@ class ModGeneratorError(ValueError):
     pass
 
 
-class ModOption(ABC):
+class ModOption(abc.ABC):
     """
     Abstract class of a single option generator in a mod (i.e. 1 of the
     parameter passed to the constructor of the mod). It should implement a
@@ -55,7 +57,7 @@ class ModOption(ABC):
         self.opt_name = opt_name
         self.mod_name = mod_name
 
-    @abstractmethod
+    @abc.abstractmethod
     def get_option(self, i):
         """
         Calculate the i-th instance of the option. The result must be
@@ -77,7 +79,7 @@ class ModOption(ABC):
                 )
             )
 
-    @abstractmethod
+    @abc.abstractmethod
     def nb_options(self):
         """
         Calculates the number of possible options for this generator.
@@ -711,8 +713,8 @@ def get_mod(mod_name):
     """
     Dynamically import a mod from its name using `importlib`.
     """
-    pkg_name = "{}.{}".format(MOD_PACKAGE, underscore(mod_name))
-    mod_name = camelize(mod_name)
+    pkg_name = "{}.{}".format(MOD_PACKAGE, inflection.underscore(mod_name))
+    mod_name = inflection.camelize(mod_name)
 
     pkg = importlib.import_module(pkg_name)
     return getattr(pkg, mod_name)
