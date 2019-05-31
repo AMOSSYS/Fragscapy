@@ -54,7 +54,12 @@ def insert_frag_hdr(pkt):
 
     Examples:
         >>> insert_frag_hdr(IPv6()/IPv6ExtHdrRouting()/AH()/TCP()/"PLOP")
-        <IPv6  nh=Routing Header |<IPv6ExtHdrRouting  nh=Fragment Header |<IPv6ExtHdrFragment  nh=AH Header |<AH |<TCP  |<Raw  load='PLOP' |>>>>>>
+        <IPv6  nh=Routing Header |
+          <IPv6ExtHdrRouting  nh=Fragment Header |
+            <IPv6ExtHdrFragment  nh=AH Header |
+              <AH |
+                <TCP  |
+                  <Raw  load='PLOP' |>>>>>>
     """
     current = get_per_frag_hdr(pkt)
     current.payload = (

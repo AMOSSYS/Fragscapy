@@ -51,7 +51,8 @@ class DropProba(Mod):
         # The function to determine if the packet should be kept
         condition = lambda _: random.random() < self.drop_proba
         # A list of decreasing indexes that should be removed
-        to_remove = [i for i in range(len(pkt_list)-1, -1, -1) if condition(pkt_list[i])]
+        to_remove = [i for i in range(len(pkt_list)-1, -1, -1)
+                     if condition(pkt_list[i])]
         # Remove the indexes (in decreasing order)
         for i in to_remove:
             pkt_list.remove_packet(i)

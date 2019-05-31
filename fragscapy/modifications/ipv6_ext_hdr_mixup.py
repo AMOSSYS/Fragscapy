@@ -78,7 +78,11 @@ def replace_exthdr(before, exthdr, after):
         ...     TCP()/"PLOP"
         ... )
         >>> pkt
-        <IPv6  nh=Routing Header |<IPv6ExtHdrRouting  nh=AH Header |<AH  |<TCP  |<Raw  load='PLOP' |>>>>>
+        <IPv6  nh=Routing Header |
+          <IPv6ExtHdrRouting  nh=AH Header |
+            <AH  |
+              <TCP  |
+                <Raw  load='PLOP' |>>>>>
     """
     if not exthdr:
         return

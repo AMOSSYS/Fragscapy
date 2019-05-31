@@ -37,11 +37,14 @@ def get_version():
                     ref_file = extra[5:]
                     branch_name = ref_file.rsplit('/', 1)[-1]
 
-                    ref_file_path = os.path.abspath(os.path.join(gitdir, ref_file))
+                    ref_file_path = os.path.abspath(os.path.join(
+                        gitdir, ref_file
+                    ))
                     # check that we are in git folder
                     # (by stripping the git folder from the ref file path)
                     if os.path.relpath(
-                            ref_file_path, gitdir).replace('\\', '/') != ref_file:
+                            ref_file_path, gitdir
+                        ).replace('\\', '/') != ref_file:
                         # out of git folder
                         extra = None
                     else:

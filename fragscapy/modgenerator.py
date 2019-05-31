@@ -245,7 +245,7 @@ class ModOptionSequenceStr(ModOption):
     Raises:
         ModGeneratorError: See the message for details.
 
-    Example:
+    Examples:
         >>> list(ModOptionSequenceStr("foo", ["a", "b", "c", "d"]))
         ['a', 'b', 'c', 'd']
     """
@@ -617,23 +617,41 @@ class ModGenerator(object):
                 opt_args = opt.split()
                 opt_type = opt_args[0]
                 if opt_type == "range":
-                    self._mod_opts.append(ModOptionRange(mod_name, opt_args[1:]))
+                    self._mod_opts.append(
+                        ModOptionRange(mod_name, opt_args[1:])
+                    )
                 elif opt_type == "seq_str":
-                    self._mod_opts.append(ModOptionSequenceStr(mod_name, opt_args[1:]))
+                    self._mod_opts.append(
+                        ModOptionSequenceStr(mod_name, opt_args[1:])
+                    )
                 elif opt_type == "seq_int":
-                    self._mod_opts.append(ModOptionSequenceInt(mod_name, opt_args[1:]))
+                    self._mod_opts.append(
+                        ModOptionSequenceInt(mod_name, opt_args[1:])
+                    )
                 elif opt_type == "seq_float":
-                    self._mod_opts.append(ModOptionSequenceFloat(mod_name, opt_args[1:]))
+                    self._mod_opts.append(
+                        ModOptionSequenceFloat(mod_name, opt_args[1:])
+                    )
                 elif opt_type == "str":
-                    self._mod_opts.append(ModOptionStr(mod_name, opt_args[1:]))
+                    self._mod_opts.append(
+                        ModOptionStr(mod_name, opt_args[1:])
+                    )
                 elif opt_type == "int":
-                    self._mod_opts.append(ModOptionInt(mod_name, opt_args[1:]))
+                    self._mod_opts.append(
+                        ModOptionInt(mod_name, opt_args[1:])
+                    )
                 elif opt_type == "float":
-                    self._mod_opts.append(ModOptionFloat(mod_name, opt_args[1:]))
+                    self._mod_opts.append(
+                        ModOptionFloat(mod_name, opt_args[1:])
+                    )
                 else:  # By default consider it as a string
-                    self._mod_opts.append(ModOptionStr(mod_name, [opt]))
+                    self._mod_opts.append(
+                        ModOptionStr(mod_name, [opt])
+                    )
             else:  # By default consider it as an int
-                self._mod_opts.append(ModOptionInt(mod_name, [opt]))
+                self._mod_opts.append(
+                    ModOptionInt(mod_name, [opt])
+                )
 
 
     def get_mod(self, i):
@@ -713,18 +731,18 @@ class ModListGenerator(object):
 
     Examples:
         >>> modlist_gen = ModListGenerator([
-        ...     {"mod_name": "fragment6", "mod_opts": ["seq_str 1280 1500 1800"]},
+        ...     {"mod_name": "fragment6", "mod_opts": ["seq_str 1280 1500"]},
         ...     {"mod_name": "echo", "mod_opts": ["seq_str foo bar fuz ball"]},
         ...     {"mod_name": "select", "mod_opts": [1, 2, 3, 4, 5]}
         ... ])
         >>> print(repr(modlist_gen))
         ModListGenerator(mods=[fragment6, echo, select])
         >>> len(modlist_gen)
-        12
+        8
         >>> modlist_gen[5]
         ModList [
-         - Fragment6<fragsize: 1800>
-         - Echo<string: bar>
+         - Fragment6<fragsize: 1500>
+         - Echo<string: fuz>
          - Select<sequence: [1, 2, 3, 4, 5]>
         ]
     """

@@ -4,16 +4,17 @@ NFQUEUE is a special Netfilter target that can be used to send packet to
 userland and modify them before sending them. To access them, this module uses
 `fnfqueue` module (which makes use of libnfqueue).
 
-Here it can be used to capture traffic (with an optional filter on protocol, host
-and/or port) and cast them to Scapy packets so they can be manipulated. Once the
-python modification is done, one would simply invoke the `.mangle()` or `.drop()`
-methods to notify Netfilter of either a new packet or the want to drop the packet.
-So far, the only L3-protocols supported are IPv4 and IPv6. Other protocols are not
-yet supported and those packets and accepted without being sent to the user.
+Here it can be used to capture traffic (with an optional filter on protocol,
+host and/or port) and cast them to Scapy packets so they can be manipulated.
+Once the python modification is done, one would simply invoke the `.mangle()`
+or `.drop()` methods to notify Netfilter of either a new packet or the want to
+drop the packet. So far, the only L3-protocols supported are IPv4 and IPv6.
+Other protocols are not yet supported and those packets and accepted without
+being sent to the user.
 
-The main objects to use are `NFQueueRule` which is used to manipulate iptables and
-ip6tables rules and `NFQueue`, the queue that can be iterated over to access the
-packets in the NFQUEUE target.
+The main objects to use are `NFQueueRule` which is used to manipulate iptables
+and ip6tables rules and `NFQueue`, the queue that can be iterated over to
+access the packets in the NFQUEUE target.
 """
 
 import abc
@@ -257,8 +258,12 @@ class NFQueue(object):  # pylint: disable=too-few-public-methods
             raise ValueError('qnum should be even')
 
         self._conn = fnfqueue.Connection()
-        self._conn.bind(qnum).set_mode(fnfqueue.MAX_PAYLOAD, fnfqueue.COPY_PACKET)
-        self._conn.bind(qnum+1).set_mode(fnfqueue.MAX_PAYLOAD, fnfqueue.COPY_PACKET)
+        self._conn.bind(qnum).set_mode(
+            fnfqueue.MAX_PAYLOAD, fnfqueue.COPY_PACKET
+        )
+        self._conn.bind(qnum+1).set_mode(
+            fnfqueue.MAX_PAYLOAD, fnfqueue.COPY_PACKET
+        )
 
     def __iter__(self):
         return self

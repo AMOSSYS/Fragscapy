@@ -38,17 +38,17 @@ class PacketStruct(object):
     Examples:
         >>> pkt = PacketStruct(IP()/TCP()/"PLOP", 25)
         >>> pkt.display()
-        ... Delay of 25.0 seconds
-        ... ###[ IP ]###
-        ...   version   = 4
-        ...   [...]
-        ... ###[ TCP ]###
-        ...      sport     = ftp_data
-        ...      [...]
-        ... ###[ Raw ]###
-        ...         load      = 'PLOP'
+        Delay of 25.0 seconds
+        ###[ IP ]###
+          version   = 4
+          [...]
+        ###[ TCP ]###
+             sport     = ftp_data
+             [...]
+        ###[ Raw ]###
+                load      = 'PLOP'
         >>> print(repr(pkt))
-        ... PacketStruct(pkt=44B, delay=25.0s)
+        PacketStruct(pkt=44B, delay=25.0s)
     """
     def __init__(self, pkt, delay):
         self.pkt = pkt
@@ -135,26 +135,27 @@ class PacketList(object):
         >>> pl.add_packet(IP()/TCP()/"PLOP", 25)
         >>> pl.add_packet(IP()/TCP()/"PLIP", 2)
         >>> pl.display()
-        ... Delay of 25.0 seconds
-        ... ###[ IP ]###
-        ...   version   = 4
-        ...   [...]
-        ... ###[ TCP ]###
-        ...      sport     = ftp_data
-        ...      [...]
-        ... ###[ Raw ]###
-        ...         load      = 'PLOP'
-        ... Delay of 2.0 seconds
-        ... ###[ IP ]###
-        ...   version   = 4
-        ...   [...]
-        ... ###[ TCP ]###
-        ...      sport     = ftp_data
-        ...      [...]
-        ... ###[ Raw ]###
-        ...         load      = 'PLIP'
+        Delay of 25.0 seconds
+        ###[ IP ]###
+          version   = 4
+          [...]
+        ###[ TCP ]###
+             sport     = ftp_data
+             [...]
+        ###[ Raw ]###
+                load      = 'PLOP'
+        Delay of 2.0 seconds
+        ###[ IP ]###
+          version   = 4
+          [...]
+        ###[ TCP ]###
+             sport     = ftp_data
+             [...]
+        ###[ Raw ]###
+                load      = 'PLIP'
         >>> repr(pl)
-        ... 'PacketList(pkts=[PacketStruct(pkt=44B, delay=25.0s), PacketStruct(pkt=44B, delay=2.0s)])'
+        'PacketList(pkts=[PacketStruct(pkt=44B, delay=25.0s),
+                          PacketStruct(pkt=44B, delay=2.0s)])'
     """
     def __init__(self):
         self.pkts = []

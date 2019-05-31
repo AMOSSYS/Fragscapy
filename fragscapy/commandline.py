@@ -51,7 +51,10 @@ def command():
     subparsers.add_parser('list', help="List the available mods")
 
     # fragscapy usage
-    parser_usage = subparsers.add_parser('usage', help="Details the usage of a mod")
+    parser_usage = subparsers.add_parser(
+        'usage',
+        help="Details the usage of a mod"
+    )
     parser_usage.add_argument(
         'mod',
         type=str,
@@ -84,7 +87,8 @@ def command():
     parser_checkconfig.add_argument(
         '--no-progressbar',
         action='store_true',
-        help="Disable the progressbar. Can be useful in non interactive terminals"
+        help=("Disable the progressbar. Can be useful in non interactive "
+              "terminals")
     )
 
     # fragscapy start
@@ -121,7 +125,8 @@ def command():
     parser_start.add_argument(
         '--no-progressbar',
         action='store_true',
-        help="Disable the progressbar. Can be useful in non interactive terminals"
+        help=("Disable the progressbar. Can be useful in non interactive "
+              "terminals")
     )
 
     args = parser.parse_args()
