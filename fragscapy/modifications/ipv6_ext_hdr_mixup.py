@@ -13,24 +13,30 @@ IPV6_EXTHDR = (
 
 
 def name(layer):
-    """
-    Returns the class name of the object (supposed to be a protocol layer).
-
-    :param layer: The layer to examine.
-    :return: The class name of this layer.
-    """
+    """Returns the class name of a protocol layer."""
     return layer.__class__.__name__
 
 
 def slice_exthdr(pkt):
-    """
-    Cuts the packet in three:
+    """Slices the packet in three parts:
     * the 'before the Extension Headers' part
     * the chain of 'Extension Headers' as a list
     * the 'after the Extension Headers' part
 
-    :param pkt: The packet to slice.
-    :return: A 3-tuple with the 3 parts described above.
+    Args:
+        pkt: The packet to slice.
+
+    Returns:
+        A 3-tuple with the 3 parts described above. The parts no longer
+        contains the other parts. It means, for instance, that the 'before'
+        part's payload is `NoPayload()` and is not linked to the 'Extension
+        Headers' nor the 'after' part anymore.
+
+    Examples:
+        >>> slice_exthdr(IPv6()/IPv6ExtHdrRouting()/AH()/TCP()/"PLOP")
+        (<IPv6  nh=Routing Header |<IPv6ExtHdrRouting  |>>,
+         [<IPv6ExtHdrRouting  |>, <AH  |>],
+         <TCP  |<Raw  load='PLOP' |>>)
     """
     current = pkt
     before = scapy.packet.NoPayload()
@@ -53,13 +59,26 @@ def slice_exthdr(pkt):
 
 
 def replace_exthdr(before, exthdr, after):
-    """
-    Takes a chain of Extension Headers and link them together in the given
-    order. Then inserts this new chain in the packet 'in-place'.
+    """Rebuilds a packet from the three parts as in `slice_exthdr`.
 
-    :param before: The 'before the Extension Headers' part
-    :param exthdr: The new chain of 'Extension Headers'
-    :param after: The 'after the Extension Headers' part
+    It does not return the packet but instead modifies it directly.
+    This avoiding having the need to pass a reference to the first
+    layer.
+
+    Args:
+        before: The 'before the Extension Headers' part.
+        exthdr: The new chain of 'Extension Headers'.
+        after: The 'after the Extension Headers' part.
+
+    Examples:
+        >>> pkt = IPv6()/IPv6ExtHdrRouting()
+        >>> replace_exthdr(
+        ...     pkt,
+        ...     [IPv6ExtHdrRouting(), AH()],
+        ...     TCP()/"PLOP"
+        ... )
+        >>> pkt
+        <IPv6  nh=Routing Header |<IPv6ExtHdrRouting  nh=AH Header |<AH  |<TCP  |<Raw  load='PLOP' |>>>>>
     """
     if not exthdr:
         return

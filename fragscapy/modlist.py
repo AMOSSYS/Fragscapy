@@ -2,7 +2,7 @@
 
 class ModList(list):
     """A list modifications.
-    
+
     Use the `ModList` as a classic python list, the only difference is the
     `.apply(packet_list)` method available to apply the list of modifications
     on a `PacketList` object.

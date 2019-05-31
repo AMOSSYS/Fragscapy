@@ -36,7 +36,7 @@ class EngineWarning(Warning):
 
 
 def engine_warning(msg):
-    """ Raises a warning about the engine, details in `msg`. """
+    """Raises a warning about the engine, details in `msg`."""
     warnings.warn(
         "{}".format(msg),
         EngineWarning

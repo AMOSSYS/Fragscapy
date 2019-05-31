@@ -31,7 +31,7 @@ def config_warning(msg):
 
 
 def json_loadf(filename):
-    """ Wrapper arround `json.load` to load directly from filename. """
+    """Wrapper arround `json.load` to load directly from filename."""
     with open(filename) as f:
         return json.load(f)
 
@@ -179,6 +179,20 @@ class Config(object):
 
 
 def _parse_mod(mod):
+    """Parses a modification from the user data config.
+
+    Args:
+        mod: The dictionary that was extracted from the data and that should
+            represent a modification.
+
+    Returns:
+        A sanitized dictionary representing the modification. For example :
+
+        {"mod_name": "echo", "mod_opts", ["seq_str plap plop plip"]}
+
+    Raises:
+        ConfigError: See details in the 'key' parameter.
+    """
     if not isinstance(mod, dict):
         raise ConfigError('.not_dict')
 

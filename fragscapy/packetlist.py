@@ -10,19 +10,13 @@ MIN_TIME_DELAY = 0.01
 
 
 def _safe_delay(delay):
-    """
-    Checks that a delay is a positive float number.
-
-    :param delay: The delay expression to check.
-    :return:      The sanitized delay as a float.
-    """
+    """Checks that `delay` is a positive float number else raises a
+    ValueError."""
     try:
         delay = float(delay)
     except ValueError:
-        print("Please specify a correct delay")
         raise ValueError("{} is not a valid delay (not a number)".format(delay))
     if delay < 0:
-        print("Please specify a correct delay")
         raise ValueError("{} is not a valid delay (not positive)".format(delay))
     return delay
 

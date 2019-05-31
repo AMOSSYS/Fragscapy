@@ -11,22 +11,27 @@ PROCESS_HEADERS = ("IPv6", "IPv6ExtHdrHopByHop", "IPv6ExtHdrRouting")
 
 
 def name(layer):
-    """
-    Returns the class name of the object (supposed to be a protocol layer).
-
-    :param layer: The layer to examine.
-    :return: The class name of this layer.
-    """
+    """Returns the class name of a protocol layer."""
     return layer.__class__.__name__
 
 
 def get_per_frag_hdr(pkt):
-    """
-    Returns the last 'Scapy layer' of the "Per-Fragment Headers" part of the
-    packet.
+    """Returns the last 'Scapy layer' of the "Per-Fragment Headers" part of
+    the packet.
 
-    :param pkt: The Scapy packet to examine.
-    :return: A reference to the last 'Scapy layer' of the "Per-Fragment Headers".
+    The "Per-Fragment Headers" part is the chain of IPv6 headers that is
+    repeated for every fragment because they are useful for routing and
+    defragmenting.
+
+    Args:
+        pkt: The Scapy packet to examine.
+
+    Returns:
+        A reference to the last 'Scapy layer' of the "Per-Fragment Headers".
+
+    Examples:
+        >>> get_per_frag_hdr(IPv6()/IPv6ExtHdrRouting()/AH()/TCP()/"PLOP")
+        <IPv6ExtHdrRouting  nh=AH Header |<AH  |<TCP  |<Raw  load='PLOP' |>>>>
     """
     current = pkt
     ret = current
@@ -38,12 +43,18 @@ def get_per_frag_hdr(pkt):
 
 
 def insert_frag_hdr(pkt):
-    """
-    Insert a "Fragment Extension Header" in a packet where right after the
-    "Per-Fragment Headers" and the "Extension & Upper-Layer Headers"
+    """Inserts a "Fragment Extension Header" in a packet just after the
+    "Per-Fragment Headers" part.
 
-    :param pkt: The packet to modify
-    :return: The same packet with a well-placed Fragment Extension Header
+    Args:
+        pkt: The packet to modify.
+
+    Returns:
+        The same packet with a well-placed Fragment Extension Header.
+
+    Examples:
+        >>> insert_frag_hdr(IPv6()/IPv6ExtHdrRouting()/AH()/TCP()/"PLOP")
+        <IPv6  nh=Routing Header |<IPv6ExtHdrRouting  nh=Fragment Header |<IPv6ExtHdrFragment  nh=AH Header |<AH |<TCP  |<Raw  load='PLOP' |>>>>>>
     """
     current = get_per_frag_hdr(pkt)
     current.payload = (

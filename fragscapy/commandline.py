@@ -27,9 +27,9 @@ EPILOG = "Fragscapy {version} - {author}".format(
 
 
 def command():
-    """
-    Parse the arguments passed to the command line and triggers the correct
-    function. The main sub commands are:
+    """Parses the arguments from the command line and trigger the action.
+
+    The main sub-commands are:
     * 'list' for listing the mods that can be detected
     * 'usage' for detailling the usage of one (or multiple) mods
     * 'checkconfig' to check various aspects of a configuration file
@@ -139,7 +139,7 @@ def command():
 
 
 def list_mods():
-    """ List all the mods that can be detected. """
+    """Lists all the mods that can be detected."""
     all_mods_name = sorted(map(
         lambda x: x.name or x.__class__.__name__.lower(),
         get_all_mods()
@@ -150,7 +150,11 @@ def list_mods():
 
 
 def start(args):
-    """ Run the test suite. """
+    """Runs the test suite.
+
+    Args:
+        args: The arguments found in the `argparse.ArgumentParser`
+    """
     if not args.scapy_output:
         # Removes warning messages
         logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
@@ -164,7 +168,11 @@ def start(args):
 
 
 def usage(args):
-    """ Print the usage for specific mods. """
+    """Prints the usage for specific mods.
+
+    Args:
+        args: The arguments found in the `argparse.ArgumentParser`
+    """
     for mod_name in args.mod:
         try:
             mod = get_mod(mod_name)
@@ -175,10 +183,13 @@ def usage(args):
 
 
 def checkconfig(args):
-    """
-    Checks that the config file looks correct. It does not guarantee that
-    there will be no crash during the test suite but it tries to catch
-    everything before running it.
+    """Checks that the config file looks correct.
+
+    It does not guarantee that there will be no crash during the test suite
+    but it tries to catch everything before running it.
+
+    Args:
+        args: The arguments found in the `argparse.ArgumentParser`
     """
     try:
         print(">>> Loading config file")
@@ -198,7 +209,12 @@ def checkconfig(args):
 
 
 def _filter_kwargs(args, keys):
-    """ Filter and transforme argparse's args to a kwargs. """
+    """Filters and transforms argparse's args to a kwargs.
+
+    Args:
+        args: The arguments found in the `argparse.ArgumentParser`
+        keys: The keys to keep
+    """
     kwargs = dict()
     for k in keys:
         if hasattr(args, k) and getattr(args, k) is not None:

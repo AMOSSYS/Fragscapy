@@ -21,6 +21,7 @@ import os
 import inflection
 
 from fragscapy.modlist import ModList
+from fragscapy.modifications.mod import Mod
 
 
 # Package where the modifications are stored (and loaded from)
@@ -789,8 +790,11 @@ class ModListGenerator(object):
 
 
 def get_all_mods():
-    """
-    Retrieve all the available mods using `importlib` and `os.listdir`.
+    """Retrieves all the available mods using `importlib` and `os.listdir`.
+
+    Returns:
+        A list of python classes which are all the modifications found and
+        that can be used. All the objects returned are subclass of `Mod`.
     """
     dirname = os.path.dirname(__file__)
     all_mods = list()
@@ -800,17 +804,43 @@ def get_all_mods():
         if mod_name in ('__init__.py', 'mod.py'):
             continue
         mod_name = mod_name[:-3]
-        all_mods.append(get_mod(mod_name))
+        try:
+            all_mods.append(get_mod(mod_name))
+        except ImportError:
+            # The mod could no be loaded or was not a subclass of Mod
+            continue
 
     return all_mods
 
 
 def get_mod(mod_name):
-    """
-    Dynamically import a mod from its name using `importlib`.
+    """Imports a mod from its name using `importlib`.
+
+    Args:
+        mod_name: The name of the mod (snake_case of CamelCase are accepted).
+
+    Returns:
+        The python class which corresponds to the modification.
+
+    Raises:
+        ImportError: The class was not found or it is not a subclass of `Mod`.
+
+    Examples:
+        >>> get_mod("DropOne")
+        <class 'fragscapy.modifications.drop_one.DropOne'>
+        >>> get_mod("drop_one")
+        <class 'fragscapy.modifications.drop_one.DropOne'>
     """
     pkg_name = "{}.{}".format(MOD_PACKAGE, inflection.underscore(mod_name))
     mod_name = inflection.camelize(mod_name)
 
     pkg = importlib.import_module(pkg_name)
-    return getattr(pkg, mod_name)
+    mod = getattr(pkg, mod_name)
+
+    if not issubclass(mod, Mod):
+        raise ImportError(
+            "{}.{} is not a subclass of `fragscapy.modifications.mod.Mod`"
+            .format(pkg_name, mod_name)
+        )
+
+    return mod

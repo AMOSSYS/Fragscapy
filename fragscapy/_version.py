@@ -17,9 +17,7 @@ VERSION_INFO = 0, 1
 
 
 def get_version():
-    """
-    Calculate the version based on the version info and the git hash.
-    """
+    """Computes the version based on the version info and the git hash."""
     version = '.'.join(map(str, VERSION_INFO))
 
     # auto -extra based on commit hash (if not tagged as release)
