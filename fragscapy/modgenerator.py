@@ -7,10 +7,10 @@ The `ModOption`-derived classes are used to generates 1 option (e.g. an
 integer, a string, ...) based on a type of option (e.g. a sequence, a range,
 ...).
 
-The  `ModGenerator` contains multiple `ModOption`s and generates 1 `Mod`
+The  `ModGenerator` contains multiple `ModOption` and generates 1 `Mod`
 object by enumerating all the different combination of options.
 
-The `ModListGenerator` contains multiple `ModGenerator`s and generates 1
+The `ModListGenerator` contains multiple `ModGenerator` and generates 1
 `ModList` object by enumerating all the different combination of mods.
 """
 
@@ -549,7 +549,7 @@ class ModGenerator(object):
     Args:
         mod_name: The name of the modification (for importing the correct mod
             and improve error messages).
-        mod_opts: A list with the options to use to build `ModOption`s
+        mod_opts: A list with the options to use to build `ModOption`
             objects.
 
     Attributes:

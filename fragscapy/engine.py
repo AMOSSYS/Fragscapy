@@ -201,9 +201,9 @@ class Engine(object):
     packets and start the thread(s) that process them.
 
     The next step of the process, is the main loop that generates 2 `ModList`
-    (input and output) from the `ModListGenerator`s, set thoses in the threads
+    (input and output) from the `ModListGenerator`, set thoses in the threads
     that process the packets and run the command that was specified in the
-    config. It then loops back to generating the next `ModList`s.
+    config. It then loops back to generating the next `ModList`.
 
     Args:
         config (:obj:`Config`): The configuration to use to get all the
