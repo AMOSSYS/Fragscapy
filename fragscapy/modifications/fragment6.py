@@ -106,6 +106,7 @@ class Fragment6(Mod):
 
 
     def apply(self, pkt_list):
+        """Fragment each IPv6 packet. See `Mod.apply` for more details."""
         new_pl = PacketList()
 
         for pkt in pkt_list:

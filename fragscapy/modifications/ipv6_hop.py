@@ -44,11 +44,8 @@ class Ipv6Hop(Mod):
                                  "Got {}".format(self.hop))
 
     def apply(self, pkt_list):
-        """
-        Fetches the IPv6 layer replace the hop parameter.
-
-        :param pkt_list: The packet list.
-        """
+        """Modifies the 'Hop Limit' field of each IPv6 packet. See `Mod.apply`
+        for more details."""
         h = self.hop
         if h is None:
             h = random.randint(0, 0xff)

@@ -25,11 +25,8 @@ class Summary(Mod):
         super().__init__(*args)
 
     def apply(self, pkt_list):
-        """
-        For each packet in the packet list, show the summary
-
-        :param pkt_list: The packet list.
-        """
+        """Prints the summary for each packet.See `Mod.apply` for more
+        details."""
         pkt_list.summary()
 
         return pkt_list

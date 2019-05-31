@@ -50,6 +50,7 @@ class Reorder(Mod):
                              "Got {}".format(args[0]))
 
     def apply(self, pkt_list):
+        """Reorder the packets. See `Mod.apply` for more details."""
         if self.method == METHOD.REVERSE:
             sequence = list(range(len(pkt_list)-1, -1, -1))
         elif self.method == METHOD.RANDOM:

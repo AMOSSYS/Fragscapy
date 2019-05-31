@@ -69,40 +69,41 @@ class ModOption(abc.ABC):
 
     @abc.abstractmethod
     def get_option(self, i):
-        """
-        Calculate the i-th instance of the option. The result must be
-        deterministic, constant for a given `i`. E.g. asking for
-        `.get_option(10)` must always output the same result.
+        """Returns the i-th instance of the option.
 
-        The `ModOption.get_option` method implements the checks for 0<i<len
-        so any subclass of `ModOption` should begin with a call to
-        `super().get_option(i)` for consistency.
+        The result must be deterministic, constant for a given `i`. E.g.
+        asking for `.get_option(10)` must always output the same result.
 
-        :param i: the number of the configuration.
+        Args:
+            i: the number of the configuration.
+
+        Raises:
+            ModGeneratorError: `i` is out of bounds (i<0 or i>=len).
+
+        Returns:
+            The i-th option.
         """
-        if (not isinstance(i, int)
-                or i < 0
-                or i >= self.nb_options()):
+        raise NotImplementedError
+
+    def inbound_or_raise(self, i):
+        """Raises a `ModGeneratorError` if is out of bound (i<0 or i>=len)."""
+        if not isinstance(i, int):
+            self._raise_error("Index is not an integer, got '{}'".format(i))
+        if i < 0 or i >= self.nb_options():
             self._raise_error(
-                "'i' should be between 0 and {}, got '{}'".format(
+                "Index should be between 0 and {}, got '{}'".format(
                     self.nb_options()-1, i
                 )
             )
 
     @abc.abstractmethod
     def nb_options(self):
-        """
-        Calculates the number of possible options for this generator.
-        """
-        pass
+        """Returns the number of possible options for this generator."""
+        raise NotImplementedError
 
     def _raise_error(self, msg):
-        """
-        Raises a `ModGeneratorError` alogn with indication of the option and
-        the name of the mod.
-
-        :param msg: A message explaining the error.
-        """
+        """Raises a `ModGeneratorError` along with indication of the option and
+        the name of the mod."""
         raise ModGeneratorError("Error with option '{}' of mod '{}': {}".format(
             self.opt_name, self.mod_name, msg))
 
@@ -195,7 +196,8 @@ class ModOptionRange(ModOption):
             )
 
     def _int(self, l, i):
-        """ Small function to cast the i-th value of l to an integer. """
+        """Small function to cast the i-th value of l to an integer or raises
+        a ModGeneratorError if not possible."""
         try:
             return int(l[i])
         except ValueError:
@@ -204,18 +206,12 @@ class ModOptionRange(ModOption):
             )
 
     def get_option(self, i):
-        """
-        Calculate the i-th instance of the generation.
-        See `ModOption.get_option` for more info.
-        """
-        super(ModOptionRange, self).get_option(i)
+        """See `ModOption.get_option`."""
+        self.inbound_or_raise(i)
         return self.start + self.step * i
 
     def nb_options(self):
-        """
-        Calculate the i-th instance of the generation.
-        See `ModOption.nb_options` for more info.
-        """
+        """See `ModOption.nb_options`."""
         return (self.stop - self.start)//self.step + 1
 
     def __str__(self):
@@ -260,18 +256,12 @@ class ModOptionSequenceStr(ModOption):
         self.seq = args
 
     def get_option(self, i):
-        """
-        Calculate the i-th instance of the generation.
-        See `ModOption.get_option` for more info.
-        """
-        super(ModOptionSequenceStr, self).get_option(i)
+        """See `ModOption.get_option`."""
+        self.inbound_or_raise(i)
         return self.seq[i]
 
     def nb_options(self):
-        """
-        Calculate number of instances of the generation.
-        See `ModOption.nb_options` for more info.
-        """
+        """See `Option.nb_options`."""
         return len(self.seq)
 
     def __str__(self):
@@ -319,18 +309,12 @@ class ModOptionSequenceInt(ModOption):
                 self._raise_error("Non-int argument, got '{}'".format(arg))
 
     def get_option(self, i):
-        """
-        Calculate the i-th instance of the generation.
-        See `ModOption.get_option` for more info.
-        """
-        super(ModOptionSequenceInt, self).get_option(i)
+        """See `ModOption.get_option`."""
+        self.inbound_or_raise(i)
         return self.seq[i]
 
     def nb_options(self):
-        """
-        Calculate the number of instances of the generation.
-        See `ModOption.nb_options` for more info.
-        """
+        """See `ModOption.nb_options`."""
         return len(self.seq)
 
     def __str__(self):
@@ -378,18 +362,12 @@ class ModOptionSequenceFloat(ModOption):
                 self._raise_error("Non-float argument, got '{}'".format(arg))
 
     def get_option(self, i):
-        """
-        Calculate the i-th instance of the generation.
-        See `ModOption.get_option` for more info.
-        """
-        super(ModOptionSequenceFloat, self).get_option(i)
+        """See `ModOption.get_option`."""
+        self.inbound_or_raise(i)
         return self.seq[i]
 
     def nb_options(self):
-        """
-        Calculate the number of instances of the generation.
-        See `ModOption.nb_options` for more info.
-        """
+        """See `ModOption.nb_options`."""
         return len(self.seq)
 
     def __str__(self):
@@ -434,18 +412,13 @@ class ModOptionStr(ModOption):
         self.s = args[0]
 
     def get_option(self, i):
-        """
-        Returns the string, i.e. the only instance possible.
-        See `ModOption.get_option` for more info.
-        """
-        super(ModOptionStr, self).get_option(i)
+        """See `ModOption.get_option`."""
+        self.inbound_or_raise(i)
         return self.s
 
     def nb_options(self):
-        """
-        Returns always 1 because there is ony 1 instance possible.
-        See `ModOption.nb_options` for more info.
-        """
+        """Returns always 1 because there is ony 1 instance possible. See
+        `ModOption.nb_options` for more info."""
         return 1
 
     def __str__(self):
@@ -493,18 +466,13 @@ class ModOptionInt(ModOption):
             self._raise_error("Can't cast '{}' to an integer".format(args[0]))
 
     def get_option(self, i):
-        """
-        Returns the integer, i.e. the only instance possible.
-        See `ModOption.get_option` for more info.
-        """
-        super(ModOptionInt, self).get_option(i)
+        """See `ModOption.get_option`."""
+        self.inbound_or_raise(i)
         return self.n
 
     def nb_options(self):
-        """
-        Returns always 1 because there is ony 1 instance possible.
-        See `ModOption.nb_options` for more info.
-        """
+        """Returns always 1 because there is ony 1 instance possible. See
+        `ModOption.nb_options` for more info."""
         return 1
 
     def __str__(self):
@@ -554,18 +522,13 @@ class ModOptionFloat(ModOption):
             self._raise_error("Can't cast '{}' to a float".format(args[0]))
 
     def get_option(self, i):
-        """
-        Returns the float, i.e. the only instance possible.
-        See `ModOption.get_option` for more info.
-        """
-        super(ModOptionFloat, self).get_option(i)
+        """See `ModOption.get_option`."""
+        self.inbound_or_raise(i)
         return self.n
 
     def nb_options(self):
-        """
-        Returns always 1 because there is ony 1 instance possible.
-        See `ModOption.nb_options` for more info.
-        """
+        """Returns always 1 because there is ony 1 instance possible. See
+        `ModOption.nb_options` for more info."""
         return 1
 
     def __str__(self):
@@ -655,16 +618,24 @@ class ModGenerator(object):
 
 
     def get_mod(self, i):
-        """
-        Calculate the i-th instance of the mod. The result must be
-        deterministic, constant for a given `i`. E.g. asking for
-        `.get_mod(10)` must always output the same result.
+        """Returns the i-th instance of the mod.
+        The result must be deterministic, constant for a given `i`. E.g.
+        asking for `.get_mod(10)` must always output the same result.
 
-        :param i: the number of the configuration.
+        Args:
+            i: the number of the configuration.
+
+        Raises:
+            ModGeneratorError: `i` is out of bounds (i<0 or i>=len).
+
+        Returns:
+            The i-th `Mod` instance.
         """
-        if (not isinstance(i, int)
-                or i < 0
-                or i >= self.nb_mods()):
+        if not isinstance(i, int):
+            raise ModGeneratorError(
+                "Index is not an integer, got '{}'".format(i)
+            )
+        if i < 0 or i >= self.nb_mods():
             raise ModGeneratorError(
                 "Error with mod '{}': 'i' should be between 0 and {}, got '{}'"
                 .format(self.mod_name, self.nb_mods()-1, i)
@@ -677,10 +648,10 @@ class ModGenerator(object):
         return self._mod(*opts)
 
     def nb_mods(self):
-        """
-        The number of different mods possible. It is basically the
-        multiplication of the length of the different ModOption it is
-        composed of.
+        """Returns the number of different mods possible.
+
+        It is basically the multiplication of the length of the different
+        `ModOption` it is composed of.
         """
         ret = 1
         for opt in self._mod_opts:
@@ -754,18 +725,26 @@ class ModListGenerator(object):
         ]
 
     def get_modlist(self, i):
-        """
-        Calculate the i-th instance of the modlist. The result must be
-        deterministic, constant for a given `i`. E.g. asking for
-        `.get_modlist(10)` must always output the same result.
+        """Returns the i-th instance of the modlist.
+        The result must be deterministic, constant for a given `i`. E.g.
+        asking for `.get_modlist(10)` must always output the same result.
 
-        :param i: the number of the configuration.
+        Args:
+            i: the number of the configuration.
+
+        Raises:
+            ModGeneratorError: `i` is out of bounds (i<0 or i>=len).
+
+        Returns:
+            The i-th `ModList` instance.
         """
-        if (not isinstance(i, int)
-                or i < 0
-                or i >= self.nb_modlists()):
+        if not isinstance(i, int):
             raise ModGeneratorError(
-                "'i' should be between 0 and {}, got '{}'"
+                "Index is not an integer, got '{}'".format(i)
+            )
+        if i < 0 or i >= self.nb_modlists():
+            raise ModGeneratorError(
+                "Index should be between 0 and {}, got '{}'"
                 .format(self.nb_modlists()-1, i)
             )
         modlist = ModList()
@@ -776,10 +755,10 @@ class ModListGenerator(object):
         return modlist
 
     def nb_modlists(self):
-        """
-        The number of different modlists possible. It is basically the
-        multiplication of the length of the different ModGenerator it is
-        composed of.
+        """Returns the number of different modlsits possible.
+
+        It is basically the multiplication of the length of the different
+        `ModGenerator` it is composed of.
         """
         ret = 1
         for mod_generator in self._mod_generators:

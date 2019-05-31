@@ -44,11 +44,8 @@ class Ipv6Length(Mod):
                                  "Got {}".format(self.length))
 
     def apply(self, pkt_list):
-        """
-        Fetches the IPv6 layer replace the payload length parameter.
-
-        :param pkt_list: The packet list.
-        """
+        """Modifies the 'Payload Length' field of each IPv6 packet. See
+        `Mod.apply` for more details."""
         l = self.length
         if l is None:
             l = random.randint(0, 0xffff)

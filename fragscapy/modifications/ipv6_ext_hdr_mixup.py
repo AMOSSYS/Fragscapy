@@ -125,11 +125,8 @@ class Ipv6ExtHdrMixup(Mod):
         super().__init__(*args)
 
     def apply(self, pkt_list):
-        """apply
-        Randomly changes the order of the Extension Headers of each packet.
-
-        :param pkt_list: The packet list
-        """
+        """Mixes-up the order of the Extension Headers for each IPv6 packet.
+        See `Mod.apply` for more info."""
         for pkt in pkt_list:
             before, chain, after = slice_exthdr(pkt.pkt)
             random.shuffle(chain)

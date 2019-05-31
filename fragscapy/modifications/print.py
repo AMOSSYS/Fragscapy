@@ -25,11 +25,8 @@ class Print(Mod):
         super().__init__(*args)
 
     def apply(self, pkt_list):
-        """
-        For each packet in the packet list, displays its content.
-
-        :param pkt_list: The packet list.
-        """
+        """Prints the content of each packet. See `Mod.apply` for more
+        details."""
         pkt_list.display()
 
         return pkt_list

@@ -136,6 +136,17 @@ class NFQueueRule(object):  # pylint: disable=too-many-instance-attributes
         self.qnum = qnum
 
     def _build_filter(self, chain, h):
+        """Returns the ip(6)tables filter to use.
+
+        Args:
+            chain: The current chain (changes the direction "src/dst" for
+                some options).
+            h: The current hostname to filter on.
+
+        Returns:
+            A list of parameters that can be used as a filter in an
+            ip(6)tables command.
+        """
         opt = []    # A list of iptables options
         opt.append(chain.name)                   # OUTPUT or INPUT
         if h is not None:
@@ -150,6 +161,15 @@ class NFQueueRule(object):  # pylint: disable=too-many-instance-attributes
         return opt
 
     def _build_nfqueue_opt(self, chain):
+        """Returns the options to use for building the NFQUEUE rule.
+
+        Args:
+            chain: The current chain (changes the queue number).
+
+        Returns:
+            A list of parameters that can be used as options in an
+            ip(6)tables command.
+        """
         opt = []
         opt.append('-j')                         # -j
         opt.append('NFQUEUE')                    # NFQUEUE
@@ -157,7 +177,20 @@ class NFQueueRule(object):  # pylint: disable=too-many-instance-attributes
         opt.append(str(self.qnum + chain.qnum))  # <qnum> or <qnum>+1
         return opt
 
-    def _build_rst_opt(self, _):   # pylint: disable=no-self-use
+    def _build_rst_opt(self, chain):   # pylint: disable=no-self-use
+        """Returns the options to use for building the "reset TCP's RST flag"
+        rule.
+
+        Args:
+            chain: Not used.
+
+        Returns:
+            A list of parameters that can be used as options in an
+            ip(6)tables command.
+        """
+        # `self` and `chain` are not used here but the arguments are kept for
+        # interchangeability with `._build_nfqueue_opt`.
+        del chain
         opt = []
         opt.append("--tcp-flags")
         opt.append("RST")
@@ -167,6 +200,18 @@ class NFQueueRule(object):  # pylint: disable=too-many-instance-attributes
         return opt
 
     def _insert_or_remove(self, insert=True):
+        """Build and then insert or remove the netfilter rules.
+
+        Both operations are regrouped as they are very similary built. The
+        only difference is a '-I' or a '-D' in the options.
+
+        Args:
+            insert: Inserts the rule if 'True', removes it if 'False'.
+
+        Raises:
+            CalledProcessError: An error occurred while running the
+                sub-command ip(6)tables.
+        """
         # Pre-catch non root errors here instead of letting iptables fail.
         # Because it returns an exitcode of 2 which can indicate something
         # else.
@@ -209,18 +254,19 @@ class NFQueueRule(object):  # pylint: disable=too-many-instance-attributes
                     subprocess.run(cmd, check=True)
 
     def insert(self):
-        """
-        Build and insert the resulting rules in iptables and ip6tables.
-        A `subprocess.CalledProcessError` exception is raised if an error
-        occurs in the process.
+        """Builds and insert the resulting rules in iptables and ip6tables.
+
+        Raises:
+            CalledProcessError: exception is raised if an error occurs in the
+                process.
         """
         self._insert_or_remove(insert=True)
 
     def remove(self):
-        """
-        Remove the previously inserted rules in iptables and ip6tables.
-        A `subprocess.CalledProcessError` exception is raised if an error
-        occurs in the process.
+        """Removes the previously inserted rules in iptables and ip6tables.
+        Raises:
+            CalledProcessError: exception is raised if an error occurs in the
+                process.
         """
         self._insert_or_remove(insert=False)
 
@@ -272,9 +318,7 @@ class NFQueue(object):  # pylint: disable=too-few-public-methods
         return self.next_packet()
 
     def next_packet(self):
-        """
-        Returns only one packet from the queue.
-        """
+        """Returns the next packet in NFQUEUE."""
         for p in self._conn:
             if p.hw_protocol == scapy.data.ETH_P_IP:
                 return IP(p)
@@ -305,27 +349,26 @@ class _PacketWrapper(abc.ABC):
     @property
     @abc.abstractmethod
     def l3_layer(self):
-        """
-        The `scapy` l3-layer constructor to use (e.g. `scapy.layers.inet.IP`
-        or `scapy.layers.inet6.IPv6`)
-        """
+        """The `scapy` l3-layer constructor to use
+        (e.g. `scapy.layers.inet.IP` or `scapy.layers.inet6.IPv6`)."""
         raise NotImplementedError
 
     @property
     def is_input(self):
-        """ True is the packet comes from INPUT chain """
+        """True if the packet comes from INPUT chain."""
         return not self._output
 
     @property
     def is_output(self):
-        """ True if the packet comes from OUTPUT chain """
+        """True if the packet comes from OUTPUT chain."""
         return self._output
 
     def _apply_modifications(self):
+        """Reports the modifications in the Scapy packet to the fnfqueue
+        packet."""
         self._fnfqueue_pkt.payload = bytes(self._scapy_pkt)
 
     def __dir__(self):
-
         ret = ['_scapy_pkt', '_fnfqueue_pkt', 'l3_layer', 'is_input',
                'is_output']
         ret.extend(dir(self._scapy_pkt))
@@ -345,21 +388,22 @@ class _PacketWrapper(abc.ABC):
         return ret
 
     def raw_send(self):
-        """
-        Send the scapy packet directly on a raw socket. The charge of dropping
-        the nfqueued packed is left to the user (if necessary).
+        """Sends the scapy packet directly on a raw socket.
+
+        The charge of dropping the nfqueue packet is left to the user
+        (if necessary).
         """
         scapy.sendrecv.send(self._scapy_pkt)
 
 
 
 class IP(_PacketWrapper):
-    """ See _PacketWrapper documentation """
+    """See _PacketWrapper documentation."""
     l3_layer = scapy.layers.inet.IP
     __doc__ = _PacketWrapper.__doc__
 
 
 class IPv6(_PacketWrapper):
-    """ See _PacketWrapper documentation """
+    """See _PacketWrapper documentation."""
     l3_layer = scapy.layers.inet6.IPv6
     __doc__ = _PacketWrapper.__doc__

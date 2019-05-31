@@ -51,6 +51,7 @@ class DropOne(Mod):
                                  "Got {}".format(args[0]))
 
     def apply(self, pkt_list):
+        """Drops one packet. See `Mod.apply` for more details."""
         l = len(pkt_list)
         i = self.drop_index
 

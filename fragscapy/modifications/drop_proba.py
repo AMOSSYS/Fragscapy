@@ -27,7 +27,7 @@ class DropProba(Mod):
     """
 
     name = "DropProba"
-    doc = ("Drop each packet with a certain probability.\n"
+    doc = ("Drops each packet with a certain probability.\n"
            "dropproba <proba>")
     _nb_args = 1
 
@@ -48,6 +48,8 @@ class DropProba(Mod):
 
 
     def apply(self, pkt_list):
+        """Drops each packet with a certain probability. See `Mod.apply` for
+        more details."""
         # The function to determine if the packet should be kept
         condition = lambda _: random.random() < self.drop_proba
         # A list of decreasing indexes that should be removed

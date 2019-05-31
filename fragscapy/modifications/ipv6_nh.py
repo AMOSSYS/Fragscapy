@@ -44,11 +44,8 @@ class Ipv6Nh(Mod):
                                  "Got {}".format(self.proto))
 
     def apply(self, pkt_list):
-        """
-        Fetches the IPv6 layer replace the nh parameter.
-
-        :param pkt_list: The packet list.
-        """
+        """Modifies the 'Next Header' field of the IPv6 packet. See `Mod.apply`
+        for more details."""
         nh = self.proto
         if nh is None:
             nh = random.randint(0, 0xff)

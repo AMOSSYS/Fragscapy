@@ -52,6 +52,7 @@ class Duplicate(Mod):
                                  "Got {}".format(args[0]))
 
     def apply(self, pkt_list):
+        """Duplicates one packet. See `Mod.apply` for more details."""
         l = len(pkt_list)
         i = self.duplicate_index
 

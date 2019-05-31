@@ -30,11 +30,7 @@ class Echo(Mod):
         self.string = " ".join(args)
 
     def apply(self, pkt_list):
-        """
-        Prints the string.
-
-        :param pkt_list: The packet list (not used).
-        """
+        """Print the string. See `Mod.apply` for more details."""
         print(self.string)
 
         return pkt_list

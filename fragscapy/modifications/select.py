@@ -42,6 +42,7 @@ class Select(Mod):
                                  "Got {}".format(arg))
 
     def apply(self, pkt_list):
+        """Keeps only the wanted packets. See `Mod.apply` for more details."""
         new_pl = PacketList()
         for i in self.sequence:
             new_pl.add_packet(pkt_list[i].pkt, pkt_list[i].delay)

@@ -84,7 +84,8 @@ class EngineThread(threading.Thread):
 
     @property
     def input_modlist(self):
-        """ The modlist applied to the packets on INPUT chain. """
+        """The modlist applied to the packets on INPUT chain. Read/Write is
+        thread-safe."""
         with self._input_lock:
             return self._input_modlist.copy()
 
@@ -95,7 +96,8 @@ class EngineThread(threading.Thread):
 
     @property
     def output_modlist(self):
-        """ The modlist applied to the packets on OUTPUT chain. """
+        """The modlist applied to the packets on OUTPUT chain. Read/Write is
+        thread-safe."""
         with self._output_lock:
             return self._output_modlist.copy()
 
@@ -105,7 +107,7 @@ class EngineThread(threading.Thread):
             self._output_modlist = new
 
     def _process_input(self, packet):
-        """ Apply the input modifications on `packet`. """
+        """Applies the input modifications on `packet`."""
         # Put the packet in a packet list
         packetlist = PacketList()
         packetlist.add_packet(packet.scapy_pkt)
@@ -137,7 +139,7 @@ class EngineThread(threading.Thread):
             packet.mangle()
 
     def _process_output(self, packet):
-        """ Apply the output modifications on `packet`. """
+        """Applies the output modifications on `packet`."""
         # Put the packet in a packet list
         packetlist = PacketList()
         packetlist.add_packet(packet.scapy_pkt)
@@ -151,6 +153,14 @@ class EngineThread(threading.Thread):
         packet.drop()
 
     def run(self):
+        """Runs the main loop of the thread.
+
+        Checks that there are starting input_modlist and output_modlist and
+        then starts catching the packet in the NFQUEUE and process them.
+
+        Raises:
+            EngineError: There is a modlist (input or output) missing.
+        """
         # Checks that the INPUT and OUTPUT modlist are populated
         with self._input_lock:
             if self._input_modlist is None:
@@ -277,7 +287,7 @@ class Engine(object):
             ))
 
     def _write_modlist_to_file(self, i, input_modlist, output_modlist):
-        """ Write the modification details to the 'modif_file'. """
+        """Writes the modification details to the 'modif_file'."""
         with open(self.modif_file, "a") as mod_file:
             mod_file.write(self.MODIF_TEMPLATE.format(
                 i=i,
@@ -286,16 +296,19 @@ class Engine(object):
             ))
 
     def _update_modlists(self, i, input_modlist, output_modlist):
-        """ Change the modlist in all the threads. """
+        """Changes the modlist in all the threads."""
         for engine_thread in self._engine_threads:
             engine_thread.input_modlist = input_modlist
             engine_thread.output_modlist = output_modlist
         self._write_modlist_to_file(i, input_modlist, output_modlist)
 
     def _run_cmd(self, i):
-        """
-        Launch the user command in a sub-process and redirect stdout and
-        stderr to the corresponding files.
+        """Launches the user command in a sub-process.
+
+        Redirect stdout and stderr to the corresponding files.
+
+        Args:
+            i: current iteration number, used for formating the filenames.
         """
         fout = self.stdout_file.format(i=i)
         ferr = self.stderr_file.format(i=i)
@@ -303,30 +316,35 @@ class Engine(object):
             subprocess.run(self._cmd, stdout=out, stderr=err, shell=True)
 
     def _insert_nfrules(self):
+        """Insert all the NF rules using `ip(6)tables`."""
         for nfrule in self._nfrules:
             nfrule.insert()
 
     def _remove_nfrules(self):
+        """Remove all the NF rules using `ip(6)tables`."""
         for nfrule in self._nfrules:
             nfrule.remove()
 
     def _start_threads(self):
+        """Starts the engine threads used to process the packets."""
         for engine_thread in self._engine_threads:
             engine_thread.start()
 
     def _join_threads(self):
+        """Joins the engine threads used to process the packets."""
         for engine_thread in self._engine_threads:
             engine_thread.join()
 
     def pre_run(self):
-        """ All the actions that need to be run before the Engine starts. """
+        """Runs all the actions that need to be run before `.run()`."""
         self._insert_nfrules()
         self._start_threads()
 
     def run(self):
-        """
-        The main action of the engine. Generates a modlist, run the command
-        and do it over and over until all the modlists are exhausted.
+        """Runs the test suite.
+
+        Generates a modlist, run the command and do it over and over until all
+        the possible modlists are exhausted.
         """
         iterator = self._get_modlist_iterator()
 
@@ -337,17 +355,24 @@ class Engine(object):
             self._run_cmd(i)
 
     def post_run(self):
-        """ All the actions that need to be run after the Engine stops. """
+        """Runs all the actions that need to be run after `.run()`."""
         self._remove_nfrules()
         self._join_threads()
 
     def start(self):
-        """ Start the testing with .pre_run(), .run() and .post_run(). """
+        """Starts the test suite by running `.pre_run()`, `.run()` and
+        finaly `.post_run()`."""
         self.pre_run()
         self.run()
         self.post_run()
 
     def _get_modlist_iterator(self):
+        """Returns an iterator for all the possible combinations of modlists.
+
+        Each value of the iterator is on the following format:
+            (int<index>, (ModList<input_modlist>, ModList<output_modlist>))
+        If `self.progressbar` is True, automatically add the `tqdm` iterator.
+        """
         iterator = enumerate(itertools.product(
             self._mlgen_input,
             self._mlgen_output
@@ -362,12 +387,12 @@ class Engine(object):
         return iterator
 
     def check_nfrules(self):
-        """ Check that the NF rules should work without errors. """
+        """Checks that the NF rules should work without errors."""
         self._insert_nfrules()
         self._remove_nfrules()
 
     def check_modlist_generation(self):
-        """ Check that the ModListGenerator will generate all mods. """
+        """Checks that the ModListGenerator will generate all mods."""
         iterator = self._get_modlist_iterator()
         for i, (input_modlist, output_modlist) in iterator:
             self._write_modlist_to_file(i, input_modlist, output_modlist)

@@ -56,9 +56,7 @@ class PacketStruct(object):
 
     @property
     def delay(self):
-        """
-        The delay to wait before sending the packet.
-        """
+        """The delay to wait before sending the packet."""
         return self._delay
 
     @delay.setter
@@ -66,25 +64,22 @@ class PacketStruct(object):
         self._delay = _safe_delay(val)
 
     def send(self):
-        """
-        Sends the packet as a Layer2 packet.
-        """
+        """Sends the packet as a Layer-3 packet."""
         # Only sleep if above the min limit
         if self.delay > MIN_TIME_DELAY:
             time.sleep(self.delay)
         scapy.sendrecv.send(self.pkt)
 
     def sendp(self):
-        """
-        Sends the packet as a Layer3 packet.
-        """
+        """Sends the packet as a Layer-2 packet."""
         # Only sleep if above the min limit
         if self.delay > MIN_TIME_DELAY:
             time.sleep(self.delay)
         scapy.sendrecv.sendp(self.pkt)
 
     def display(self):
-        """
+        """Displays the content of the packet.
+
         Displays the delay (if any) followed by the details of the underlying
         Scapy packet.
         """
@@ -93,11 +88,7 @@ class PacketStruct(object):
         self.pkt.display()
 
     def copy(self):
-        """
-        Make a copy of the PacketStruct object
-
-        :return: A new and different PacketStruct object with the same data
-        """
+        """Returns a copy of the packet."""
         return PacketStruct(self.pkt, self.delay)
 
     def __str__(self):
@@ -170,68 +161,62 @@ class PacketList(object):
         return iter(self.pkts)
 
     def add_packet(self, pkt, delay=0):
-        """
-        Adds a new Scapy packet at the end of the list.
+        """Adds a new Scapy packet at the end of the list.
 
-        :param pkt:   The Scapy packet to add.
-        :param delay: The delay to respect before packet emission (default: 0).
+        Args:
+            pkt: The Scapy packet to add.
+            delay: The delay to respect before sending the packet.
         """
         self.pkts.append(PacketStruct(pkt, delay))
 
     def edit_delay(self, index, delay):
-        """
-        Changes the delay before packet emission.
+        """Changes the delay before packet emission.
 
-        :param index: Position of the packet to change.
-        :param delay: The new delay.
+        Args:
+            index: Position of the packet to change.
+            delay: The new delay.
         """
         self.pkts[index].delay = delay
 
     def edit_packet(self, index, pkt):
-        """
-        Changes the underlying Scapy packet.
+        """Changes the Scapy packet.
 
-        :param index: Position of the packet to change.
-        :param pkt:   The new Scapy packet.
+        Args:
+            index: Position of the packet to change.
+            pkt: The new Scapy packet.
         """
         self.pkts[index].pkt = pkt
 
     def remove_packet(self, index):
-        """
-        Removes a packet from the list.
+        """Removes a packet from the list.
 
-        :param index: Position of the packet to remove.
+        Args:
+            index: Position of the packet to remove.
         """
         del self.pkts[index]
 
     def insert_packet(self, index, pkt, delay=0):
-        """
-        Inserts a new packet in the list at the given index.
+        """Inserts a new packet in the list at the given index.
 
-        :param index: Position to insert the new packet.
-        :param pkt:   The new packet itself.
-        :param delay: Delay to respect before sending packet. (default: 0)
+        Args:
+            index: Position to insert the new packet.
+            pkt: The new packet itself.
+            delay: Delay to respect before sending packet.
         """
         self.pkts.insert(index, PacketStruct(pkt, delay))
 
     def send_all(self):
-        """
-        Sends all packets in the list as Layer3 packets.
-        """
+        """Sends all packets in the list as Layer3 packets."""
         for pkt in self.pkts:
             pkt.send()
 
     def sendp_all(self):
-        """
-        Sends all packets in the list as Layer2 packets.
-        """
+        """Sends all packets in the list as Layer2 packets."""
         for pkt in self.pkts:
             pkt.sendp()
 
     def display(self):
-        """
-        Displays the details of each packet of the packet list.
-        """
+        """Displays the details of each packet of the packet list."""
         for pkt in self.pkts:
             pkt.display()
 

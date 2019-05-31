@@ -49,23 +49,26 @@ class Mod(abc.ABC):
 
     @abc.abstractmethod
     def apply(self, pkt_list):
-        """
-        Applies the modification to a PacketList object. It returns a
-        PacketList object but might also modified the original. Actually
-        the returned object might even be the same "in-memory" original
-        object. There is no guarantee, the pkt_list will not be modified.
-        It depends on the implementation of the modification.
+        """Applies the modification to a list of packets.
 
-        :param pkt_list: A list of packet on which to apply the modifications.
-        :return: The new PacketList object resulting from the modfications.
+        It always returns a `PacketList` object but might also modified the
+        original. Actually the returned object might even be the same
+        "in-memory" original object. There is no guarantee that `pkt_list`
+        will not be modified. It depends on the implementation of the
+        modification.
+
+        Args:
+            pkt_list: A `PacketList` on which to apply the modifications.
+
+        Returns:
+            The new `PacketList` object resulting from the modfications.
         """
         pass
 
     @classmethod
     def usage(cls):
-        """
-        Prints the usage of the modification.
-        """
+        """Prints the usage of the modification based on the `name` and `doc`
+        attributes."""
         if cls.name is None:
             print(cls.__class__.__name__.lower())
         else:

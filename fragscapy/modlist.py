@@ -45,10 +45,13 @@ class ModList(list):
         return "\n".join(ret)
 
     def apply(self, pkt_list):
-        """
-        Applies the modifications to a PacketList object.
+        """Applies all the modifications to a packet list.
 
-        :param pkt_list: The PacketList object to modify.
+        Args:
+            pkt_list: The `PacketList` object to modify.
+
+        Returns:
+            The resulting `PacketList` with all modifications applied.
         """
         for mod in self:
             pkt_list = mod.apply(pkt_list)

@@ -84,25 +84,27 @@ class Config(object):
 
     @property
     def cmd(self):
-        """ The command to run for each test. """
+        """The command to run for each test."""
         return self._cmd
 
     @property
     def nfrules(self):
-        """ A list of key-words args to pass to NFQueueRule. """
+        """A list of key-words args to pass to NFQueueRule."""
         return self._nfrules
 
     @property
     def output(self):
-        """ A list of args to pass to a modification for the output chain. """
+        """A list of args to pass to a modification for the output chain."""
         return self._output
 
     @property
     def input(self):
-        """ A list of args to pass to a modification for the input chain. """
+        """A list of args to pass to a modification for the input chain."""
         return self._input
 
     def _parse(self):
+        """Parses the data, fill the attributes and raises ConfigError when
+        needed."""
         # Parse the data and interrupt if not readable
         try:
             user_data = self.parser(self.data)
@@ -136,6 +138,15 @@ class Config(object):
             )
 
     def _parse_cmd(self, user_cmd):
+        """Parses the section of the command from the data.
+
+        Args:
+            user_cmd: The section read from the data that is about the
+                command.
+
+        Raises:
+            ConfigError: The command is not a string.
+        """
         if not isinstance(user_cmd, str):
             raise ConfigError('.cmd.not_str')
         if not user_cmd[0] == '/':
@@ -146,6 +157,16 @@ class Config(object):
         self._cmd = user_cmd
 
     def _parse_nfrules(self, user_nfrules):
+        """Parses the section of the netfilter rules from the data.
+
+        Args:
+            user_nfrules: The section read from the data that is about the
+                netfilter rules.
+
+        Raises:
+            ConfigError: The NF rules specification has not the right format.
+                See message for details.
+        """
         if not isinstance(user_nfrules, list):
             raise ConfigError('.nfrules.not_list')
 
@@ -156,6 +177,16 @@ class Config(object):
             self._nfrules.append(user_nfrule)
 
     def _parse_input(self, user_input):
+        """Parses the section of the INPUT modification list from the data.
+
+        Args:
+            user_input: The section read from the data that is about the INPUT
+                modification list.
+
+        Raises:
+            ConfigError: The 'user_cmd' object has not the right format. See
+                message for details.
+        """
         if not isinstance(user_input, list):
             raise ConfigError('.input.not_list')
 
@@ -167,6 +198,16 @@ class Config(object):
                 raise ConfigError('.input.{}{}'.format(i, e.key))
 
     def _parse_output(self, user_output):
+        """Parses the section of the OUTPUT modification list from the data.
+
+        Args:
+            user_output: The section read from the data that is about the
+                OUTPUT modification list.
+
+        Raises:
+            ConfigError: The 'user_cmd' object has not the right format. See
+                message for details.
+        """
         if not isinstance(user_output, list):
             raise ConfigError('.output.not_list')
 
