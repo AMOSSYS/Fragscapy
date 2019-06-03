@@ -328,7 +328,7 @@ class NFQueue(object):  # pylint: disable=too-few-public-methods
         return None
 
 
-class _PacketWrapper(abc.ABC):
+class PacketWrapper(abc.ABC):
     """
     A Scapy representation of the data received from the NFQUEUE target.
     In depth, it is the junction of a `scapy` IP (or IPv6) packet and a
@@ -397,13 +397,13 @@ class _PacketWrapper(abc.ABC):
 
 
 
-class IP(_PacketWrapper):
-    """See _PacketWrapper documentation."""
+class IP(PacketWrapper):
+    """See PacketWrapper documentation."""
     l3_layer = scapy.layers.inet.IP
-    __doc__ = _PacketWrapper.__doc__
+    __doc__ = PacketWrapper.__doc__
 
 
-class IPv6(_PacketWrapper):
-    """See _PacketWrapper documentation."""
+class IPv6(PacketWrapper):
+    """See PacketWrapper documentation."""
     l3_layer = scapy.layers.inet6.IPv6
-    __doc__ = _PacketWrapper.__doc__
+    __doc__ = PacketWrapper.__doc__
