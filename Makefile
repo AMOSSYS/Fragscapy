@@ -47,7 +47,7 @@ pylint-reports:
 build-doc: docclean
 	@echo "Building the documentation"
 	@mkdir docs/_build
-	@sphinx-apidoc -f -o docs/source fragscapy
+	@sphinx-apidoc -f -o docs/source fragscapy --separate
 	@sphinx-build -b html docs/source docs/_build
 
 dependencies:
