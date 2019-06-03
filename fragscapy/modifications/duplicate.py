@@ -1,21 +1,37 @@
-"""
-Modification to duplicate one packet (delete it from the packet list).
-The duplicate is placed juste after the original one in the list. Can be
-either the first one, the last one, a random one or a specific one (by id).
-"""
-from random import randint
-from .mod import Mod
+"""Duplicates one of the packets."""
+
+import random
+
+from fragscapy.modifications.mod import Mod
+
 
 class Duplicate(Mod):
+    """Duplicates one of the packets.
+
+    The duplicate is placed juste after the original one in the list. Can be
+    either the first one, the last one, a random one or a specific one (by
+    id).
+
+    Args:
+        *args: The arguments of the mods.
+
+    Attributes:
+        duplicate_index: The index to duplicate. None if random.
+
+    Raises:
+        ValueError: Unrecognized or incorrect number of parameters.
+
+    Examples:
+        >>> Duplicate("first").duplicate_index
+        0
+        >>> Duplicate(18).duplicate_index
+        18
     """
-    Duplicate one packet (delete it from the packet list). The duplicate is
-    placed juste after the original one in the list. Can be either the first
-    one, the last one, a random one or a specific one (by id).
-    """
+
     name = "Duplicate"
     doc = ("Duplicate one of the packets.\n"
            "duplicate {first|last|random|<id>}")
-    nb_args = 1
+    _nb_args = 1
 
     def __init__(self, *args):
         super().__init__(*args)
@@ -36,11 +52,12 @@ class Duplicate(Mod):
                                  "Got {}".format(args[0]))
 
     def apply(self, pkt_list):
+        """Duplicates one packet. See `Mod.apply` for more details."""
         l = len(pkt_list)
         i = self.duplicate_index
 
         if i is None:  # Random
-            i = randint(-l, l-1)
+            i = random.randint(-l, l-1)
 
         if i < -l or i > l-1:
             print("Unable to duplicate packet n°{}. PacketList too small."

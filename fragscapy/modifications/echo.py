@@ -1,17 +1,28 @@
-"""
-Echo a string when this modification is applied. Does not alter the packet
-list.
-"""
-from .mod import Mod
+"""Echoes a string."""
+
+from fragscapy.modifications.mod import Mod
 
 class Echo(Mod):
+    """Echoes a string.
+
+    This modification neither alter the packet nor depend on it. It simply
+    prints the string that was passed as a parameter.
+
+    Args:
+        *args: The arguments of the mods.
+
+    Attributes:
+        string: The string that will be echoed
+
+    Examples:
+        >>> Echo("Hello, world!").string
+        Hello, world!
+        >>> Echo("plop", "i", "plop").string
+        plop i plop
     """
-    Echo a string when this modification is applied. Does not alter the
-    packet list.
-    """
+
     name = "Echo"
     doc = "Echo a string.\necho <string>"
-    nb_args = 1
 
     def __init__(self, *args):
         super().__init__(*args)
@@ -19,11 +30,7 @@ class Echo(Mod):
         self.string = " ".join(args)
 
     def apply(self, pkt_list):
-        """
-        Prints the string.
-
-        :param pkt_list: The packet list (not used).
-        """
+        """Print the string. See `Mod.apply` for more details."""
         print(self.string)
 
         return pkt_list

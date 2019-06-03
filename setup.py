@@ -22,8 +22,13 @@ with io_open(version_file, mode='r') as fh:
 
 requirements = []
 with io_open("requirements.txt", mode='r') as fh:
-    requirement = [line.strip().split('#', 1)[0].strip()
-                   for line in fh.readlines()]
+    requirements = [line.strip().split('#', 1)[0].strip()
+                    for line in fh.readlines()]
+
+requirements_doc = []
+with io_open("requirements-doc.txt", mode='r') as fh:
+    requirements_doc = [line.strip().split('#', 1)[0].strip()
+                        for line in fh.readlines()]
 
 long_description = ""
 with io_open("README.md", mode='r') as fh:
@@ -40,6 +45,7 @@ setup(name='fragscapy',
       url='https://gitlab.amossys.fr/mka/fragscapy',
       packages=['fragscapy'] + ['fragscapy.'+i for i in find_packages('fragscapy')],
       install_requires=requirements,
+      extra_requires=requirements_doc,
       package_data={
           'fragscapy': ['README.md', 'LICENSE.txt', 'config_examples/*'],
       },

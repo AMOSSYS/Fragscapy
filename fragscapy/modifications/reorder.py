@@ -1,23 +1,41 @@
-"""
-Modification to reorder the packet list. The operation can either
-reverse the whole packet list or simply randomly rearrange them.
-"""
-from random import shuffle
-from enum import Enum
-from .mod import Mod
-from ..packetlist import PacketList
+"""Reorder the packet listing."""
 
-METHOD = Enum("METHOD", "REVERSE RANDOM")
+import enum
+import random
+
+from fragscapy.modifications.mod import Mod
+from fragscapy.packetlist import PacketList
+
+
+METHOD = enum.Enum("METHOD", "REVERSE RANDOM")
+
 
 class Reorder(Mod):
+    """Reorder the packet listing.
+
+    The operation can either reverse the whole packet list or simply
+    randomly rearrange them.
+
+    Args:
+        *args: The arguments of the mods.
+
+    Attributes:
+        method: The method to use (reverse or random)
+
+    Raises:
+        ValueError: Unrecognized or incorrect number of parameters.
+
+    Examples:
+        >>> Reorder("reverse").method
+        REVERSE
+        >>> Reorder("random").method
+        RANDOM
     """
-    Reorder the packet list. The operation can either reverse the whole
-    packet list or simply randomly rearrange them.
-    """
+
     name = "Reorder"
     doc = ("Reorder the packet list.\n"
            "reorder {reverse|random}")
-    nb_args = 1
+    _nb_args = 1
 
     def __init__(self, *args):
         super().__init__(*args)
@@ -32,11 +50,12 @@ class Reorder(Mod):
                              "Got {}".format(args[0]))
 
     def apply(self, pkt_list):
+        """Reorder the packets. See `Mod.apply` for more details."""
         if self.method == METHOD.REVERSE:
             sequence = list(range(len(pkt_list)-1, -1, -1))
         elif self.method == METHOD.RANDOM:
             sequence = list(range(len(pkt_list)))
-            shuffle(sequence)
+            random.shuffle(sequence)
         new_pl = PacketList()
         for i in sequence:
             new_pl.add_packet(pkt_list[i].pkt, pkt_list[i].delay)

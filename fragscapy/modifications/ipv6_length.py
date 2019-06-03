@@ -1,17 +1,31 @@
-"""
-Modifies the `Payload Length` field of the IPv6 packet.
-"""
-from random import randint
-from .mod import Mod
+"""Modifies the 'Payload Length' field of the IPv6 packet."""
+
+import random
+
+from fragscapy.modifications.mod import Mod
+
 
 class Ipv6Length(Mod):
+    """Modifies the 'Payload Length' field of the IPv6 packet.
+
+    Args:
+        *args: The arguments of the mods.
+
+    Attributes:
+        length: The new value for the 'Payload Length' field. None if random.
+
+    Raises:
+        ValueError: Unrecognized or incorrect number of parameters.
+
+    Examples:
+        >>> Ipv6Length(0xff).length
+        255
     """
-    Modifies the `Payload Length` field of the IPv6 packet.
-    """
+
     name = "Ipv6Length"
-    doc = ("Modifies the `Payload Length` field of the IPv6 packet.\n"
+    doc = ("Modifies the 'Payload Length' field of the IPv6 packet.\n"
            "ipv6_length {random|<fixed_length>}")
-    nb_args = 1
+    _nb_args = 1
 
     def __init__(self, *args):
         super().__init__(*args)
@@ -30,14 +44,11 @@ class Ipv6Length(Mod):
                                  "Got {}".format(self.length))
 
     def apply(self, pkt_list):
-        """
-        Fetches the IPv6 layer replace the payload length parameter.
-
-        :param pkt_list: The packet list.
-        """
+        """Modifies the 'Payload Length' field of each IPv6 packet. See
+        `Mod.apply` for more details."""
         l = self.length
         if l is None:
-            l = randint(0, 0xffff)
+            l = random.randint(0, 0xffff)
 
         for pkt in pkt_list:
             pkt['Ipv6'].plen = l

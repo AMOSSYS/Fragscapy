@@ -1,26 +1,32 @@
-"""
-Prints a 1-line summary of the packet.
-"""
-from .mod import Mod
+"""Prints a 1-line summary of the packet."""
+
+from fragscapy.modifications.mod import Mod
+
 
 class Summary(Mod):
+    """Prints a 1-line summary of the packet.
+
+    Args:
+        *args: The arguments of the mods.
+
+    Raises:
+        ValueError: Unrecognized or incorrect number of parameters.
+
+    Examples:
+        >>> Summary()
     """
-    Prints a 1-line summary of the packet.
-    """
+
     name = "Summary"
-    doc = ("Print a 1-line summary of the packet.\n"
+    doc = ("Prints a 1-line summary of the packet.\n"
            "summary")
-    nb_args = 0
+    _nb_args = 0
 
     def __init__(self, *args):
         super().__init__(*args)
 
     def apply(self, pkt_list):
-        """
-        For each packet in the packet list, show the summary
-
-        :param pkt_list: The packet list.
-        """
+        """Prints the summary for each packet.See `Mod.apply` for more
+        details."""
         pkt_list.summary()
 
         return pkt_list

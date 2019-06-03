@@ -1,9 +1,6 @@
-"""
-Main module for starting fragscapy package as a simple command
-`python fragscapy ...`
-instead of something clusmy as
-`python fragscapy/__main__.py`
-"""
+"""Runs Fragscapy.main() as the main entry for terminal-based use."""
 
 from fragscapy import main
+
+
 main()

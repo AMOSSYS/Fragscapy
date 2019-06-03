@@ -1,19 +1,35 @@
-"""
-Modification to drop each packet (delete them from the packet list).
-The parameter is the probability for each packet to be dropped.
-"""
-from random import random
-from .mod import Mod
+"""Drops each packet with a certain probability."""
+
+import random
+
+from fragscapy.modifications.mod import Mod
+
 
 class DropProba(Mod):
+    """Drops each packet with a certain probability.
+
+    Delete the packet from the packet list. The parameter is the
+    probability for each packet to be dropped.
+
+    Args:
+        *args: The arguments of the mods.
+
+    Attributes:
+        drop_proba: The probability with which a packet is to be dropped.
+            None if random.
+
+    Raises:
+        ValueError: Unrecognized or incorrect number of parameters.
+
+    Examples:
+        >>> DropProba(0.25).drop_proba
+        0.25
     """
-    Drop each packet (delete it from the packet list).
-    The parameter is the probability for each packet to be dropped.
-    """
+
     name = "DropProba"
-    doc = ("Drop each packet with a certain probability.\n"
+    doc = ("Drops each packet with a certain probability.\n"
            "dropproba <proba>")
-    nb_args = 1
+    _nb_args = 1
 
     def __init__(self, *args):
         super().__init__(*args)
@@ -32,10 +48,13 @@ class DropProba(Mod):
 
 
     def apply(self, pkt_list):
+        """Drops each packet with a certain probability. See `Mod.apply` for
+        more details."""
         # The function to determine if the packet should be kept
-        condition = lambda _: random() < self.drop_proba
+        condition = lambda _: random.random() < self.drop_proba
         # A list of decreasing indexes that should be removed
-        to_remove = [i for i in range(len(pkt_list)-1, -1, -1) if condition(pkt_list[i])]
+        to_remove = [i for i in range(len(pkt_list)-1, -1, -1)
+                     if condition(pkt_list[i])]
         # Remove the indexes (in decreasing order)
         for i in to_remove:
             pkt_list.remove_packet(i)

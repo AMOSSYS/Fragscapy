@@ -1,26 +1,32 @@
-"""
-Print the content of a packet list.
-"""
-from .mod import Mod
+"""Prints the content of a packet list."""
+
+from fragscapy.modifications.mod import Mod
+
 
 class Print(Mod):
+    """Prints the content of a packet list.
+
+    Args:
+        *args: The arguments of the mods.
+
+    Raises:
+        ValueError: Unrecognized or incorrect number of parameters.
+
+    Examples:
+        >>> Print()
     """
-    Print the content of a packet list.
-    """
+
     name = "Print"
-    doc = ("Print the content of the packet list.\n"
+    doc = ("Prints the content of the packet list.\n"
            "print")
-    nb_args = 0
+    _nb_args = 0
 
     def __init__(self, *args):
         super().__init__(*args)
 
     def apply(self, pkt_list):
-        """
-        For each packet in the packet list, displays its content.
-
-        :param pkt_list: The packet list.
-        """
+        """Prints the content of each packet. See `Mod.apply` for more
+        details."""
         pkt_list.display()
 
         return pkt_list

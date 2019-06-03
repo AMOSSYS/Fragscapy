@@ -1,16 +1,23 @@
-"""
-The main engine for fragscapy. It is used to start everything in order to
-intercept packet, modify them and send the modified version.
-"""
-from threading import Thread, Lock
-import warnings
-import subprocess
-from itertools import product
-from tqdm import tqdm
+"""Runs the test suite based on the config of the user.
 
-from .modgenerator import ModListGenerator
-from .netfilter import NFQueue, NFQueueRule
-from .packetlist import PacketList
+The `Engine` is the main engine for fragscapy. It is used to setup the
+Netfilter rules, generate the mod lists, run the test suite and cleanup
+everything at the end.
+
+The `EngineThread` is a thread in charge of modifying the intercept packets
+and sending them back to the network.
+"""
+
+import itertools
+import subprocess
+import threading
+import warnings
+
+import tqdm
+
+from fragscapy.modgenerator import ModListGenerator
+from fragscapy.netfilter import NFQueue, NFQueueRule
+from fragscapy.packetlist import PacketList
 
 
 STDOUT_FILE = "stdout{i}.txt"     # Redirect stdout to this file
@@ -19,58 +26,66 @@ MODIF_FILE = "modifications.txt"  # Details of each mod on this file
 
 
 class EngineError(ValueError):
-    """ An Error during the execution of the engine. """
+    """An Error during the execution of the engine."""
     pass
 
 
 class EngineWarning(Warning):
-    """ Warning during the execution of the engine. """
+    """Warning during the execution of the engine."""
     pass
 
 
 def engine_warning(msg):
-    """ Raises a warning about the engine, details in `msg`. """
+    """Raises a warning about the engine, details in `msg`."""
     warnings.warn(
         "{}".format(msg),
         EngineWarning
     )
 
 
-class EngineThread(Thread):
-    """
-    A thread that, once started, catches and transform the packet in the
+class EngineThread(threading.Thread):
+    """Thread of the engine modifying the packets in NFQUEUE.
+
+    This thread, once started, catches and transform the packet in the
     NFQUEUE. The thread applies the `input_modlist` (resp. the
     `output_modlist`) to the packets caught on the INPUT chain (resp. the
     OUTPUT chain).
 
     These two mod lists can be thread-safely replaced at any time.
 
-    >>> # Assuming the nfqueue, modlist1, modlist2 and modlist3 objects exists
-    >>> engine_th = EngineThread(nfqueue, modlist1, modlist2)
-    >>> engine_th.start()        # Start processing the packets
-    >>> engine_th.input_modlist  # Thread-safe copy of the input modlist
-    >>> engine_th.output_modlist = modlist3  # Thread-safe modification
+    Args:
+        nfqueue (:obj:`NFQueue`): The NF queue used to catch the packets.
+        input_modlist (:obj:`ModList`, optional): The list of modifications to
+            apply to the packets on the INPUT chain. If not set, it should be
+            set before starting the thread.
+        output_modlist (:obj:`ModList`, optional): The list of modifications
+            to apply to the packets on the OUTPUT chain. If not set, it should
+            be set before starting the thread.
+        *args: The args passed to the `Thread` class.
+        **kwargs: The kwargs passed to the `Thread` class.
 
-    :param nfqueue: The `NFQueue` object used to catch the packet
-    :param input_modlist: The `ModList` to use on packet on the INPUT chain.
-        If not set, it should be set later and before starting the thread
-    :param output_modlist: The `ModList` to use on packet on the OUTPUT chain.
-        If not set, it should be set later and before starting the thread
-    :param args: The args passed to the `Thread` class
-    :param kwargs: The kwargs passed to the `Thread` class
+    Examples:
+        Assuming the nfqueue, modlist1, modlist2 and modlist3 objects exists
+
+        >>> engine_th = EngineThread(nfqueue, modlist1, modlist2)
+        >>> engine_th.start()        # Start processing the packets
+        >>> engine_th.input_modlist  # Thread-safe copy of the input modlist
+        >>> engine_th.output_modlist = modlist3  # Thread-safe modification
     """
+
     def __init__(self, nfqueue, *args, input_modlist=None, output_modlist=None,
                  **kwargs):
         super(EngineThread, self).__init__(*args, **kwargs)
-        self.nfqueue = nfqueue
+        self._nfqueue = nfqueue
         self._input_modlist = input_modlist
         self._output_modlist = output_modlist
-        self._input_lock = Lock()
-        self._output_lock = Lock()
+        self._input_lock = threading.Lock()
+        self._output_lock = threading.Lock()
 
     @property
     def input_modlist(self):
-        """ The modlist applied to the packets on INPUT chain. """
+        """The modlist applied to the packets on INPUT chain. Read/Write is
+        thread-safe."""
         with self._input_lock:
             return self._input_modlist.copy()
 
@@ -81,7 +96,8 @@ class EngineThread(Thread):
 
     @property
     def output_modlist(self):
-        """ The modlist applied to the packets on OUTPUT chain. """
+        """The modlist applied to the packets on OUTPUT chain. Read/Write is
+        thread-safe."""
         with self._output_lock:
             return self._output_modlist.copy()
 
@@ -91,7 +107,7 @@ class EngineThread(Thread):
             self._output_modlist = new
 
     def _process_input(self, packet):
-        """ Apply the input modifications on `packet`. """
+        """Applies the input modifications on `packet`."""
         # Put the packet in a packet list
         packetlist = PacketList()
         packetlist.add_packet(packet.scapy_pkt)
@@ -123,7 +139,7 @@ class EngineThread(Thread):
             packet.mangle()
 
     def _process_output(self, packet):
-        """ Apply the output modifications on `packet`. """
+        """Applies the output modifications on `packet`."""
         # Put the packet in a packet list
         packetlist = PacketList()
         packetlist.add_packet(packet.scapy_pkt)
@@ -137,6 +153,14 @@ class EngineThread(Thread):
         packet.drop()
 
     def run(self):
+        """Runs the main loop of the thread.
+
+        Checks that there are starting input_modlist and output_modlist and
+        then starts catching the packet in the NFQUEUE and process them.
+
+        Raises:
+            EngineError: There is a modlist (input or output) missing.
+        """
         # Checks that the INPUT and OUTPUT modlist are populated
         with self._input_lock:
             if self._input_modlist is None:
@@ -150,7 +174,7 @@ class EngineThread(Thread):
                 )
 
         # Process the queue infinitely
-        for packet in self.nfqueue:
+        for packet in self._nfqueue:
             if packet.is_input:
                 self._process_input(packet)
             else:
@@ -160,9 +184,8 @@ class EngineThread(Thread):
 
 
 # pylint: disable=too-many-instance-attributes
-class Engine:
-    """
-    Main engine to run fragscapy, given a `Config` object.
+class Engine(object):
+    """Main engine to run fragscapy, given a `Config` object.
 
     The engine will parse the configuration, extract the necessary
     `NFQueueRule` and `NFQueue` objects. It also extracts the
@@ -178,21 +201,44 @@ class Engine:
     packets and start the thread(s) that process them.
 
     The next step of the process, is the main loop that generates 2 `ModList`
-    (input and output) from the `ModListGenerator`s, set thoses in the threads
+    (input and output) from the `ModListGenerator`, set thoses in the threads
     that process the packets and run the command that was specified in the
-    config. It then loops back to generating the next `ModList`s.
+    config. It then loops back to generating the next `ModList`.
 
-    :param config: The `Config` object to use to get all the necessary data.
-    :param progressbar: Show a progressbar during the process. Default: True.
-    :param modif_file: The filename where to write the modifications.
-        Default is 'modifications.txt'.
-    :param stdout_file: The filename where to redirect stdout. Use the
-        formating '{i}' to have a different file for each test. Default is
-        'stdout{i}.txt'.
-    :param stderr_file: The filename where to redirect stderr. Use the
-        formating '{i}' to have a different file for each test. Default is
-        'stderr{i}.txt'.
+    Args:
+        config (:obj:`Config`): The configuration to use to get all the
+            necessary data.
+        progressbar (bool, optional): Show a progressbar during the process.
+            Default is 'True'.
+        modif_file (str, optional): The filename where to write the
+            modifications. Default is 'modifications.txt'.
+        stdout_file (str, optional): The filename where to redirect stdout.
+            Use the formating '{i}' to have a different file for each test.
+            Default is 'stdout{i}.txt'.
+        stderr_file (str, optional): The filename where to redirect stderr.
+            Use the formating '{i}' to have a different file for each test.
+            Default is 'stderr{i}.txt'.
+
+    Attributes:
+        progressbar (bool): Shows a progressbar during the process if True.
+        modif_file (str, optional): The filename where to write the
+            modifications. Default is 'modifications.txt'.
+        stdout_file (str, optional): The filename where to redirect stdout.
+            Use the formating '{i}' to have a different file for each test.
+            Default is 'stdout{i}.txt'.
+        stderr_file (str, optional): The filename where to redirect stderr.
+            Use the formating '{i}' to have a different file for each test.
+            Default is 'stderr{i}.txt'.
+
+    Examples:
+        >>> engine = Engine(Config("my_conf.json"))
+        >>> engine.start()
+        100%|████████████████████████████| 200/200 [00:00<00:00, 21980.42it/s]
+
+        >>> engine = Engine(Config("my_conf.json"), progressbar=False)
+        >>> engine.start()
     """
+
     # Template of the infos for each modification
     MODIF_TEMPLATE = ("Modification n°{i}:\n"
                       "> INPUT:\n"
@@ -213,35 +259,35 @@ class Engine:
         self.stderr_file = stderr_file
 
         # The cartesian product of the input and output `ModListGenerator`
-        self.modlist_input_generator = ModListGenerator(config.input)
-        self.modlist_output_generator = ModListGenerator(config.output)
+        self._mlgen_input = ModListGenerator(config.input)
+        self._mlgen_output = ModListGenerator(config.output)
 
         # The command to run
-        self.cmd = config.cmd
+        self._cmd = config.cmd
 
         # Populate the NFQUEUE-related objects
-        self.nfrules = list()
-        self.nfqueues = list()
-        self.qnums = set()
+        self._nfrules = list()
+        self._nfqueues = list()
+        self._qnums = set()
         for nfrule in config.nfrules:
-            self.nfrules.append(NFQueueRule(**nfrule))
+            self._nfrules.append(NFQueueRule(**nfrule))
             qnum = nfrule.get('qnum', 0)
             if not qnum % 2:
-                self.qnums.add(qnum)
-        for qnum in self.qnums:
-            self.nfqueues.append(NFQueue(qnum=qnum))
+                self._qnums.add(qnum)
+        for qnum in self._qnums:
+            self._nfqueues.append(NFQueue(qnum=qnum))
 
         # Prepare the threads that catches, modify and send the packets
-        self.engine_threads = list()
-        for nfqueue in self.nfqueues:
-            self.engine_threads.append(EngineThread(
+        self._engine_threads = list()
+        for nfqueue in self._nfqueues:
+            self._engine_threads.append(EngineThread(
                 nfqueue,
-                input_modlist=self.modlist_input_generator[0],
-                output_modlist=self.modlist_output_generator[0]
+                input_modlist=self._mlgen_input[0],
+                output_modlist=self._mlgen_output[0]
             ))
 
     def _write_modlist_to_file(self, i, input_modlist, output_modlist):
-        """ Write the modification details to the 'modif_file'. """
+        """Writes the modification details to the 'modif_file'."""
         with open(self.modif_file, "a") as mod_file:
             mod_file.write(self.MODIF_TEMPLATE.format(
                 i=i,
@@ -250,47 +296,55 @@ class Engine:
             ))
 
     def _update_modlists(self, i, input_modlist, output_modlist):
-        """ Change the modlist in all the threads. """
-        for engine_thread in self.engine_threads:
+        """Changes the modlist in all the threads."""
+        for engine_thread in self._engine_threads:
             engine_thread.input_modlist = input_modlist
             engine_thread.output_modlist = output_modlist
         self._write_modlist_to_file(i, input_modlist, output_modlist)
 
     def _run_cmd(self, i):
-        """
-        Launch the user command in a sub-process and redirect stdout and
-        stderr to the corresponding files.
+        """Launches the user command in a sub-process.
+
+        Redirect stdout and stderr to the corresponding files.
+
+        Args:
+            i: current iteration number, used for formating the filenames.
         """
         fout = self.stdout_file.format(i=i)
         ferr = self.stderr_file.format(i=i)
         with open(fout, "ab") as out, open(ferr, "ab") as err:
-            subprocess.run(self.cmd, stdout=out, stderr=err, shell=True)
+            subprocess.run(self._cmd, stdout=out, stderr=err, shell=True)
 
     def _insert_nfrules(self):
-        for nfrule in self.nfrules:
+        """Insert all the NF rules using `ip(6)tables`."""
+        for nfrule in self._nfrules:
             nfrule.insert()
 
     def _remove_nfrules(self):
-        for nfrule in self.nfrules:
+        """Remove all the NF rules using `ip(6)tables`."""
+        for nfrule in self._nfrules:
             nfrule.remove()
 
     def _start_threads(self):
-        for engine_thread in self.engine_threads:
+        """Starts the engine threads used to process the packets."""
+        for engine_thread in self._engine_threads:
             engine_thread.start()
 
     def _join_threads(self):
-        for engine_thread in self.engine_threads:
+        """Joins the engine threads used to process the packets."""
+        for engine_thread in self._engine_threads:
             engine_thread.join()
 
     def pre_run(self):
-        """ All the actions that need to be run before the Engine starts. """
+        """Runs all the actions that need to be run before `.run()`."""
         self._insert_nfrules()
         self._start_threads()
 
     def run(self):
-        """
-        The main action of the engine. Generates a modlist, run the command
-        and do it over and over until all the modlists are exhausted.
+        """Runs the test suite.
+
+        Generates a modlist, run the command and do it over and over until all
+        the possible modlists are exhausted.
         """
         iterator = self._get_modlist_iterator()
 
@@ -301,37 +355,44 @@ class Engine:
             self._run_cmd(i)
 
     def post_run(self):
-        """ All the actions that need to be run after the Engine stops. """
+        """Runs all the actions that need to be run after `.run()`."""
         self._remove_nfrules()
         self._join_threads()
 
     def start(self):
-        """ Start the testing with .pre_run(), .run() and .post_run(). """
+        """Starts the test suite by running `.pre_run()`, `.run()` and
+        finaly `.post_run()`."""
         self.pre_run()
         self.run()
         self.post_run()
 
     def _get_modlist_iterator(self):
-        iterator = enumerate(product(
-            self.modlist_input_generator,
-            self.modlist_output_generator
+        """Returns an iterator for all the possible combinations of modlists.
+
+        Each value of the iterator is on the following format:
+            (int<index>, (ModList<input_modlist>, ModList<output_modlist>))
+        If `self.progressbar` is True, automatically add the `tqdm` iterator.
+        """
+        iterator = enumerate(itertools.product(
+            self._mlgen_input,
+            self._mlgen_output
         ))
         if self.progressbar:  # Use tqdm for showing progressbar
             # Need to manually specify the total size as enumerate and
             # product fucntion prevent from getting it automatically
-            total = (len(self.modlist_input_generator)
-                     * len(self.modlist_output_generator))
-            iterator = tqdm(iterator, total=total)
+            total = (len(self._mlgen_input)
+                     * len(self._mlgen_output))
+            iterator = tqdm.tqdm(iterator, total=total)
 
         return iterator
 
     def check_nfrules(self):
-        """ Check that the NF rules should work without errors. """
+        """Checks that the NF rules should work without errors."""
         self._insert_nfrules()
         self._remove_nfrules()
 
     def check_modlist_generation(self):
-        """ Check that the ModListGenerator will generate all mods. """
+        """Checks that the ModListGenerator will generate all mods."""
         iterator = self._get_modlist_iterator()
         for i, (input_modlist, output_modlist) in iterator:
             self._write_modlist_to_file(i, input_modlist, output_modlist)
