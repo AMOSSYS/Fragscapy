@@ -316,12 +316,12 @@ class Engine(object):
             subprocess.run(self._cmd, stdout=out, stderr=err, shell=True)
 
     def _insert_nfrules(self):
-        """Insert all the NF rules using `ip(6)tables`."""
+        """Inserts all the NF rules using `ip(6)tables`."""
         for nfrule in self._nfrules:
             nfrule.insert()
 
     def _remove_nfrules(self):
-        """Remove all the NF rules using `ip(6)tables`."""
+        """Removes all the NF rules using `ip(6)tables`."""
         for nfrule in self._nfrules:
             nfrule.remove()
 

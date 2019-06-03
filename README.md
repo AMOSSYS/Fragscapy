@@ -104,3 +104,10 @@ to its needs.
 
 The already existing mods can be used as a reference on how to develop a mod
 since they all respect these rules too.
+
+## Code architecture
+
+Here is a schema of how the different objects interact together and what they
+are doing.
+
+![media/architecture.png](media/architecture.png "The architecture of the project")
