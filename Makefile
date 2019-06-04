@@ -30,11 +30,10 @@ buildclean:
 	@rm -Rf fragscapy.egg-info
 pylintclean:
 	@echo "Deleting pylint files"
-	@rm -Rf **/__pycache__
+	@find . -type d -path './fragscapy*/__pycache__' -exec rm -Rf {} +
 compileclean:
 	@echo "Deleting compiled files"
-	@rm -f **.pyc
-	@rm -f **.pyo
+	@find . -type f -path './fragscapy/*.py[co]' -delete
 docclean:
 	@echo "Deleting documentation"
 	@rm -rf docs/_build
