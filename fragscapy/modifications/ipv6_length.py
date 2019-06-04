@@ -30,6 +30,8 @@ class Ipv6Length(Mod):
     def __init__(self, *args):
         super().__init__(*args)
 
+    def parse_args(self, *args):
+        """See base class."""
         self.length = None
         if args[0] == "random":
             pass  # Protocol number will be calculated later
@@ -43,6 +45,10 @@ class Ipv6Length(Mod):
                 raise ValueError("Parameter 1 must be beetween 0 and 65535. "
                                  "Got {}".format(self.length))
 
+    def is_deterministic(self):
+        """See base class."""
+        return self.length is not None  # i.e. not random
+
     def apply(self, pkt_list):
         """Modifies the 'Payload Length' field of each IPv6 packet. See
         `Mod.apply` for more details."""
@@ -55,14 +61,7 @@ class Ipv6Length(Mod):
 
         return pkt_list
 
-    def __str__(self):
-        return "{name} {param}".format(
-            name=self.name,
-            param="random" if self.length is None else str(self.length)
-        )
-
-    def __repr__(self):
-        return "{name}<length: {length}>".format(
-            name=self.name,
-            length=self.length
-        )
+    def get_params(self):
+        """See base class."""
+        return {k: v if v is not None else "random"
+                for k, v in super(Ipv6Length, self).get_params().items()}

@@ -27,9 +27,8 @@ class Ipv6Hop(Mod):
            "ipv6_hop {random|<fixed_hop>}")
     _nb_args = 1
 
-    def __init__(self, *args):
-        super().__init__(*args)
-
+    def parse_args(self, *args):
+        """See base class."""
         self.hop = None
         if args[0] == "random":
             pass  # Protocol number will be calculated later
@@ -43,6 +42,10 @@ class Ipv6Hop(Mod):
                 raise ValueError("Parameter 1 must be beetween 0 and 255. "
                                  "Got {}".format(self.hop))
 
+    def is_deterministic(self):
+        """See base class."""
+        return self.hop is not None  # i.e. not random
+
     def apply(self, pkt_list):
         """Modifies the 'Hop Limit' field of each IPv6 packet. See `Mod.apply`
         for more details."""
@@ -55,14 +58,7 @@ class Ipv6Hop(Mod):
 
         return pkt_list
 
-    def __str__(self):
-        return "{name} {param}".format(
-            name=self.name,
-            param="random" if self.hop is None else str(self.hop)
-        )
-
-    def __repr__(self):
-        return "{name}<hop: {hop}>".format(
-            name=self.name,
-            hop=self.hop
-        )
+    def get_params(self):
+        """See base class."""
+        return {k: v if v is not None else "random"
+                for k, v in super(Ipv6Hop, self).get_params().items()}

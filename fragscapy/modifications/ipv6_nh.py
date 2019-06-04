@@ -27,9 +27,8 @@ class Ipv6Nh(Mod):
            "ipv6_nh {random|<protocol_number>}")
     _nb_args = 1
 
-    def __init__(self, *args):
-        super().__init__(*args)
-
+    def parse_args(self, *args):
+        """See base class."""
         self.proto = None
         if args[0] == "random":
             pass  # Protocol number will be calculated later
@@ -43,6 +42,10 @@ class Ipv6Nh(Mod):
                 raise ValueError("Parameter 1 must be beetween 0 and 255. "
                                  "Got {}".format(self.proto))
 
+    def is_deterministic(self):
+        """See base class."""
+        return self.proto is not None  # i.e. not random
+
     def apply(self, pkt_list):
         """Modifies the 'Next Header' field of the IPv6 packet. See `Mod.apply`
         for more details."""
@@ -55,14 +58,7 @@ class Ipv6Nh(Mod):
 
         return pkt_list
 
-    def __str__(self):
-        return "{name} {param}".format(
-            name=self.name,
-            param="random" if self.proto is None else str(self.proto)
-        )
-
-    def __repr__(self):
-        return "{name}<proto: {proto}>".format(
-            name=self.name,
-            proto=self.proto
-        )
+    def get_params(self):
+        """See base class."""
+        return {k: v if v is not None else "random"
+                for k, v in super(Ipv6Nh, self).get_params().items()}

@@ -24,9 +24,8 @@ class Echo(Mod):
     name = "Echo"
     doc = "Echo a string.\necho <string>"
 
-    def __init__(self, *args):
-        super().__init__(*args)
-
+    def parse_args(self, *args):
+        """See base class."""
         self.string = " ".join(args)
 
     def apply(self, pkt_list):
@@ -34,15 +33,3 @@ class Echo(Mod):
         print(self.string)
 
         return pkt_list
-
-    def __str__(self):
-        return "{name} {param}".format(
-            name=self.name,
-            param=self.string
-        )
-
-    def __repr__(self):
-        return "{name}<string: {string}>".format(
-            name=self.name,
-            string=self.string
-        )

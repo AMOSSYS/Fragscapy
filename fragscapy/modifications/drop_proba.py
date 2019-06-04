@@ -31,11 +31,8 @@ class DropProba(Mod):
            "dropproba <proba>")
     _nb_args = 1
 
-    def __init__(self, *args):
-        super().__init__(*args)
-
-
-        # Check the content of the argument
+    def parse_args(self, *args):
+        """See base class."""
         try:
             self.drop_proba = float(args[0])
         except ValueError:
@@ -46,6 +43,9 @@ class DropProba(Mod):
             raise ValueError("Parameter 1 should be between 0 and 1. "
                              "Got {}".format(args[0]))
 
+    def is_deterministic(self):
+        """See base class."""
+        return False
 
     def apply(self, pkt_list):
         """Drops each packet with a certain probability. See `Mod.apply` for
@@ -60,15 +60,3 @@ class DropProba(Mod):
             pkt_list.remove_packet(i)
 
         return pkt_list
-
-    def __str__(self):
-        return "{name} {param}".format(
-            name=self.name,
-            param=str(self.drop_proba)
-        )
-
-    def __repr__(self):
-        return "{name}<drop_proba: {drop_proba}>".format(
-            name=self.name,
-            drop_proba=self.drop_proba
-        )

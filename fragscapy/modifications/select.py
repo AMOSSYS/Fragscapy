@@ -29,10 +29,8 @@ class Select(Mod):
     doc = ("Select only some packet.\n"
            "select [id1 [id2 [id3 ...]]]")
 
-    def __init__(self, *args):
-        super().__init__(*args)
-
-        # Checks that all indexes are integer and stores them
+    def parse_args(self, *args):
+        """See base class."""
         self.sequence = []
         for arg in args:
             try:
@@ -52,10 +50,4 @@ class Select(Mod):
         return "{name} {param}".format(
             name=self.name,
             param=" ".join(str(i) for i in self.sequence)
-        )
-
-    def __repr__(self):
-        return "{name}<sequence: {sequence}>".format(
-            name=self.name,
-            sequence=self.sequence
         )

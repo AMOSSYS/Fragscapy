@@ -39,8 +39,37 @@ class Mod(abc.ABC):
     doc = None
     _nb_args = -1
 
-    @abc.abstractmethod
     def __init__(self, *args):
+        self.check_args(*args)
+        self.parse_args(*args)
+
+    def is_deterministic(self):  # pylint: disable=no-self-use
+        """Is the modification deterministic (no random)."""
+        return True
+
+    def parse_args(self, *args):
+        """Parses the arguments and extract the necessary data from it.
+
+        Args:
+            *args: The argument received
+
+        Raises:
+            ValueError: At least one of the argument cannot be parsed.
+        """
+        pass
+
+    def check_args(self, *args):
+        """Performs some checks on the arguments.
+
+        Base class only check that the number of arguments is equal to
+        `self._nb_args`.
+
+        Args:
+            *args: The arguments received.
+
+        Raises:
+            ValueError: The arguments are not correct.
+        """
         if self._nb_args >= 0 and len(args) != self._nb_args:
             raise ValueError(
                 "Incorrect number of parameters specified. "
@@ -63,7 +92,7 @@ class Mod(abc.ABC):
         Returns:
             The new `PacketList` object resulting from the modfications.
         """
-        pass
+        raise NotImplementedError
 
     @classmethod
     def usage(cls):
@@ -79,8 +108,19 @@ class Mod(abc.ABC):
         else:
             print("  ", cls.doc.replace('\n', '\n  '), sep='')
 
+    def get_params(self):
+        """Returns a dictionnary of the options defining the mod."""
+        return {k: v for k, v in vars(self).items() if k[0] != "_"}
+
     def __str__(self):
-        return self.name
+        params = " ".join(str(v) for v in self.get_params().values())
+        if params:
+            return "{name} {params}".format(name=self.name, params=params)
+        return "{name}".format(name=self.name)
 
     def __repr__(self):
-        return self.name
+        return "{name}<{params}>".format(
+            name=self.name,
+            params=", ".join("{}={}".format(k, v)
+                             for k, v in self.get_params().items())
+        )

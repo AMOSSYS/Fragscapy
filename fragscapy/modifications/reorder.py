@@ -37,10 +37,8 @@ class Reorder(Mod):
            "reorder {reverse|random}")
     _nb_args = 1
 
-    def __init__(self, *args):
-        super().__init__(*args)
-
-        # Check the content of the argument
+    def parse_args(self, *args):
+        """See base class."""
         if args[0] == "reverse":
             self.method = METHOD.REVERSE
         elif args[0] == "random":
@@ -48,6 +46,10 @@ class Reorder(Mod):
         else:
             raise ValueError("Parameter 1 unrecognized. "
                              "Got {}".format(args[0]))
+
+    def is_deterministic(self):
+        """See base class."""
+        return self.method != METHOD.RANDOM
 
     def apply(self, pkt_list):
         """Reorder the packets. See `Mod.apply` for more details."""
@@ -60,15 +62,3 @@ class Reorder(Mod):
         for i in sequence:
             new_pl.add_packet(pkt_list[i].pkt, pkt_list[i].delay)
         return new_pl
-
-    def __str__(self):
-        return "{name} {param}".format(
-            name=self.name,
-            param="reverse" if self.method == METHOD.REVERSE else "random"
-        )
-
-    def __repr__(self):
-        return "{name}<method: {method}>".format(
-            name=self.name,
-            method=self.method
-        )

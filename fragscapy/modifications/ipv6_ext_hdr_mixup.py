@@ -121,8 +121,9 @@ class Ipv6ExtHdrMixup(Mod):
            "ipv6_ext_hdr_mixup")
     _nb_args = 0
 
-    def __init__(self, *args):
-        super().__init__(*args)
+    def is_deterministic(self):
+        """See base class."""
+        return False
 
     def apply(self, pkt_list):
         """Mixes-up the order of the Extension Headers for each IPv6 packet.
@@ -133,13 +134,3 @@ class Ipv6ExtHdrMixup(Mod):
             replace_exthdr(before, chain, after)
 
         return pkt_list
-
-    def __str__(self):
-        return "{name}".format(
-            name=self.name
-        )
-
-    def __repr__(self):
-        return "{name}<>".format(
-            name=self.name
-        )

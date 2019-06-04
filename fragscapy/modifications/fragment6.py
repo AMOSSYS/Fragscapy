@@ -95,15 +95,13 @@ class Fragment6(Mod):
            "fragment <size>")
     _nb_args = 1
 
-    def __init__(self, *args):
-        super().__init__(*args)
-
+    def parse_args(self, *args):
+        """See base class."""
         try:
             self.fragsize = int(args[0])
         except ValueError:
             raise ValueError("Parameter 1 unrecognized. "
                              "Got {}".format(args[0]))
-
 
     def apply(self, pkt_list):
         """Fragment each IPv6 packet. See `Mod.apply` for more details."""
@@ -119,15 +117,3 @@ class Fragment6(Mod):
             new_pl.edit_delay(index, pkt.delay)
 
         return new_pl
-
-    def __str__(self):
-        return "{name} {param}".format(
-            name=self.name,
-            param=self.fragsize
-        )
-
-    def __repr__(self):
-        return "{name}<fragsize: {fragsize}>".format(
-            name=self.name,
-            fragsize=self.fragsize
-        )

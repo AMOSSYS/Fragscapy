@@ -20,9 +20,9 @@ from fragscapy.netfilter import NFQueue, NFQueueRule
 from fragscapy.packetlist import PacketList
 
 
-STDOUT_FILE = "stdout{i}.txt"     # Redirect stdout to this file
-STDERR_FILE = "stderr{i}.txt"     # Redirect stderr to this file
-MODIF_FILE = "modifications.txt"  # Details of each mod on this file
+STDOUT_FILE = "stdout{i}_{j}.txt"  # Redirect stdout to this file
+STDERR_FILE = "stderr{i}_{j}.txt"  # Redirect stderr to this file
+MODIF_FILE = "modifications.txt"   # Details of each mod on this file
 
 
 class EngineError(ValueError):
@@ -213,22 +213,22 @@ class Engine(object):
         modif_file (str, optional): The filename where to write the
             modifications. Default is 'modifications.txt'.
         stdout_file (str, optional): The filename where to redirect stdout.
-            Use the formating '{i}' to have a different file for each test.
-            Default is 'stdout{i}.txt'.
+            Use the formating '{i}' and '{j}' to have a different file for
+            each test. Default is 'stdout{i}_{j}.txt'.
         stderr_file (str, optional): The filename where to redirect stderr.
-            Use the formating '{i}' to have a different file for each test.
-            Default is 'stderr{i}.txt'.
+            Use the formating '{i}' and '{j}' to have a different file for
+            each test. Default is 'stderr{i}_{j}.txt'.
 
     Attributes:
         progressbar (bool): Shows a progressbar during the process if True.
         modif_file (str, optional): The filename where to write the
             modifications. Default is 'modifications.txt'.
         stdout_file (str, optional): The filename where to redirect stdout.
-            Use the formating '{i}' to have a different file for each test.
-            Default is 'stdout{i}.txt'.
+            Use the formating '{i}' and '{j}' to have a different file for
+            each test. Default is 'stdout{i}_{j}.txt'.
         stderr_file (str, optional): The filename where to redirect stderr.
-            Use the formating '{i}' to have a different file for each test.
-            Default is 'stderr{i}.txt'.
+            Use the formating '{i}' and '{j}' to have a different file for
+            each test. Default is 'stderr{i}_{j}.txt'.
 
     Examples:
         >>> engine = Engine(Config("my_conf.json"))
@@ -240,7 +240,7 @@ class Engine(object):
     """
 
     # Template of the infos for each modification
-    MODIF_TEMPLATE = ("Modification n°{i}:\n"
+    MODIF_TEMPLATE = ("Modification n°{i}{repeat}:\n"
                       "> INPUT:\n"
                       "{input_modlist}\n"
                       "\n"
@@ -286,32 +286,39 @@ class Engine(object):
                 output_modlist=self._mlgen_output[0]
             ))
 
-    def _write_modlist_to_file(self, i, input_modlist, output_modlist):
+    def _write_modlist_to_file(self, i, input_modlist, output_modlist,
+                               repeat=0):
         """Writes the modification details to the 'modif_file'."""
+        repeat = "(repeated {} times)".format(repeat) if repeat > 1 else ""
         with open(self.modif_file, "a") as mod_file:
             mod_file.write(self.MODIF_TEMPLATE.format(
                 i=i,
+                repeat=repeat,
                 input_modlist=input_modlist,
                 output_modlist=output_modlist
             ))
 
-    def _update_modlists(self, i, input_modlist, output_modlist):
+    def _update_modlists(self, i, input_modlist, output_modlist, repeat=0):
         """Changes the modlist in all the threads."""
         for engine_thread in self._engine_threads:
             engine_thread.input_modlist = input_modlist
             engine_thread.output_modlist = output_modlist
-        self._write_modlist_to_file(i, input_modlist, output_modlist)
+        self._write_modlist_to_file(i, input_modlist, output_modlist,
+                                    repeat=repeat)
 
-    def _run_cmd(self, i):
+    def _run_cmd(self, i, j):
         """Launches the user command in a sub-process.
 
         Redirect stdout and stderr to the corresponding files.
 
         Args:
-            i: current iteration number, used for formating the filenames.
+            i: current modlist iteration number, used for formating the
+                filenames.
+            j: current repeat iteration number, used for formating the
+                filenames.
         """
-        fout = self.stdout_file.format(i=i)
-        ferr = self.stderr_file.format(i=i)
+        fout = self.stdout_file.format(i=i, j=j)
+        ferr = self.stderr_file.format(i=i, j=j)
         with open(fout, "ab") as out, open(ferr, "ab") as err:
             subprocess.run(self._cmd, stdout=out, stderr=err, shell=True)
 
@@ -349,10 +356,17 @@ class Engine(object):
         iterator = self._get_modlist_iterator()
 
         for i, (input_modlist, output_modlist) in iterator:
+            # How many times should we repeat the command (for random changes)
+            if (input_modlist.is_deterministic()
+                    and output_modlist.is_deterministic()):
+                repeat = 1
+            else:
+                repeat = 100
             # Change the modlist in the threads
-            self._update_modlists(i, input_modlist, output_modlist)
+            self._update_modlists(i, input_modlist, output_modlist, repeat)
             # Run the command
-            self._run_cmd(i)
+            for j in range(repeat):
+                self._run_cmd(i, j)
 
     def post_run(self):
         """Runs all the actions that need to be run after `.run()`."""
@@ -395,4 +409,10 @@ class Engine(object):
         """Checks that the ModListGenerator will generate all mods."""
         iterator = self._get_modlist_iterator()
         for i, (input_modlist, output_modlist) in iterator:
-            self._write_modlist_to_file(i, input_modlist, output_modlist)
+            if (input_modlist.is_deterministic()
+                    and output_modlist.is_deterministic()):
+                repeat = 1
+            else:
+                repeat = 100
+            self._write_modlist_to_file(i, input_modlist, output_modlist,
+                                        repeat=repeat)
