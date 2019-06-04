@@ -8,15 +8,15 @@
 
   "input": [
     {
-      "mod_name": "tcp_sport",
-      "mod_opts": 80
+      "mod_name": "field",
+      "mod_opts": ["TCP", "sport", 80]
     }
   ],
 
   "output": [
     {
-      "mod_name": "tcp_dport",
-      "mod_opts": 8080
+      "mod_name": "field",
+      "mod_opts": ["TCP", "sport", 8080]
     }
   ]
 }

@@ -13,12 +13,12 @@
       "mod_opts": "seq_str foo bar fuz"
     },
     {
-      "mod_name": "ipv6_nh",
-      "mod_opts": 20
+      "mod_name": "field",
+      "mod_opts": ["IPv6", "nh", 20]
     },
     {
-      "mod_name": "ipv6_length",
-      "mod_opts": "range 1 500"
+      "mod_name": "field",
+      "mod_opts": ["IPv6", "plen", "range 1 500"]
     },
     {
       "mod_name": "summary"
