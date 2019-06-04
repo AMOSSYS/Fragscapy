@@ -832,7 +832,13 @@ def get_mod(mod_name):
     mod_name = inflection.camelize(mod_name)
 
     pkg = importlib.import_module(pkg_name)
-    mod = getattr(pkg, mod_name)
+    try:
+        mod = getattr(pkg, mod_name)
+    except AttributeError:  # There is no class named correctly
+        raise ImportError(
+            "No class named {} in module {}"
+            .format(mod_name, pkg_name)
+        )
 
     if not issubclass(mod, Mod):
         raise ImportError(

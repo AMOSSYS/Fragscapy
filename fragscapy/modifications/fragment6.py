@@ -92,7 +92,7 @@ class Fragment6(Mod):
 
     name = "Fragment6"
     doc = ("Fragment the IPv6 packets at the L3-layer\n"
-           "fragment <size>")
+           "fragment6 <size>")
     _nb_args = 1
 
     def parse_args(self, *args):
