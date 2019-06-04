@@ -129,8 +129,9 @@ class Ipv6ExtHdrMixup(Mod):
         """Mixes-up the order of the Extension Headers for each IPv6 packet.
         See `Mod.apply` for more info."""
         for pkt in pkt_list:
-            before, chain, after = slice_exthdr(pkt.pkt)
-            random.shuffle(chain)
-            replace_exthdr(before, chain, after)
+            if pkt.pkt.haslayer('IPv6'):
+                before, chain, after = slice_exthdr(pkt.pkt)
+                random.shuffle(chain)
+                replace_exthdr(before, chain, after)
 
         return pkt_list

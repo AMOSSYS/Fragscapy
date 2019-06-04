@@ -108,12 +108,16 @@ class Fragment6(Mod):
         new_pl = PacketList()
 
         for pkt in pkt_list:
-            mod_pkt = insert_frag_hdr(pkt.pkt)
-            fragments = scapy.layers.inet6.fragment6(mod_pkt, self.fragsize)
+            if pkt.pkt.haslayer('IPv6'):
+                mod_pkt = insert_frag_hdr(pkt.pkt)
+                fragments = scapy.layers.inet6.fragment6(mod_pkt, self.fragsize)
 
-            index = len(new_pl) - 1
-            for fragment in fragments:
-                new_pl.add_packet(fragment)
-            new_pl.edit_delay(index, pkt.delay)
+                index = len(new_pl) - 1
+                for fragment in fragments:
+                    new_pl.add_packet(fragment)
+                new_pl.edit_delay(index, pkt.delay)
+            else:
+                # Not IPv6 so no fragmentation
+                new_pl.add_packet(fragment, pkt.delay)
 
         return new_pl
