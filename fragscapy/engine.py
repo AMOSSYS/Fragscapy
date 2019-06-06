@@ -209,22 +209,26 @@ class Engine(object):
             Default is 'True'.
         modif_file (str, optional): The filename where to write the
             modifications. Default is 'modifications.txt'.
-        stdout_file (str, optional): The filename where to redirect stdout.
+        stdout (str, optional): The filename where to redirect stdout.
             Use the formating '{i}' and '{j}' to have a different file for
-            each test. Default is 'None' which means the output is dropped.
-        stderr_file (str, optional): The filename where to redirect stderr.
+            each test. If not specified (the default), the output is dropped.
+            If set to 'None', the output is redirected to stdout.
+        stderr (str, optional): The filename where to redirect stderr.
             Use the formating '{i}' and '{j}' to have a different file for
-            each test. Default is 'None' which means the error output is
-            dropped.
+            each test. If not specified (the default), the error output is
+            dropped. If set to 'None', the error output is redirected to
+            stderr.
 
     Attributes:
         progressbar (bool): Shows a progressbar during the process if True.
         modif_file (str, optional): The filename where to write the
             modifications.
-        stdout_file (str, optional): The filename where to redirect stdout.
+        stdout (bool): 'False' if stdout of the command should be dropped.
+        stdout_file (str): The filename where to redirect stdout.
             Use the formating '{i}' and '{j}' to have a different file for
             each test. 'None' means the output is dropped
-        stderr_file (str, optional): The filename where to redirect stderr.
+        stderr (bool): 'False' if stderr of the command should be dropped.
+        stderr_file (str): The filename where to redirect stderr.
             Use the formating '{i}' and '{j}' to have a different file for
             each test. 'None' means the error output is dropped.
 
@@ -251,8 +255,18 @@ class Engine(object):
     def __init__(self, config, **kwargs):
         self.progressbar = kwargs.pop("progressbar", True)
         self.modif_file = kwargs.pop("modif_file", MODIF_FILE)
-        self.stdout_file = kwargs.pop("stdout_file", None)
-        self.stderr_file = kwargs.pop("stderr_file", None)
+        try:
+            self.stdout_file = kwargs.pop("stdout")
+            self.stdout = True
+        except KeyError:
+            self.stdout_file = None
+            self.stdout = False
+        try:
+            self.stderr_file = kwargs.pop("stderr")
+            self.stderr = True
+        except KeyError:
+            self.stderr_file = None
+            self.stderr = False
 
         # The cartesian product of the input and output `ModListGenerator`
         self._mlgen_input = ModListGenerator(config.input)
@@ -315,13 +329,19 @@ class Engine(object):
         """
         # Can not use with statement here because files may be None
         # so emulates the behavior of a with statement with try/finally
+
         # Load the files if they exists
-        if self.stdout_file is not None:
+        if self.stdout and self.stdout_file is not None:
             fout = open(self.stdout_file.format(i=i, j=j), "ab")
+        elif self.stdout:
+            fout = None
         else:
             fout = subprocess.PIPE
-        if self.stderr_file is not None:
+
+        if self.stderr and self.stderr_file is not None:
             ferr = open(self.stderr_file.format(i=i, j=j), "ab")
+        elif self.stderr:
+            ferr = None
         else:
             ferr = subprocess.PIPE
 
