@@ -45,25 +45,32 @@ class Field(Mod):
         fieldtype = layer_class().fieldtype[self.field_name]
         self.randval = fieldtype.randval()
 
+        self._random = False
         if args[2] == "random":
+            self._random = True
             self.value = None  # Exact value will be calculated later
         else:
             self.value = args[2]
-            if self.value > self.randval.max or self.value < self.randval.min:
-                raise ValueError(
-                    "Parameter 3 must be beetween {} and {}. Got {}"
-                    .format(self.randval.min, self.randval.max, self.value)
-                )
+            try:
+                if (self.value > self.randval.max
+                        or self.value < self.randval.min):
+                    raise ValueError(
+                        "Parameter 3 must be beetween {} and {}. Got {}"
+                        .format(self.randval.min, self.randval.max, self.value)
+                    )
+            except TypeError:
+                # self.value cannot be compared
+                pass
 
     def is_deterministic(self):
         """See base class."""
-        return self.value is not None  # i.e. not random
+        return not self._random
 
     def apply(self, pkt_list):
         """Modifies any field of a specific layer in a packet. See `Mod.apply`
         for more details."""
         value = self.value
-        if value is None:
+        if self._random:
             value = self.randval._fix()  # pylint: disable=protected-access
 
         for pkt in pkt_list:
@@ -81,5 +88,5 @@ class Field(Mod):
         return {
             'layer_name': self.layer_name,
             'field_name': self.field_name,
-            'value': self.value if self.value is not None else "random",
+            'value': self.value if not self._random else "random",
         }
