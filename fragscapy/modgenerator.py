@@ -538,6 +538,54 @@ class ModOptionFloat(ModOption):
         return "ModOptionFloat({}, [{}])".format(self.mod_name, self.n)
 
 
+class ModOptionNone(ModOption):
+    """Modification option generator with 1 possibility: None.
+
+    The args is a list (for consistency with other mod options) with no
+    elements.
+
+    Args:
+        mod_name: The name of the mod (used only for error messages).
+        args: A list with 0 elements.
+
+    Attributes:
+        mod_name: The name of the modification.
+        opt_name: The name of this option ('none').
+
+    Raises:
+        ModGeneratorError: See the message for details.
+
+    Examples:
+        >>> list(ModOptionNone("foo", []))
+        [None]
+    """
+
+    def __init__(self, mod_name, args):
+        super(ModOptionNone, self).__init__(mod_name, "none")
+
+        # Verify there is exactly 1 argument
+        if args:
+            self._raise_error(
+                "There should be no element, got '{}'".format(args)
+            )
+
+    def get_option(self, i):
+        """See `ModOption.get_option`."""
+        self.inbound_or_raise(i)
+        return None
+
+    def nb_options(self):
+        """Returns always 1 because there is ony 1 instance possible. See
+        `ModOption.nb_options` for more info."""
+        return 1
+
+    def __str__(self):
+        return "none"
+
+    def __repr__(self):
+        return "ModOptionNone({}, [])".format(self.mod_name)
+
+
 class ModGenerator(object):
     """Generator for a modification.
 
@@ -606,6 +654,10 @@ class ModGenerator(object):
                 elif opt_type == "float":
                     self._mod_opts.append(
                         ModOptionFloat(mod_name, opt_args[1:])
+                    )
+                elif opt_type == "none":
+                    self._mod_opts.append(
+                        ModOptionNone(mod_name, opt_args[1:])
                     )
                 else:  # By default consider it as a string
                     self._mod_opts.append(
