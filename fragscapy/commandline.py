@@ -138,6 +138,20 @@ def command():
         help=("Disable the progressbar. Can be useful in non interactive "
               "terminals")
     )
+    parser_start.add_argument(
+        '--local-pcap', '-W',
+        type=str,
+        metavar='<pcap_file>',
+        help=("Dump the content of the packets sent and received by "
+              "localhost (packets as the command see them)")
+    )
+    parser_start.add_argument(
+        '--remote-pcap', '-w',
+        type=str,
+        metavar='<pcap_file>',
+        help=("Dump the content of the packets sent to and received from "
+              "the remote host (packets as the remote host see them)")
+    )
 
     args = parser.parse_args()
 
@@ -177,7 +191,7 @@ def start(args):
         scapy.config.conf.verb = 0
 
     config = Config(args.config_file)
-    kwargs = _filter_kwargs(args, ['modif_file'])
+    kwargs = _filter_kwargs(args, ['modif_file', 'local_pcap', 'remote_pcap'])
     kwargs['progressbar'] = not args.no_progressbar
     # To distinguish between '', '-o' and '-o plop', we tricked the option
     # into default to 0 in the first case (None for the second and plop the
