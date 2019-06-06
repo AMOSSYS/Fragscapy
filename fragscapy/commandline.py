@@ -106,16 +106,20 @@ def command():
         help="Where to write the modifications, default is 'modifications.txt'"
     )
     parser_start.add_argument(
-        '--stdout-file',
+        '--stdout-file', '-o',
         type=str,
         metavar='<stdout_file>',
-        help="Where to redirect stdout, default is 'stdout{i}.txt'"
+        help=("Where to redirect stdout. {i} and {j} can be used to include "
+              "respectively the modification number and the iteration number "
+              "in the filename. Default is no output.")
     )
     parser_start.add_argument(
-        '--stderr-file',
+        '--stderr-file', '-e',
         type=str,
         metavar='<stderr_file>',
-        help="Where to redirect stderr, default is 'stderr{i}.txt'"
+        help=("Where to redirect stderr. {i} and {j} can be used to include "
+              "respectively the modification number and the iteration number "
+              "in the filename. Default is no output.")
     )
     parser_start.add_argument(
         '--scapy-output',
