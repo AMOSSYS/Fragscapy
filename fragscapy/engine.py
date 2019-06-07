@@ -9,6 +9,8 @@ and sending them back to the network.
 """
 
 import itertools
+import glob
+import os
 import subprocess
 import threading
 import warnings
@@ -243,7 +245,11 @@ class Engine(object):
     id of the current modification and the number of the current iteration
     of the same test (in case of non-deterministic tests). Note the only
     excpetion is 'modif_file' which only accepts '{i}' because it does not
-    not change when only '{j}' changes
+    not change when only '{j}' changes.
+
+    Unless `append=True` is specified, the modif, sdtout and stderr filenames
+    that matches the provided patterns are removed before running the test so
+    the results are not appended to previous files.
 
     Args:
         config (:obj:`Config`): The configuration to use to get all the
@@ -265,6 +271,9 @@ class Engine(object):
         remote_pcap (str, optional): A pcap file where the packets of the
             remote side should dumped to. Default is 'None' which means the
             packets are not dumped.
+        append (bool, optional): If 'True', do not erase the existing files
+            (modif, stdout and stderr), append the results to them instead.
+            Default is 'False'
 
     Attributes:
         progressbar (bool): Shows a progressbar during the process if True.
@@ -280,6 +289,8 @@ class Engine(object):
             should dumped to. 'None' means the packets are not dumped.
         remote_pcap (str): A pcap file where the packets of the remote side
             should dumped to. 'None' means the packets are not dumped.
+        append (bool): If 'True', do not erase the existing files
+            (modif, stdout and stderr), append the results to them instead.
 
     Examples:
         >>> engine = Engine(Config("my_conf.json"))
@@ -318,6 +329,7 @@ class Engine(object):
             self.stderr = False
         self.local_pcap = kwargs.pop("local_pcap", None)
         self.remote_pcap = kwargs.pop("remote_pcap", None)
+        self.append = kwargs.pop("append", False)
 
         # The cartesian product of the input and output `ModListGenerator`
         self._mlgen_input = ModListGenerator(config.input)
@@ -349,6 +361,11 @@ class Engine(object):
                 remote_pcap=self.remote_pcap
             ))
 
+    def _flush_modif_files(self):
+        """Delete all the files that match the pattern of `modif_file`."""
+        for f in glob.glob(self.modif_file.format(i='*')):
+            os.remove(f)
+
     def _write_modlist_to_file(self, i, input_modlist, output_modlist,
                                repeat=0):
         """Writes the modification details to the 'modif_file'."""
@@ -368,6 +385,14 @@ class Engine(object):
             engine_thread.output_modlist = output_modlist
         self._write_modlist_to_file(i, input_modlist, output_modlist,
                                     repeat=repeat)
+
+    def _flush_std_files(self):
+        """Delete all the files that match the pattern of `stdout_file` and
+        `stderr_file`."""
+        for f in glob.glob(self.stdout_file.format(i='*', j='*')):
+            os.remove(f)
+        for f in glob.glob(self.stderr_file.format(i='*', j='*')):
+            os.remove(f)
 
     def _run_cmd(self, i, j):
         """Launches the user command in a sub-process.
@@ -435,6 +460,9 @@ class Engine(object):
 
     def pre_run(self):
         """Runs all the actions that need to be run before `.run()`."""
+        if not self.append:
+            self._flush_modif_files()
+            self._flush_std_files()
         self._insert_nfrules()
         self._start_threads()
 
@@ -498,6 +526,8 @@ class Engine(object):
 
     def check_modlist_generation(self):
         """Checks that the ModListGenerator will generate all mods."""
+        if not self.append:
+            self._flush_modif_files()
         iterator = self._get_modlist_iterator()
         for i, (input_modlist, output_modlist) in iterator:
             if (input_modlist.is_deterministic()

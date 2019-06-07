@@ -90,6 +90,12 @@ def command():
         help=("Disable the progressbar. Can be useful in non interactive "
               "terminals")
     )
+    parser_checkconfig.add_argument(
+        '--append', '-a',
+        action='store_true',
+        help=("Do not delete the result files. Instead append the new results "
+              "to them.")
+    )
 
     # fragscapy start
     parser_start = subparsers.add_parser('start', help="Start the tests")
@@ -152,6 +158,12 @@ def command():
         help=("Dump the content of the packets sent to and received from "
               "the remote host (packets as the remote host see them)")
     )
+    parser_start.add_argument(
+        '--append', '-a',
+        action='store_true',
+        help=("Do not delete the result files. Instead append the new results "
+              "to them.")
+    )
 
     args = parser.parse_args()
 
@@ -191,7 +203,10 @@ def start(args):
         scapy.config.conf.verb = 0
 
     config = Config(args.config_file)
-    kwargs = _filter_kwargs(args, ['modif_file', 'local_pcap', 'remote_pcap'])
+    kwargs = _filter_kwargs(
+        args,
+        ['modif_file', 'local_pcap', 'remote_pcap', 'append']
+    )
     kwargs['progressbar'] = not args.no_progressbar
     # To distinguish between '', '-o' and '-o plop', we tricked the option
     # into default to 0 in the first case (None for the second and plop the
@@ -232,7 +247,7 @@ def checkconfig(args):
         print(">>> Loading config file")
         config = Config(args.config_file)
         print(">>> Loading engine")
-        kwargs = _filter_kwargs(args, ['modif_file'])
+        kwargs = _filter_kwargs(args, ['modif_file', 'append'])
         kwargs['progressbar'] = not args.no_progressbar
         engine = Engine(config, **kwargs)
         print(">>> Checking Netfilter rules")
