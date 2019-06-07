@@ -56,3 +56,7 @@ class ModList(list):
         for mod in self:
             pkt_list = mod.apply(pkt_list)
         return pkt_list
+
+    def is_deterministic(self):
+        """Are all the mod deterministic (i.e. non-random)."""
+        return all(mod.is_deterministic() for mod in self)

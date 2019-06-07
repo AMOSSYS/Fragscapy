@@ -32,10 +32,8 @@ class DropOne(Mod):
            "dropone {first|last|random|<id>}")
     _nb_args = 1
 
-    def __init__(self, *args):
-        super().__init__(*args)
-
-        # Check the content of the argument
+    def parse_args(self, *args):
+        """See base class."""
         self.drop_index = None
         if args[0] == "first":
             self.drop_index = 0
@@ -49,6 +47,10 @@ class DropOne(Mod):
             except ValueError:
                 raise ValueError("Parameter 1 unrecognized. "
                                  "Got {}".format(args[0]))
+
+    def is_deterministic(self):
+        """See base class."""
+        return self.drop_index is not None  # i.e. not random
 
     def apply(self, pkt_list):
         """Drops one packet. See `Mod.apply` for more details."""
@@ -66,14 +68,7 @@ class DropOne(Mod):
 
         return pkt_list
 
-    def __str__(self):
-        return "{name} {param}".format(
-            name=self.name,
-            param="random" if self.drop_index is None else str(self.drop_index)
-        )
-
-    def __repr__(self):
-        return "{name}<drop_index: {drop_index}>".format(
-            name=self.name,
-            drop_index=self.drop_index
-        )
+    def get_params(self):
+        """See base class."""
+        return {k: v if v is not None else "random"
+                for k, v in super(DropOne, self).get_params().items()}

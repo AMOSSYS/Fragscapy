@@ -135,16 +135,16 @@ class NFQueueRule(object):  # pylint: disable=too-many-instance-attributes
         self.ipv6 = ipv6
         self.qnum = qnum
 
-    def _build_filter(self, chain, h):
-        """Returns the ip(6)tables filter to use.
+    def _build_nfqueue_opt(self, h, chain):
+        """Returns the options to use for building the NFQUEUE rule.
 
         Args:
-            chain: The current chain (changes the direction "src/dst" for
-                some options).
             h: The current hostname to filter on.
+            chain: The current chain (changes the direction "src/dst" for
+                some options and the queue number).
 
         Returns:
-            A list of parameters that can be used as a filter in an
+            A list of parameters that can be used as options in an
             ip(6)tables command.
         """
         opt = []    # A list of iptables options
@@ -158,45 +158,40 @@ class NFQueueRule(object):  # pylint: disable=too-many-instance-attributes
             if self.port is not None:
                 opt.append(chain.port_opt)       # --dport or --sport
                 opt.append(str(self.port))       # <port>
-        return opt
-
-    def _build_nfqueue_opt(self, chain):
-        """Returns the options to use for building the NFQUEUE rule.
-
-        Args:
-            chain: The current chain (changes the queue number).
-
-        Returns:
-            A list of parameters that can be used as options in an
-            ip(6)tables command.
-        """
-        opt = []
         opt.append('-j')                         # -j
         opt.append('NFQUEUE')                    # NFQUEUE
         opt.append('--queue-num')                # --queue-num
         opt.append(str(self.qnum + chain.qnum))  # <qnum> or <qnum>+1
         return opt
 
-    def _build_rst_opt(self, chain):   # pylint: disable=no-self-use
+    def _build_rst_opt(self, h, chain):   # pylint: disable=no-self-use
         """Returns the options to use for building the "reset TCP's RST flag"
         rule.
 
         Args:
-            chain: Not used.
+            h: The current hostname to filter on.
+            chain: The current chain (changes the direction "src/dst" for
+                the port).
 
         Returns:
             A list of parameters that can be used as options in an
             ip(6)tables command.
         """
-        # `self` and `chain` are not used here but the arguments are kept for
-        # interchangeability with `._build_nfqueue_opt`.
-        del chain
-        opt = []
-        opt.append("--tcp-flags")
-        opt.append("RST")
-        opt.append("RST")
-        opt.append("-j")
-        opt.append("DROP")
+        opt = []    # A list of iptabales options
+        opt.append("OUTPUT")       # OUTPUT
+        if h is not None:
+            opt.append('-d')            # -d
+            opt.append(h)               # <hostname>
+        opt.append('-p')                # -p
+        opt.append(self.proto)          # <proto>
+        if self.port is not None:
+            opt.append(chain.port_opt)  # --dport or --sport
+            opt.append(str(self.port))  # <port>
+        opt.append("--tcp-flags")       # --tcp-flags
+        opt.append("RST")               # RST
+        opt.append("RST")               # RST
+        opt.append("-j")                # -j
+        opt.append("DROP")              # DROP
         return opt
 
     def _insert_or_remove(self, insert=True):
@@ -232,15 +227,14 @@ class NFQueueRule(object):  # pylint: disable=too-many-instance-attributes
         if self.input_chain:
             chains.append(INPUT)
 
-        # The options to use (nfqueue and/or tcp RST drop)
-        opt_funcs = []
-        opt_funcs.append(self._build_nfqueue_opt)
+        # The options builders (_build_nfqueue_opt and/or _build_rst_opt)
+        opt_builders = [self._build_nfqueue_opt]
         if self.proto is not None and self.proto.lower() == 'tcp':
-            opt_funcs.append(self._build_rst_opt)
+            opt_builders.append(self._build_rst_opt)
 
         for binary, h in bin_host:
             for chain in chains:
-                for opt_func in opt_funcs:
+                for opt_builder in opt_builders:
                     # Build the iptables/ip6tables resulting command
                     cmd = []
                     cmd.append(binary)
@@ -248,8 +242,7 @@ class NFQueueRule(object):  # pylint: disable=too-many-instance-attributes
                         cmd.append('-I')
                     else:
                         cmd.append('-D')
-                    cmd.extend(self._build_filter(chain, h))
-                    cmd.extend(opt_func(chain))
+                    cmd.extend(opt_builder(h, chain))
                     # Run the command and raise an exception if an error occurs
                     subprocess.run(cmd, check=True)
 
@@ -366,21 +359,21 @@ class PacketWrapper(abc.ABC):
     def _apply_modifications(self):
         """Reports the modifications in the Scapy packet to the fnfqueue
         packet."""
-        self._fnfqueue_pkt.payload = bytes(self._scapy_pkt)
+        self.fnfqueue_pkt.payload = bytes(self.scapy_pkt)
 
     def __dir__(self):
-        ret = ['_scapy_pkt', '_fnfqueue_pkt', 'l3_layer', 'is_input',
+        ret = ['scapy_pkt', 'fnfqueue_pkt', 'l3_layer', 'is_input',
                'is_output']
-        ret.extend(dir(self._scapy_pkt))
-        ret.extend(dir(self._fnfqueue_pkt))
+        ret.extend(dir(self.scapy_pkt))
+        ret.extend(dir(self.fnfqueue_pkt))
         return ret
 
     def __getattr__(self, name):
         try:
-            return getattr(self._scapy_pkt, name)
+            return getattr(self.scapy_pkt, name)
         except AttributeError:
             pass
-        ret = getattr(self._fnfqueue_pkt, name)
+        ret = getattr(self.fnfqueue_pkt, name)
         # When accessing the underlying fnfqueue methods,
         # force to apply the modifications (useful before calling methods
         # such as accept, mangle, verdict, ...)
@@ -393,7 +386,7 @@ class PacketWrapper(abc.ABC):
         The charge of dropping the nfqueue packet is left to the user
         (if necessary).
         """
-        scapy.sendrecv.send(self._scapy_pkt)
+        scapy.sendrecv.send(self.scapy_pkt)
 
 
 
