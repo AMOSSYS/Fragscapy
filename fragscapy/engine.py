@@ -13,6 +13,7 @@ import subprocess
 import threading
 import warnings
 
+import scapy.utils
 import tqdm
 
 from fragscapy.modgenerator import ModListGenerator
@@ -59,8 +60,20 @@ class EngineThread(threading.Thread):
         output_modlist (:obj:`ModList`, optional): The list of modifications
             to apply to the packets on the OUTPUT chain. If not set, it should
             be set before starting the thread.
+        local_pcap (str, optional): A pcap file where the packets of the local
+            side should dumped to. Default is 'None' which means the packets
+            are not dumped.
+        remote_pcap (str, optional): A pcap file where the packets of the
+            remote side should dumped to. Default is 'None' which means the
+            packets are not dumped.
         *args: The args passed to the `Thread` class.
         **kwargs: The kwargs passed to the `Thread` class.
+
+    Attributes:
+        local_pcap (str): A pcap file where the packets of the local side
+            should dumped to. 'None' means the packets are not dumped.
+        remote_pcap (str): A pcap file where the packets of the remote side
+            should dumped to. 'None' means the packets are not dumped.
 
     Examples:
         Assuming the nfqueue, modlist1, modlist2 and modlist3 objects exists
@@ -75,6 +88,8 @@ class EngineThread(threading.Thread):
         self._nfqueue = nfqueue
         self._input_modlist = kwargs.pop("input_modlist", None)
         self._output_modlist = kwargs.pop("output_modlist", None)
+        self.local_pcap = kwargs.pop("local_pcap", None)
+        self.remote_pcap = kwargs.pop("remote_pcap", None)
         self._input_lock = threading.Lock()
         self._output_lock = threading.Lock()
         super(EngineThread, self).__init__(*args, **kwargs)
@@ -105,6 +120,11 @@ class EngineThread(threading.Thread):
 
     def _process_input(self, packet):
         """Applies the input modifications on `packet`."""
+        # Dump the packet before anything else
+        if self.remote_pcap is not None:
+            scapy.utils.wrpcap(self.remote_pcap, packet.scapy_pkt,
+                               append=True)
+
         # Put the packet in a packet list
         packetlist = PacketList()
         packetlist.add_packet(packet.scapy_pkt)
@@ -131,12 +151,21 @@ class EngineThread(threading.Thread):
             # If there is at least 1 packet in the result, send it
             # Modify the initial packet with the new content
             packet.scapy_pkt = packetlist[0].pkt
+            # Dump the packet just before sending it
+            if self.local_pcap is not None:
+                scapy.utils.wrpcap(self.local_pcap, packet.scapy_pkt,
+                                   append=True)
             # Mangle the packet to the NFQUEUE (so it is sent
             # correctly to the local application)
             packet.mangle()
 
     def _process_output(self, packet):
         """Applies the output modifications on `packet`."""
+        # Dump the packet before anything else
+        if self.local_pcap is not None:
+            scapy.utils.wrpcap(self.local_pcap, packet.scapy_pkt,
+                               append=True)
+
         # Put the packet in a packet list
         packetlist = PacketList()
         packetlist.add_packet(packet.scapy_pkt)
@@ -144,6 +173,13 @@ class EngineThread(threading.Thread):
         with self._output_lock:
             packetlist = self._output_modlist.apply(packetlist)
 
+        # Dump the packets just before sending it
+        if self.remote_pcap is not None:
+            scapy.utils.wrpcap(
+                self.remote_pcap,
+                [pkt.pkt for pkt in packetlist],
+                append=True
+            )
         # Send all the packets resulting
         packetlist.send_all()
         # Drop the old packet in NFQUEUE
@@ -202,6 +238,13 @@ class Engine(object):
     that process the packets and run the command that was specified in the
     config. It then loops back to generating the next `ModList`.
 
+    All the arguments about files can use the formating '{i}' and '{j}' to
+    have a different file for each test. They respectively contains the
+    id of the current modification and the number of the current iteration
+    of the same test (in case of non-deterministic tests). Note the only
+    excpetion is 'modif_file' which only accepts '{i}' because it does not
+    not change when only '{j}' changes
+
     Args:
         config (:obj:`Config`): The configuration to use to get all the
             necessary data.
@@ -210,14 +253,18 @@ class Engine(object):
         modif_file (str, optional): The filename where to write the
             modifications. Default is 'modifications.txt'.
         stdout (str, optional): The filename where to redirect stdout.
-            Use the formating '{i}' and '{j}' to have a different file for
-            each test. If not specified (the default), the output is dropped.
+            If not specified (the default), the output is dropped.
             If set to 'None', the output is redirected to stdout.
         stderr (str, optional): The filename where to redirect stderr.
-            Use the formating '{i}' and '{j}' to have a different file for
-            each test. If not specified (the default), the error output is
+            If not specified (the default), the error output is
             dropped. If set to 'None', the error output is redirected to
             stderr.
+        local_pcap (str, optional): A pcap file where the packets of the local
+            side should dumped to. Default is 'None' which means the packets
+            are not dumped.
+        remote_pcap (str, optional): A pcap file where the packets of the
+            remote side should dumped to. Default is 'None' which means the
+            packets are not dumped.
 
     Attributes:
         progressbar (bool): Shows a progressbar during the process if True.
@@ -225,12 +272,14 @@ class Engine(object):
             modifications.
         stdout (bool): 'False' if stdout of the command should be dropped.
         stdout_file (str): The filename where to redirect stdout.
-            Use the formating '{i}' and '{j}' to have a different file for
-            each test. 'None' means the output is dropped
+            'None' means the output is dropped
         stderr (bool): 'False' if stderr of the command should be dropped.
         stderr_file (str): The filename where to redirect stderr.
-            Use the formating '{i}' and '{j}' to have a different file for
-            each test. 'None' means the error output is dropped.
+            'None' means the error output is dropped.
+        local_pcap (str): A pcap file where the packets of the local side
+            should dumped to. 'None' means the packets are not dumped.
+        remote_pcap (str): A pcap file where the packets of the remote side
+            should dumped to. 'None' means the packets are not dumped.
 
     Examples:
         >>> engine = Engine(Config("my_conf.json"))
@@ -267,6 +316,8 @@ class Engine(object):
         except KeyError:
             self.stderr_file = None
             self.stderr = False
+        self.local_pcap = kwargs.pop("local_pcap", None)
+        self.remote_pcap = kwargs.pop("remote_pcap", None)
 
         # The cartesian product of the input and output `ModListGenerator`
         self._mlgen_input = ModListGenerator(config.input)
@@ -293,14 +344,16 @@ class Engine(object):
             self._engine_threads.append(EngineThread(
                 nfqueue,
                 input_modlist=self._mlgen_input[0],
-                output_modlist=self._mlgen_output[0]
+                output_modlist=self._mlgen_output[0],
+                local_pcap=self.local_pcap,
+                remote_pcap=self.remote_pcap
             ))
 
     def _write_modlist_to_file(self, i, input_modlist, output_modlist,
                                repeat=0):
         """Writes the modification details to the 'modif_file'."""
         repeat = "(repeated {} times)".format(repeat) if repeat > 1 else ""
-        with open(self.modif_file, "a") as mod_file:
+        with open(self.modif_file.format(i=i), "a") as mod_file:
             mod_file.write(self.MODIF_TEMPLATE.format(
                 i=i,
                 repeat=repeat,
