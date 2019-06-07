@@ -106,16 +106,26 @@ def command():
         help="Where to write the modifications, default is 'modifications.txt'"
     )
     parser_start.add_argument(
-        '--stdout-file',
+        '--stdout', '-o',
         type=str,
+        default=0,
         metavar='<stdout_file>',
-        help="Where to redirect stdout, default is 'stdout{i}.txt'"
+        nargs='?',
+        help=("Where to redirect stdout. {i} and {j} can be used to include "
+              "respectively the modification number and the iteration number "
+              "in the filename. If not specified, stdout is dropped. If "
+              "specified with no arguments, stdout is displayed to stdout.")
     )
     parser_start.add_argument(
-        '--stderr-file',
+        '--stderr', '-e',
         type=str,
+        default=0,
         metavar='<stderr_file>',
-        help="Where to redirect stderr, default is 'stderr{i}.txt'"
+        nargs='?',
+        help=("Where to redirect stderr. {i} and {j} can be used to include "
+              "respectively the modification number and the iteration number "
+              "in the filename. If not specified, stderr is dropped. If "
+              "specified with no arguments, stderr is displayed to stderr.")
     )
     parser_start.add_argument(
         '--scapy-output',
@@ -167,8 +177,16 @@ def start(args):
         scapy.config.conf.verb = 0
 
     config = Config(args.config_file)
-    kwargs = _filter_kwargs(args, ['modif_file', 'stdout_file', 'stderr_file'])
-    engine = Engine(config, progressbar=(not args.no_progressbar), **kwargs)
+    kwargs = _filter_kwargs(args, ['modif_file'])
+    kwargs['progressbar'] = not args.no_progressbar
+    # To distinguish between '', '-o' and '-o plop', we tricked the option
+    # into default to 0 in the first case (None for the second and plop the
+    # thrid).
+    if args.stdout != 0:
+        kwargs['stdout'] = args.stdout
+    if args.stderr != 0:
+        kwargs['stderr'] = args.stderr
+    engine = Engine(config, **kwargs)
     engine.start()
 
 
@@ -201,7 +219,8 @@ def checkconfig(args):
         config = Config(args.config_file)
         print(">>> Loading engine")
         kwargs = _filter_kwargs(args, ['modif_file'])
-        engine = Engine(config, progressbar=(not args.no_progressbar), **kwargs)
+        kwargs['progressbar'] = not args.no_progressbar
+        engine = Engine(config, **kwargs)
         print(">>> Checking Netfilter rules")
         engine.check_nfrules()
         print(">>> Checking mod list generation (output to '{}')"

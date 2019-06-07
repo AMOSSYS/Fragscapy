@@ -20,8 +20,6 @@ from fragscapy.netfilter import NFQueue, NFQueueRule
 from fragscapy.packetlist import PacketList
 
 
-STDOUT_FILE = "stdout{i}_{j}.txt"  # Redirect stdout to this file
-STDERR_FILE = "stderr{i}_{j}.txt"  # Redirect stderr to this file
 MODIF_FILE = "modifications.txt"   # Details of each mod on this file
 
 
@@ -73,14 +71,13 @@ class EngineThread(threading.Thread):
         >>> engine_th.output_modlist = modlist3  # Thread-safe modification
     """
 
-    def __init__(self, nfqueue, *args, input_modlist=None, output_modlist=None,
-                 **kwargs):
-        super(EngineThread, self).__init__(*args, **kwargs)
+    def __init__(self, nfqueue, *args, **kwargs):
         self._nfqueue = nfqueue
-        self._input_modlist = input_modlist
-        self._output_modlist = output_modlist
+        self._input_modlist = kwargs.pop("input_modlist", None)
+        self._output_modlist = kwargs.pop("output_modlist", None)
         self._input_lock = threading.Lock()
         self._output_lock = threading.Lock()
+        super(EngineThread, self).__init__(*args, **kwargs)
 
     @property
     def input_modlist(self):
@@ -212,23 +209,28 @@ class Engine(object):
             Default is 'True'.
         modif_file (str, optional): The filename where to write the
             modifications. Default is 'modifications.txt'.
-        stdout_file (str, optional): The filename where to redirect stdout.
+        stdout (str, optional): The filename where to redirect stdout.
             Use the formating '{i}' and '{j}' to have a different file for
-            each test. Default is 'stdout{i}_{j}.txt'.
-        stderr_file (str, optional): The filename where to redirect stderr.
+            each test. If not specified (the default), the output is dropped.
+            If set to 'None', the output is redirected to stdout.
+        stderr (str, optional): The filename where to redirect stderr.
             Use the formating '{i}' and '{j}' to have a different file for
-            each test. Default is 'stderr{i}_{j}.txt'.
+            each test. If not specified (the default), the error output is
+            dropped. If set to 'None', the error output is redirected to
+            stderr.
 
     Attributes:
         progressbar (bool): Shows a progressbar during the process if True.
         modif_file (str, optional): The filename where to write the
-            modifications. Default is 'modifications.txt'.
-        stdout_file (str, optional): The filename where to redirect stdout.
+            modifications.
+        stdout (bool): 'False' if stdout of the command should be dropped.
+        stdout_file (str): The filename where to redirect stdout.
             Use the formating '{i}' and '{j}' to have a different file for
-            each test. Default is 'stdout{i}_{j}.txt'.
-        stderr_file (str, optional): The filename where to redirect stderr.
+            each test. 'None' means the output is dropped
+        stderr (bool): 'False' if stderr of the command should be dropped.
+        stderr_file (str): The filename where to redirect stderr.
             Use the formating '{i}' and '{j}' to have a different file for
-            each test. Default is 'stderr{i}_{j}.txt'.
+            each test. 'None' means the error output is dropped.
 
     Examples:
         >>> engine = Engine(Config("my_conf.json"))
@@ -250,13 +252,21 @@ class Engine(object):
                       "\n"
                       "\n")
 
-    # pylint: disable=too-many-arguments
-    def __init__(self, config, progressbar=True, modif_file=MODIF_FILE,
-                 stdout_file=STDOUT_FILE, stderr_file=STDERR_FILE):
-        self.progressbar = progressbar
-        self.modif_file = modif_file
-        self.stdout_file = stdout_file
-        self.stderr_file = stderr_file
+    def __init__(self, config, **kwargs):
+        self.progressbar = kwargs.pop("progressbar", True)
+        self.modif_file = kwargs.pop("modif_file", MODIF_FILE)
+        try:
+            self.stdout_file = kwargs.pop("stdout")
+            self.stdout = True
+        except KeyError:
+            self.stdout_file = None
+            self.stdout = False
+        try:
+            self.stderr_file = kwargs.pop("stderr")
+            self.stderr = True
+        except KeyError:
+            self.stderr_file = None
+            self.stderr = False
 
         # The cartesian product of the input and output `ModListGenerator`
         self._mlgen_input = ModListGenerator(config.input)
@@ -317,10 +327,38 @@ class Engine(object):
             j: current repeat iteration number, used for formating the
                 filenames.
         """
-        fout = self.stdout_file.format(i=i, j=j)
-        ferr = self.stderr_file.format(i=i, j=j)
-        with open(fout, "ab") as out, open(ferr, "ab") as err:
-            subprocess.run(self._cmd, stdout=out, stderr=err, shell=True)
+        # Can not use with statement here because files may be None
+        # so emulates the behavior of a with statement with try/finally
+
+        # Load the files if they exists
+        if self.stdout and self.stdout_file is not None:
+            fout = open(self.stdout_file.format(i=i, j=j), "ab")
+        elif self.stdout:
+            fout = None
+        else:
+            fout = subprocess.PIPE
+
+        if self.stderr and self.stderr_file is not None:
+            ferr = open(self.stderr_file.format(i=i, j=j), "ab")
+        elif self.stderr:
+            ferr = None
+        else:
+            ferr = subprocess.PIPE
+
+        try:
+            # Run the command
+            subprocess.run(self._cmd, stdout=fout, stderr=ferr, shell=True)
+        finally:
+            # Close the files even if there was an exception
+            try:
+                fout.close()
+            except AttributeError:  # fout does not have a `.close()`
+                pass
+            finally:
+                try:
+                    ferr.close()
+                except AttributeError:  # ferr does not have a `.close()`
+                    pass
 
     def _insert_nfrules(self):
         """Inserts all the NF rules using `ip(6)tables`."""
