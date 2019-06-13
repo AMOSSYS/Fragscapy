@@ -1,5 +1,5 @@
 {
-  "cmd": "The command to run everytime (absolute path prefered)",
+  "cmd": "The command to run everytime (absolute path prefered). {i} and {j} can be used in the command, they will be replace by the number of the current test and the number of the current iteration of this test",
 
   "nfrules": [
     "This contains 1 object per rule to add",
@@ -41,6 +41,10 @@
 
   "output": [
     "This contains 1 object per modification to apply on the OUTPUT chain",
+    {
+      "mod_name": "Use the python 'None' value.",
+      "mod_opts": "none"
+    },
     {
       "mod_name": "Force an integer as 1 parameter (same as using an int directly)",
       "mod_opts": "int 42"

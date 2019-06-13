@@ -488,7 +488,12 @@ class Engine(object):
         # so emulates the behavior of a with statement with try/finally
         try:
             # Run the command
-            subprocess.run(self._cmd, stdout=fout, stderr=ferr, shell=True)
+            subprocess.run(
+                self._cmd.format(i=i, j=j),
+                stdout=fout,
+                stderr=ferr,
+                shell=True
+            )
         finally:
             # Close the files even if there was an exception
             try:
