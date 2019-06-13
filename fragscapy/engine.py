@@ -424,6 +424,24 @@ class Engine(object):
         self._write_modlist_to_file(i, input_modlist, output_modlist,
                                     repeat=repeat)
 
+    def _flush_pcap_files(self):
+        """Deletes all the files that match the patter of `local_pcap` and
+        `remote_pcap`."""
+        rm_pattern(self.local_pcap)
+        rm_pattern(self.remote_pcap)
+
+    def _update_pcap_files(self, i, j):
+        """Changes the pcap files in all the threads."""
+        for engine_thread in self._engine_threads:
+            if self.local_pcap is None:
+                engine_thread.local_pcap = self.local_pcap
+            else:
+                engine_thread.local_pcap = self.local_pcap.format(i=i, j=j)
+            if self.remote_pcap is None:
+                engine_thread.remote_pcap = self.remote_pcap
+            else:
+                engine_thread.remote_pcap = self.remote_pcap.format(i=i, j=j)
+
     def _flush_std_files(self):
         """Deletes all the files that match the pattern of `stdout_file` and
         `stderr_file`."""
@@ -508,6 +526,7 @@ class Engine(object):
         if not self.append:
             self._flush_modif_files()
             self._flush_std_files()
+            self._flush_pcap_files()
         self._insert_nfrules()
         self._start_threads()
 
@@ -526,11 +545,13 @@ class Engine(object):
                 repeat = 1
             else:
                 repeat = 100
+
             # Change the modlist in the threads
             self._update_modlists(i, input_modlist, output_modlist, repeat)
-            # Run the command
+
             for j in range(repeat):
-                self._run_cmd(i, j)
+                self._update_pcap_files(i, j)  # Changes the pcap filenames
+                self._run_cmd(i, j)            # Run the command
 
     def post_run(self):
         """Runs all the actions that need to be run after `.run()`."""
