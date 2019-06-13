@@ -11,6 +11,7 @@ and sending them back to the network.
 import itertools
 import glob
 import os
+import string
 import subprocess
 import threading
 import warnings
@@ -42,6 +43,25 @@ def engine_warning(msg):
         "{}".format(msg),
         EngineWarning
     )
+
+
+def rm_pattern(pattern):
+    """Deletes all the files that match a formatting pattern."""
+
+    # Build the args and kwargs to use '*' in the pattern
+    args = list()
+    kwargs = dict()
+    for _, name, _, _ in string.Formatter().parse(pattern):
+        if name is None:
+            continue
+        if name:
+            kwargs[name] = '*'
+        else:
+            args.append('*')
+
+    # Remove the corresponding files
+    for f in glob.glob(pattern.format(*args, **kwargs)):
+        os.remove(f)
 
 
 class EngineThread(threading.Thread):
@@ -362,9 +382,8 @@ class Engine(object):
             ))
 
     def _flush_modif_files(self):
-        """Delete all the files that match the pattern of `modif_file`."""
-        for f in glob.glob(self.modif_file.format(i='*')):
-            os.remove(f)
+        """Deletes all the files that match the pattern of `modif_file`."""
+        rm_pattern(self.modif_file)
 
     def _write_modlist_to_file(self, i, input_modlist, output_modlist,
                                repeat=0):
@@ -387,12 +406,32 @@ class Engine(object):
                                     repeat=repeat)
 
     def _flush_std_files(self):
-        """Delete all the files that match the pattern of `stdout_file` and
+        """Deletes all the files that match the pattern of `stdout_file` and
         `stderr_file`."""
-        for f in glob.glob(self.stdout_file.format(i='*', j='*')):
-            os.remove(f)
-        for f in glob.glob(self.stderr_file.format(i='*', j='*')):
-            os.remove(f)
+        rm_pattern(self.stdout_file)
+        rm_pattern(self.stderr_file)
+
+    def _get_std_files(self, i, j):
+        """Returns a 2-tuple of file descriptor (or None) of where stdout and
+        stderr should be redirected."""
+        if self.stdout:
+            if self.stdout_file is not None:
+                fout = open(self.stdout_file.format(i=i, j=j), "ab")
+            else:
+                fout = None
+        else:
+            fout = subprocess.PIPE
+
+        if self.stderr:
+            if self.stderr_file is not None:
+                ferr = open(self.stderr_file.format(i=i, j=j), "ab")
+            else:
+                ferr = None
+        else:
+            ferr = subprocess.PIPE
+
+        return fout, ferr
+
 
     def _run_cmd(self, i, j):
         """Launches the user command in a sub-process.
@@ -405,24 +444,11 @@ class Engine(object):
             j: current repeat iteration number, used for formating the
                 filenames.
         """
+        # Load the files if they exists
+        fout, ferr = self._get_std_files(i, j)
+
         # Can not use with statement here because files may be None
         # so emulates the behavior of a with statement with try/finally
-
-        # Load the files if they exists
-        if self.stdout and self.stdout_file is not None:
-            fout = open(self.stdout_file.format(i=i, j=j), "ab")
-        elif self.stdout:
-            fout = None
-        else:
-            fout = subprocess.PIPE
-
-        if self.stderr and self.stderr_file is not None:
-            ferr = open(self.stderr_file.format(i=i, j=j), "ab")
-        elif self.stderr:
-            ferr = None
-        else:
-            ferr = subprocess.PIPE
-
         try:
             # Run the command
             subprocess.run(self._cmd, stdout=fout, stderr=ferr, shell=True)
