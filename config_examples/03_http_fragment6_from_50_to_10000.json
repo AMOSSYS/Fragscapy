@@ -10,7 +10,7 @@
 
   "output": [
     {
-      "mod_name": "fragment6",
+      "mod_name": "ipv6_frag",
       "mod_opts": "range 50 10000 50"
     }
   ]
