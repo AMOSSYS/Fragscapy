@@ -5,7 +5,7 @@ from fragscapy.modifications.utils import fragment6
 from fragscapy.packetlist import PacketList
 
 
-class Fragment6(Mod):
+class Ipv6Frag(Mod):
     """Fragments the IPv6 packets at the L3-layer.
 
     Fragment each IPv6 packet. the fragmentation size must be specified. It
@@ -22,13 +22,13 @@ class Fragment6(Mod):
         ValueError: Unrecognized or incorrect number of parameters.
 
     Examples:
-        >>> Fragment6(1280).fragsize  # Minimum MTU for IPv6
+        >>> Ipv6Frag(1280).fragsize  # Minimum MTU for IPv6
         1280
     """
 
-    name = "Fragment6"
-    doc = ("Fragment the IPv6 packets at the L3-layer\n"
-           "fragment6 <size>")
+    name = "Ipv6Frag"
+    doc = ("Fragments the IPv6 packets at the L3-layer\n"
+           "ipv6_frag <size>")
     _nb_args = 1
 
     def parse_args(self, *args):
@@ -44,7 +44,8 @@ class Fragment6(Mod):
         new_pl = PacketList()
 
         for pkt in pkt_list:
-            if pkt.pkt.haslayer('IPv6'):
+            # Checks the packet length to avoid creating atomic fragments
+            if pkt.pkt.haslayer('IPv6') and len(pkt.pkt) > self.fragsize:
                 fragments = fragment6(pkt.pkt, self.fragsize)
 
                 index = len(new_pl) - 1
@@ -52,7 +53,7 @@ class Fragment6(Mod):
                     new_pl.add_packet(fragment)
                 new_pl.edit_delay(index, pkt.delay)
             else:
-                # Not IPv6 so no fragmentation
-                new_pl.add_packet(fragment, pkt.delay)
+                # Not IPv6 or too small so no fragmentation
+                new_pl.add_packet(pkt.pkt, pkt.delay)
 
         return new_pl

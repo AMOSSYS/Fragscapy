@@ -7,7 +7,7 @@ from fragscapy.modifications.mod import Mod
 from fragscapy.packetlist import PacketList
 
 
-class Fragment4(Mod):
+class Ipv4Frag(Mod):
     """Fragments the IPv4 packets at the L3-layer.
 
     Fragment each IPv4 packet. the fragmentation size must be specified. It
@@ -24,13 +24,13 @@ class Fragment4(Mod):
         ValueError: Unrecognized or incorrect number of parameters.
 
     Examples:
-        >>> Fragment4(32).fragsize
+        >>> Ipv4Frag(32).fragsize
         32
     """
 
-    name = "Fragment4"
-    doc = ("Fragment the IPv4 packets at the L3-layer\n"
-           "fragment4 <size>")
+    name = "Ipv4Frag"
+    doc = ("Fragments the IPv4 packets at the L3-layer\n"
+           "ipv4_frag <size>")
     _nb_args = 1
 
     def parse_args(self, *args):
