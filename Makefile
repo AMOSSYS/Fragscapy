@@ -39,6 +39,7 @@ buildclean:
 pylintclean:
 	@echo "Deleting pylint files"
 	@find . -type d -path './fragscapy*/__pycache__' -exec rm -Rf {} +
+	@rm -f classes_fragscapy.dot packages_fragscapy.dot classes_fragscapy.svg packages_fragscapy.svg
 compileclean:
 	@echo "Deleting compiled files"
 	@find . -type f -path './fragscapy/*.py[co]' -delete
@@ -50,17 +51,25 @@ clean: buildclean pylintclean compileclean docclean
 
 # Pylint-related commands
 pylint:
-	@if ! command -v pylint; then echo "Pylint not found, run 'make dependencies-dev'."; exit 1; fi
+	@if ! command -v pylint > /dev/null; then echo "Pylint not found, run 'make dependencies-dev'."; exit 1; fi
 	@pylint fragscapy; exit 0
 pylint-reports:
-	@if ! command -v pylint; then echo "Pylint not found, run 'make dependencies-dev'."; exit 1; fi
+	@if ! command -v pylint > /dev/null; then echo "Pylint not found, run 'make dependencies-dev'."; exit 1; fi
 	@pylint fragscapy --reports=y; exit 0
 pyreverse:
-	@if ! command -v pyreverse; then echo "Pylint not found, run 'make dependencies-dev'."; exit 1; fi
-	@pyreverse -p fragscapy $(find fragscapy/ -type f -not -path 'fragscapy/modifications/*') fragscapy/modifications/__init__.py fragscapy/modifications/mod.py fragscapy/modifications/utils.py
+	@if ! command -v pyreverse > /dev/null; then echo "Pyreverse not found, run 'make dependencies-dev'."; exit 1; fi
+	@if ! command -v dot > /dev/null; then echo "dot not found, install 'graphviz'"; exit 1; fi
+	@find fragscapy/ -type f -not -path 'fragscapy/modifications/*' | xargs pyreverse -p fragscapy -- fragscapy/modifications/__init__.py fragscapy/modifications/mod.py fragscapy/modifications/utils.py
+	@dot -Tsvg classes_fragscapy.dot > classes_fragscapy.svg
+	@dot -Tsvg packages_fragscapy.dot > packages_fragscapy.svg
+	@echo "Generated files 'classes_fragscapy.svg' and 'packages_fragscapy.svg'"
 pyreverse-mod:
-	@if ! command -v pyreverse; then echo "Pylint not found, run 'make dependencies-dev'."; exit 1; fi
+	@if ! command -v pyreverse > /dev/null; then echo "Pyreverse not found, run 'make dependencies-dev'."; exit 1; fi
+	@if ! command -v dot > /dev/null; then echo "dot not found, install 'graphviz'"; exit 1; fi
 	@pyreverse -p fragscapy fragscapy/
+	@dot -Tsvg classes_fragscapy.dot > classes_fragscapy.svg
+	@dot -Tsvg packages_fragscapy.dot > packages_fragscapy.svg
+	@echo "Generated files 'classes_fragscapy.svg' and 'packages_fragscapy.svg'"
 
 # Standard install
 dependencies:
