@@ -18,15 +18,43 @@ applied to packets as long one can write them using Scapy.
 
 ## Setup
 
+### Building dependencies
+
+The project requires some tools to be installed. Those are:
+* git  (for cloning the repository)
+* python >= 3.5
+* python-dev >= 3.5  (for building the dependencies with pip)
+* gcc  (for building the dependencies with pip)
+* cffi (for building the dependencies with pip
+* make (for simplification of tasks)
+* pip  (installed by default in a venv)
+
 The recommended setup is to use a
 [virtual environment](https://docs.python.org/3.5/library/venv.html). Once it
-is started (or not if using a global installation), the Makefile can do all
-common tasks. 
+is started (or not if using a global installation), the Makefile can do most
+of the common tasks.
+
+On Debian or Ubuntu:
+```
+apt install -y git python3 python3-dev gcc cffi make python3-venv
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### Install
 
 To install fragscapy, run:
 ```
-make build
 make install
+```
+
+### Development install
+
+Fragscapy can be installed in development mode. It means the changes made to
+the code will be taken into account without the need to rebuild everything
+each time:
+```
+make install-dev
 ```
 
 ## Documentation
