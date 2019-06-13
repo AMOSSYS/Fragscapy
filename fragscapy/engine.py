@@ -11,6 +11,7 @@ and sending them back to the network.
 import itertools
 import glob
 import os
+import string
 import subprocess
 import threading
 import warnings
@@ -44,6 +45,26 @@ def engine_warning(msg):
     )
 
 
+def rm_pattern(pattern):
+    """Deletes all the files that match a formatting pattern."""
+
+    # Build the args and kwargs to use '*' in the pattern
+    args = list()
+    kwargs = dict()
+    for _, name, _, _ in string.Formatter().parse(pattern):
+        if name is None:
+            continue
+        if name:
+            kwargs[name] = '*'
+        else:
+            args.append('*')
+
+    # Remove the corresponding files
+    for f in glob.glob(pattern.format(*args, **kwargs)):
+        os.remove(f)
+
+
+# pylint: disable=too-many-instance-attributes
 class EngineThread(threading.Thread):
     """Thread of the engine modifying the packets in NFQUEUE.
 
@@ -71,12 +92,6 @@ class EngineThread(threading.Thread):
         *args: The args passed to the `Thread` class.
         **kwargs: The kwargs passed to the `Thread` class.
 
-    Attributes:
-        local_pcap (str): A pcap file where the packets of the local side
-            should dumped to. 'None' means the packets are not dumped.
-        remote_pcap (str): A pcap file where the packets of the remote side
-            should dumped to. 'None' means the packets are not dumped.
-
     Examples:
         Assuming the nfqueue, modlist1, modlist2 and modlist3 objects exists
 
@@ -90,10 +105,12 @@ class EngineThread(threading.Thread):
         self._nfqueue = nfqueue
         self._input_modlist = kwargs.pop("input_modlist", None)
         self._output_modlist = kwargs.pop("output_modlist", None)
-        self.local_pcap = kwargs.pop("local_pcap", None)
-        self.remote_pcap = kwargs.pop("remote_pcap", None)
         self._input_lock = threading.Lock()
         self._output_lock = threading.Lock()
+        self._local_pcap = kwargs.pop("local_pcap", None)
+        self._remote_pcap = kwargs.pop("remote_pcap", None)
+        self._local_pcap_lock = threading.Lock()
+        self._remote_pcap_lock = threading.Lock()
         super(EngineThread, self).__init__(*args, **kwargs)
 
     @property
@@ -120,12 +137,45 @@ class EngineThread(threading.Thread):
         with self._output_lock:
             self._output_modlist = new
 
+    @property
+    def local_pcap(self):
+        """A pcap file where the packets of the local side should be dumped
+        to. 'None' means the packets are not dumped. Read/Write is
+        thread-safe."""
+        with self._local_pcap_lock:
+            return self._local_pcap
+
+    @local_pcap.setter
+    def local_pcap(self, new):
+        with self._local_pcap_lock:
+            self._local_pcap = new
+
+    @property
+    def remote_pcap(self):
+        """A pcap file where the packets of the remote side should be dumped
+        to. 'None' means the packets are not dumped. Read/Write is
+        thread-safe."""
+        with self._remote_pcap_lock:
+            return self._remote_pcap
+
+    @remote_pcap.setter
+    def remote_pcap(self, new):
+        with self._remote_pcap_lock:
+            self._remote_pcap = new
+
     def _process_input(self, packet):
         """Applies the input modifications on `packet`."""
         # Dump the packet before anything else
         if self.remote_pcap is not None:
             scapy.utils.wrpcap(self.remote_pcap, packet.scapy_pkt,
                                append=True)
+
+        # Checks that the INPUT modlist is populated
+        with self._input_lock:
+            if self._input_modlist is None:
+                raise EngineError(
+                    "Can't run the engine with no INPUT modlist"
+                )
 
         # Put the packet in a packet list
         packetlist = PacketList()
@@ -168,6 +218,13 @@ class EngineThread(threading.Thread):
             scapy.utils.wrpcap(self.local_pcap, packet.scapy_pkt,
                                append=True)
 
+        # Checks that the OUTPUT modlist is populated
+        with self._output_lock:
+            if self._output_modlist is None:
+                raise EngineError(
+                    "Can't run the engine with no OUTPUT modlist"
+                )
+
         # Put the packet in a packet list
         packetlist = PacketList()
         packetlist.add_packet(packet.scapy_pkt)
@@ -196,18 +253,6 @@ class EngineThread(threading.Thread):
         Raises:
             EngineError: There is a modlist (input or output) missing.
         """
-        # Checks that the INPUT and OUTPUT modlist are populated
-        with self._input_lock:
-            if self._input_modlist is None:
-                raise EngineError(
-                    "Can't run the engine with no INPUT modlist"
-                )
-        with self._output_lock:
-            if self._output_modlist is None:
-                raise EngineError(
-                    "Can't run the engine with no OUTPUT modlist"
-                )
-
         # Process the queue infinitely
         for packet in self._nfqueue:
             if packet.is_input:
@@ -353,18 +398,11 @@ class Engine(object):
         # Prepare the threads that catches, modify and send the packets
         self._engine_threads = list()
         for nfqueue in self._nfqueues:
-            self._engine_threads.append(EngineThread(
-                nfqueue,
-                input_modlist=self._mlgen_input[0],
-                output_modlist=self._mlgen_output[0],
-                local_pcap=self.local_pcap,
-                remote_pcap=self.remote_pcap
-            ))
+            self._engine_threads.append(EngineThread(nfqueue))
 
     def _flush_modif_files(self):
-        """Delete all the files that match the pattern of `modif_file`."""
-        for f in glob.glob(self.modif_file.format(i='*')):
-            os.remove(f)
+        """Deletes all the files that match the pattern of `modif_file`."""
+        rm_pattern(self.modif_file)
 
     def _write_modlist_to_file(self, i, input_modlist, output_modlist,
                                repeat=0):
@@ -386,13 +424,51 @@ class Engine(object):
         self._write_modlist_to_file(i, input_modlist, output_modlist,
                                     repeat=repeat)
 
+    def _flush_pcap_files(self):
+        """Deletes all the files that match the patter of `local_pcap` and
+        `remote_pcap`."""
+        rm_pattern(self.local_pcap)
+        rm_pattern(self.remote_pcap)
+
+    def _update_pcap_files(self, i, j):
+        """Changes the pcap files in all the threads."""
+        for engine_thread in self._engine_threads:
+            if self.local_pcap is None:
+                engine_thread.local_pcap = self.local_pcap
+            else:
+                engine_thread.local_pcap = self.local_pcap.format(i=i, j=j)
+            if self.remote_pcap is None:
+                engine_thread.remote_pcap = self.remote_pcap
+            else:
+                engine_thread.remote_pcap = self.remote_pcap.format(i=i, j=j)
+
     def _flush_std_files(self):
-        """Delete all the files that match the pattern of `stdout_file` and
+        """Deletes all the files that match the pattern of `stdout_file` and
         `stderr_file`."""
-        for f in glob.glob(self.stdout_file.format(i='*', j='*')):
-            os.remove(f)
-        for f in glob.glob(self.stderr_file.format(i='*', j='*')):
-            os.remove(f)
+        rm_pattern(self.stdout_file)
+        rm_pattern(self.stderr_file)
+
+    def _get_std_files(self, i, j):
+        """Returns a 2-tuple of file descriptor (or None) of where stdout and
+        stderr should be redirected."""
+        if self.stdout:
+            if self.stdout_file is not None:
+                fout = open(self.stdout_file.format(i=i, j=j), "ab")
+            else:
+                fout = None
+        else:
+            fout = subprocess.PIPE
+
+        if self.stderr:
+            if self.stderr_file is not None:
+                ferr = open(self.stderr_file.format(i=i, j=j), "ab")
+            else:
+                ferr = None
+        else:
+            ferr = subprocess.PIPE
+
+        return fout, ferr
+
 
     def _run_cmd(self, i, j):
         """Launches the user command in a sub-process.
@@ -405,27 +481,19 @@ class Engine(object):
             j: current repeat iteration number, used for formating the
                 filenames.
         """
+        # Load the files if they exists
+        fout, ferr = self._get_std_files(i, j)
+
         # Can not use with statement here because files may be None
         # so emulates the behavior of a with statement with try/finally
-
-        # Load the files if they exists
-        if self.stdout and self.stdout_file is not None:
-            fout = open(self.stdout_file.format(i=i, j=j), "ab")
-        elif self.stdout:
-            fout = None
-        else:
-            fout = subprocess.PIPE
-
-        if self.stderr and self.stderr_file is not None:
-            ferr = open(self.stderr_file.format(i=i, j=j), "ab")
-        elif self.stderr:
-            ferr = None
-        else:
-            ferr = subprocess.PIPE
-
         try:
             # Run the command
-            subprocess.run(self._cmd, stdout=fout, stderr=ferr, shell=True)
+            subprocess.run(
+                self._cmd.format(i=i, j=j),
+                stdout=fout,
+                stderr=ferr,
+                shell=True
+            )
         finally:
             # Close the files even if there was an exception
             try:
@@ -463,6 +531,7 @@ class Engine(object):
         if not self.append:
             self._flush_modif_files()
             self._flush_std_files()
+            self._flush_pcap_files()
         self._insert_nfrules()
         self._start_threads()
 
@@ -481,11 +550,13 @@ class Engine(object):
                 repeat = 1
             else:
                 repeat = 100
+
             # Change the modlist in the threads
             self._update_modlists(i, input_modlist, output_modlist, repeat)
-            # Run the command
+
             for j in range(repeat):
-                self._run_cmd(i, j)
+                self._update_pcap_files(i, j)  # Changes the pcap filenames
+                self._run_cmd(i, j)            # Run the command
 
     def post_run(self):
         """Runs all the actions that need to be run after `.run()`."""
