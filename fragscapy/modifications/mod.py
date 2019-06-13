@@ -56,7 +56,6 @@ class Mod(abc.ABC):
         Raises:
             ValueError: At least one of the argument cannot be parsed.
         """
-        pass
 
     def check_args(self, *args):
         """Performs some checks on the arguments.

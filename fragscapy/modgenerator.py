@@ -33,8 +33,6 @@ MOD_DIR = 'modifications'
 class ModGeneratorError(ValueError):
     """Error with the mods generation."""
 
-    pass
-
 
 class ModOption(abc.ABC):
     """Abstract generator for an option in a modification.
@@ -572,7 +570,6 @@ class ModOptionNone(ModOption):
     def get_option(self, i):
         """See `ModOption.get_option`."""
         self.inbound_or_raise(i)
-        return None
 
     def nb_options(self):
         """Returns always 1 because there is ony 1 instance possible. See
