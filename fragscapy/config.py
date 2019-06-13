@@ -19,7 +19,6 @@ class ConfigError(ValueError):
 
 class ConfigWarning(Warning):
     """Warning during the configuration parsing."""
-    pass
 
 
 def config_warning(msg):

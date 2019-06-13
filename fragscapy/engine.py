@@ -29,12 +29,10 @@ MODIF_FILE = "modifications.txt"   # Details of each mod on this file
 
 class EngineError(ValueError):
     """An Error during the execution of the engine."""
-    pass
 
 
 class EngineWarning(Warning):
     """Warning during the execution of the engine."""
-    pass
 
 
 def engine_warning(msg):
@@ -259,8 +257,6 @@ class EngineThread(threading.Thread):
                 self._process_input(packet)
             else:
                 self._process_output(packet)
-
-        return None
 
 
 # pylint: disable=too-many-instance-attributes
