@@ -22,6 +22,7 @@ import tqdm
 from fragscapy.modgenerator import ModListGenerator
 from fragscapy.netfilter import NFQueue, NFQueueRule
 from fragscapy.packetlist import PacketList
+from fragscapy.tests import TestSuite
 
 
 MODIF_FILE = "modifications.txt"   # Details of each mod on this file
@@ -41,25 +42,6 @@ def engine_warning(msg):
         "{}".format(msg),
         EngineWarning
     )
-
-
-def rm_pattern(pattern):
-    """Deletes all the files that match a formatting pattern."""
-
-    # Build the args and kwargs to use '*' in the pattern
-    args = list()
-    kwargs = dict()
-    for _, name, _, _ in string.Formatter().parse(pattern):
-        if name is None:
-            continue
-        if name:
-            kwargs[name] = '*'
-        else:
-            args.append('*')
-
-    # Remove the corresponding files
-    for f in glob.glob(pattern.format(*args, **kwargs)):
-        os.remove(f)
 
 
 # pylint: disable=too-many-instance-attributes
@@ -368,31 +350,30 @@ class Engine(object):
                       "\n"
                       "\n")
 
+
     def __init__(self, config, **kwargs):
         self.progressbar = kwargs.pop("progressbar", True)
-        self.modif_file = kwargs.pop("modif_file", MODIF_FILE)
-        try:
-            self.stdout_file = kwargs.pop("stdout")
-            self.stdout = True
-        except KeyError:
-            self.stdout_file = None
-            self.stdout = False
-        try:
-            self.stderr_file = kwargs.pop("stderr")
-            self.stderr = True
-        except KeyError:
-            self.stderr_file = None
-            self.stderr = False
-        self.local_pcap = kwargs.pop("local_pcap", None)
-        self.remote_pcap = kwargs.pop("remote_pcap", None)
+
+        # Build the generator for all mods
+        in_ml = ModListGenerator(config.input)
+        out_ml = ModListGenerator(config.output)
+        ml_iterator = itertools.product(in_ml, out_ml)
+        if self.progressbar:  # Use tqdm for showing progressbar
+            ml_iterator = tqdm.tqdm(ml_iterator, total=len(in_ml)*len(out_ml))
+
+        # The test suite object
+        self.test_suite = TestSuite(
+            ml_iterator=ml_iterator,
+            cmd_pattern=config.cmd,
+            modif_file_pattern=kwargs.pop("modif_file", None),
+            stdout="stdout" in kwargs,
+            stdout_pattern=kwargs.pop("stdout", None),
+            stderr="stderr" in kwargs,
+            stderr_pattern=kwargs.pop("stderr", None),
+            local_pcap_pattern=kwargs.pop("local_pcap", None),
+            remote_pcap_pattern=kwargs.pop("remote_pcap", None)
+        )
         self.append = kwargs.pop("append", False)
-
-        # The cartesian product of the input and output `ModListGenerator`
-        self._mlgen_input = ModListGenerator(config.input)
-        self._mlgen_output = ModListGenerator(config.output)
-
-        # The command to run
-        self._cmd = config.cmd
 
         # Populate the NFQUEUE-related objects
         self._nfrules = list()
@@ -411,111 +392,31 @@ class Engine(object):
         for nfqueue in self._nfqueues:
             self._engine_threads.append(EngineThread(nfqueue))
 
-    def _flush_modif_files(self):
-        """Deletes all the files that match the pattern of `modif_file`."""
-        rm_pattern(self.modif_file)
-
-    def _write_modlist_to_file(self, i, input_modlist, output_modlist,
-                               repeat=0):
+    def _write_modlist_to_file(self, repeated_test_case):
         """Writes the modification details to the 'modif_file'."""
-        repeat = "(repeated {} times)".format(repeat) if repeat > 1 else ""
-        with open(self.modif_file.format(i=i), "a") as mod_file:
+        repeat = ("(repeated {} times)".format(repeated_test_case.repeat)
+                  if repeated_test_case.repeat > 1
+                  else "")
+        with open(repeated_test_case.modif_file, "a") as mod_file:
             mod_file.write(self.MODIF_TEMPLATE.format(
-                i=i,
+                i=repeated_test_case.test_id,
                 repeat=repeat,
-                input_modlist=input_modlist,
-                output_modlist=output_modlist
+                input_modlist=repeated_test_case.input_modlist,
+                output_modlist=repeated_test_case.output_modlist
             ))
 
-    def _update_modlists(self, i, input_modlist, output_modlist, repeat=0):
+    def _update_modlists(self, repeated_test_case):
         """Changes the modlist in all the threads."""
         for engine_thread in self._engine_threads:
-            engine_thread.input_modlist = input_modlist
-            engine_thread.output_modlist = output_modlist
-        self._write_modlist_to_file(i, input_modlist, output_modlist,
-                                    repeat=repeat)
+            engine_thread.input_modlist = repeated_test_case.input_modlist
+            engine_thread.output_modlist = repeated_test_case.output_modlist
+        self._write_modlist_to_file(repeated_test_case)
 
-    def _flush_pcap_files(self):
-        """Deletes all the files that match the patter of `local_pcap` and
-        `remote_pcap`."""
-        rm_pattern(self.local_pcap)
-        rm_pattern(self.remote_pcap)
-
-    def _update_pcap_files(self, i, j):
+    def _update_pcap_files(self, test_case):
         """Changes the pcap files in all the threads."""
         for engine_thread in self._engine_threads:
-            if self.local_pcap is None:
-                engine_thread.local_pcap = self.local_pcap
-            else:
-                engine_thread.local_pcap = self.local_pcap.format(i=i, j=j)
-            if self.remote_pcap is None:
-                engine_thread.remote_pcap = self.remote_pcap
-            else:
-                engine_thread.remote_pcap = self.remote_pcap.format(i=i, j=j)
-
-    def _flush_std_files(self):
-        """Deletes all the files that match the pattern of `stdout_file` and
-        `stderr_file`."""
-        rm_pattern(self.stdout_file)
-        rm_pattern(self.stderr_file)
-
-    def _get_std_files(self, i, j):
-        """Returns a 2-tuple of file descriptor (or None) of where stdout and
-        stderr should be redirected."""
-        if self.stdout:
-            if self.stdout_file is not None:
-                fout = open(self.stdout_file.format(i=i, j=j), "ab")
-            else:
-                fout = None
-        else:
-            fout = subprocess.PIPE
-
-        if self.stderr:
-            if self.stderr_file is not None:
-                ferr = open(self.stderr_file.format(i=i, j=j), "ab")
-            else:
-                ferr = None
-        else:
-            ferr = subprocess.PIPE
-
-        return fout, ferr
-
-
-    def _run_cmd(self, i, j):
-        """Launches the user command in a sub-process.
-
-        Redirect stdout and stderr to the corresponding files.
-
-        Args:
-            i: current modlist iteration number, used for formating the
-                filenames.
-            j: current repeat iteration number, used for formating the
-                filenames.
-        """
-        # Load the files if they exists
-        fout, ferr = self._get_std_files(i, j)
-
-        # Can not use with statement here because files may be None
-        # so emulates the behavior of a with statement with try/finally
-        try:
-            # Run the command
-            subprocess.run(
-                self._cmd.format(i=i, j=j),
-                stdout=fout,
-                stderr=ferr,
-                shell=True
-            )
-        finally:
-            # Close the files even if there was an exception
-            try:
-                fout.close()
-            except AttributeError:  # fout does not have a `.close()`
-                pass
-            finally:
-                try:
-                    ferr.close()
-                except AttributeError:  # ferr does not have a `.close()`
-                    pass
+            engine_thread.local_pcap = test_case.local_pcap
+            engine_thread.remote_pcap = test_case.remote_pcap
 
     def _insert_nfrules(self):
         """Inserts all the NF rules using `ip(6)tables`."""
@@ -545,9 +446,7 @@ class Engine(object):
     def pre_run(self):
         """Runs all the actions that need to be run before `.run()`."""
         if not self.append:
-            self._flush_modif_files()
-            self._flush_std_files()
-            self._flush_pcap_files()
+            self.test_suite.flush_all_files()
         self._insert_nfrules()
         self._start_threads()
 
@@ -557,22 +456,11 @@ class Engine(object):
         Generates a modlist, run the command and do it over and over until all
         the possible modlists are exhausted.
         """
-        iterator = self._get_modlist_iterator()
-
-        for i, (input_modlist, output_modlist) in iterator:
-            # How many times should we repeat the command (for random changes)
-            if (input_modlist.is_deterministic()
-                    and output_modlist.is_deterministic()):
-                repeat = 1
-            else:
-                repeat = 100
-
-            # Change the modlist in the threads
-            self._update_modlists(i, input_modlist, output_modlist, repeat)
-
-            for j in range(repeat):
-                self._update_pcap_files(i, j)  # Changes the pcap filenames
-                self._run_cmd(i, j)            # Run the command
+        for repeated_test_case in self.test_suite:
+            self._update_modlists(repeated_test_case)
+            for test_case in repeated_test_case:
+                self._update_pcap_files(test_case)
+                test_case.run()
 
     def post_run(self):
         """Runs all the actions that need to be run after `.run()`."""
@@ -587,26 +475,6 @@ class Engine(object):
         self.run()
         self.post_run()
 
-    def _get_modlist_iterator(self):
-        """Returns an iterator for all the possible combinations of modlists.
-
-        Each value of the iterator is on the following format:
-            (int<index>, (ModList<input_modlist>, ModList<output_modlist>))
-        If `self.progressbar` is True, automatically add the `tqdm` iterator.
-        """
-        iterator = enumerate(itertools.product(
-            self._mlgen_input,
-            self._mlgen_output
-        ))
-        if self.progressbar:  # Use tqdm for showing progressbar
-            # Need to manually specify the total size as enumerate and
-            # product fucntion prevent from getting it automatically
-            total = (len(self._mlgen_input)
-                     * len(self._mlgen_output))
-            iterator = tqdm.tqdm(iterator, total=total)
-
-        return iterator
-
     def check_nfrules(self):
         """Checks that the NF rules should work without errors."""
         self._insert_nfrules()
@@ -615,13 +483,6 @@ class Engine(object):
     def check_modlist_generation(self):
         """Checks that the ModListGenerator will generate all mods."""
         if not self.append:
-            self._flush_modif_files()
-        iterator = self._get_modlist_iterator()
-        for i, (input_modlist, output_modlist) in iterator:
-            if (input_modlist.is_deterministic()
-                    and output_modlist.is_deterministic()):
-                repeat = 1
-            else:
-                repeat = 100
-            self._write_modlist_to_file(i, input_modlist, output_modlist,
-                                        repeat=repeat)
+            self.test_suite.flush_modif_files()
+        for repeated_test_case in self.test_suite:
+            self._write_modlist_to_file(repeated_test_case)
