@@ -304,6 +304,9 @@ class NFQueue(object):
             fnfqueue.MAX_PAYLOAD, fnfqueue.COPY_PACKET
         )
 
+        # Has the nfqueue been stopped ?
+        self._stopped = False
+
     def __iter__(self):
         return self
 
@@ -324,10 +327,11 @@ class NFQueue(object):
 
     def is_stopped(self):
         """Has the nfqueue been stopped (i.e. cannot be used anymore) ?"""
-        return self._conn is None
+        return self._stopped
 
     def stop(self):
         """Stops the process of the nfqueue by closing the connection."""
+        self._stopped = True
         self._conn.close()
 
 
