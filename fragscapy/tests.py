@@ -133,6 +133,7 @@ class TestCase(object):
         self.stderr = kwargs.pop("stderr", False)
         self.local_pcap = kwargs.pop("local_pcap", None)
         self.remote_pcap = kwargs.pop("remote_pcap", None)
+        self.test_id = kwargs.pop("test_id")
         self.result = None
 
     def run(self):
@@ -179,7 +180,8 @@ class RepeatedTestCase(object):
     def __iter__(self):
         for j in range(self.repeat):
             test = TestCase(
-                **self.test_patterns.get(self.test_id, j)
+                **self.test_patterns.get(self.test_id, j),
+                test_id=j,
             )
             self.tests_generated.append(test)
             yield test

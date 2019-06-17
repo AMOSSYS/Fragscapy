@@ -9,10 +9,6 @@ and sending them back to the network.
 """
 
 import itertools
-import glob
-import os
-import string
-import subprocess
 import threading
 import warnings
 
@@ -42,6 +38,15 @@ def engine_warning(msg):
         "{}".format(msg),
         EngineWarning
     )
+
+
+def _append_to_display_list(display_list, i, j, limit):
+    """Utility function to add the test i_j to the list that will be displayed
+    within the limit given."""
+    if len(display_list) < limit:
+        display_list.append("n°{}_{}".format(i, j))
+    elif len(display_list) == limit:
+        display_list.append("...")
 
 
 # pylint: disable=too-many-instance-attributes
@@ -340,15 +345,28 @@ class Engine(object):
     """
 
     # Template of the infos for each modification
-    MODIF_TEMPLATE = ("Modification n°{i}{repeat}:\n"
-                      "> INPUT:\n"
-                      "{input_modlist}\n"
-                      "\n"
-                      "> OUTPUT:\n"
-                      "{output_modlist}\n"
-                      "=================================================="
-                      "\n"
-                      "\n")
+    MODIF_TEMPLATE = (
+        "Modification n°{i}{repeat}:\n"
+        "> INPUT:\n"
+        "{input_modlist}\n"
+        "\n"
+        "> OUTPUT:\n"
+        "{output_modlist}\n"
+        "=================================================="
+        "\n"
+        "\n"
+    )
+    # Template used to display the results
+    RESULTS_TEMPLATE = (
+        "Results ({nb_tests} tests done over {nb_mods} scenarios)\n"
+        "==================\n"
+        "Pass : {nb_passed}\n"
+        "    {display_passed}\n"
+        "Fail : {nb_failed}\n"
+        "    {display_failed}\n"
+        "Not Done : {nb_not_done}\n"
+        "    {display_not_done}"
+    )
 
 
     def __init__(self, config, **kwargs):
@@ -468,12 +486,53 @@ class Engine(object):
         self._join_threads()
         self._remove_nfrules()
 
+    def display_results(self):
+        """Display a summary of which test passed and which did not."""
+        display_limit = 80 // len("n°ii_j, ")  # Max 80 chars
+
+        nb_tests, nb_mods, nb_passed, nb_failed, nb_not_done = 0, 0, 0, 0, 0
+        display_passed = list()
+        display_failed = list()
+        display_not_done = list()
+        for repeated_test_case in self.test_suite.tests_generated:
+            nb_mods += 1
+            for test_case in repeated_test_case.tests_generated:
+                nb_tests += 1
+                if test_case.is_success():
+                    nb_passed += 1
+                    display_list = display_passed
+                elif test_case.is_failure():
+                    nb_failed += 1
+                    display_list = display_failed
+                else:
+                    nb_not_done += 1
+                    display_list = display_not_done
+                _append_to_display_list(
+                    display_list,
+                    repeated_test_case.test_id,
+                    test_case.test_id,
+                    display_limit
+                )
+
+        results = self.RESULTS_TEMPLATE.format(
+            nb_tests=nb_tests,
+            nb_mods=nb_mods,
+            nb_passed=nb_passed,
+            display_passed=", ".join(display_passed),
+            nb_failed=nb_failed,
+            display_failed=", ".join(display_failed),
+            nb_not_done=nb_not_done,
+            display_not_done=", ".join(display_not_done),
+        )
+        print(results)
+
     def start(self):
         """Starts the test suite by running `.pre_run()`, `.run()` and
-        finaly `.post_run()`."""
+        finally `.post_run()`."""
         self.pre_run()
         self.run()
         self.post_run()
+        self.display_results()
 
     def check_nfrules(self):
         """Checks that the NF rules should work without errors."""
