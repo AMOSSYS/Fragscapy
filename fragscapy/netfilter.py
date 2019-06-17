@@ -264,7 +264,7 @@ class NFQueueRule(object):  # pylint: disable=too-many-instance-attributes
         self._insert_or_remove(insert=False)
 
 
-class NFQueue(object):  # pylint: disable=too-few-public-methods
+class NFQueue(object):
     """
     Queue object that contains the different packets in the NFQUEUE target.
     It can be iterated over in a for-loop to access them one by one or call
@@ -312,13 +312,23 @@ class NFQueue(object):  # pylint: disable=too-few-public-methods
 
     def next_packet(self):
         """Returns the next packet in NFQUEUE."""
+        if self.is_stopped():
+            raise StopIteration
         for p in self._conn:
             if p.hw_protocol == scapy.data.ETH_P_IP:
                 return IP(p)
             if p.hw_protocol == scapy.data.ETH_P_IPV6:
                 return IPv6(p)
             p.accept()
-        return None
+        raise StopIteration
+
+    def is_stopped(self):
+        """Has the nfqueue been stopped (i.e. cannot be used anymore) ?"""
+        return self._conn is None
+
+    def stop(self):
+        """Stops the process of the nfqueue by closing the connection."""
+        self._conn.close()
 
 
 class PacketWrapper(abc.ABC):
