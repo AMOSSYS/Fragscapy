@@ -3,17 +3,6 @@ import os
 import string
 import subprocess
 
-# Template of the infos for each modification
-MODIF_TEMPLATE = ("Modification n°{i}{repeat}:\n"
-                  "> INPUT:\n"
-                  "{input_modlist}\n"
-                  "\n"
-                  "> OUTPUT:\n"
-                  "{output_modlist}\n"
-                  "=================================================="
-                  "\n"
-                  "\n")
-
 
 def rm_pattern(pattern):
     """Deletes all the files that match a formatting pattern."""
@@ -193,14 +182,13 @@ class RepeatedTestCase(object):
 class TestSuite(object):
     def __init__(self, **kwargs):
         self.ml_iterator = kwargs.pop("ml_iterator")
-        self.modif_file_pattern = kwargs.pop("modif_file_pattern", None)
+        self.modif_file_pattern = kwargs.pop("modif_file_pattern")
         self.test_patterns = TestPatterns(**kwargs)
         self.tests_generated = list()
 
     def flush_modif_files(self):
         """Deletes all the files that match `modif_file_pattern`."""
-        if self.modif_file_pattern is not None:
-            rm_pattern(self.modif_file_pattern)
+        rm_pattern(self.modif_file_pattern)
 
     def flush_all_files(self):
         """Deletes all the files that could be generated during the process of

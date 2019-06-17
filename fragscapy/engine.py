@@ -388,7 +388,7 @@ class Engine(object):
         self.test_suite = TestSuite(
             ml_iterator=ml_iterator,
             cmd_pattern=config.cmd,
-            modif_file_pattern=kwargs.pop("modif_file", None),
+            modif_file_pattern=kwargs.pop("modif_file", MODIF_FILE),
             stdout="stdout" in kwargs,
             stdout_pattern=kwargs.pop("stdout", None),
             stderr="stderr" in kwargs,
