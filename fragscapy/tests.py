@@ -43,7 +43,8 @@ class TestPatterns(object):
                 return None
             fname = self.stdout_pattern.format(i=i, j=j)
             if fname not in self.open_fd:
-                os.makedirs(os.path.dirname(fname), exist_ok=True)
+                if os.path.dirname(fname):
+                    os.makedirs(os.path.dirname(fname), exist_ok=True)
                 self.open_fd[fname] = open(fname, "ab")
             return self.open_fd[fname]
         return subprocess.PIPE
@@ -54,7 +55,8 @@ class TestPatterns(object):
                 return None
             fname = self.stderr_pattern.format(i=i, j=j)
             if fname not in self.open_fd:
-                os.makedirs(os.path.dirname(fname), exist_ok=True)
+                if os.path.dirname(fname):
+                    os.makedirs(os.path.dirname(fname), exist_ok=True)
                 self.open_fd[fname] = open(fname, "ab")
             return self.open_fd[fname]
         return subprocess.PIPE
@@ -63,14 +65,16 @@ class TestPatterns(object):
         if self.local_pcap_pattern is None:
             return None
         fname = self.local_pcap_pattern.format(i=i, j=j)
-        os.makedirs(os.path.dirname(fname), exist_ok=True)
+        if os.path.dirname(fname):
+            os.makedirs(os.path.dirname(fname), exist_ok=True)
         return fname
 
     def get_remote_pcap(self, i, j):
         if self.remote_pcap_pattern is None:
             return None
         fname = self.remote_pcap_pattern.format(i=i, j=j)
-        os.makedirs(os.path.dirname(fname), exist_ok=True)
+        if os.path.dirname(fname):
+            os.makedirs(os.path.dirname(fname), exist_ok=True)
         return fname
 
     def get(self, i, j):
@@ -200,7 +204,8 @@ class TestSuite(object):
         for test_id, modlists in enumerate(self.ml_iterator):
             # Makes sure the modif_file directory exists
             modif_file = self.modif_file_pattern.format(i=test_id)
-            os.makedirs(os.path.dirname(modif_file), exist_ok=True)
+            if os.path.dirname(modif_file):
+                os.makedirs(os.path.dirname(modif_file), exist_ok=True)
 
             # Creates a RepeatedTestCase with these modlists
             repeated_test_case = RepeatedTestCase(
