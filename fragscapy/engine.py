@@ -299,6 +299,8 @@ class Engine(object):
             necessary data.
         progressbar (bool, optional): Show a progressbar during the process.
             Default is 'True'.
+        dsiplay_results (bool, optional): Display the results at the end of
+            the tests. Default is 'True'.
         modif_file (str, optional): The filename where to write the
             modifications. Default is 'modifications.txt'.
         stdout (str, optional): The filename where to redirect stdout.
@@ -320,6 +322,8 @@ class Engine(object):
 
     Attributes:
         progressbar (bool): Shows a progressbar during the process if True.
+        diplay_results (bool): Display the results at the end of the tests if
+            True.
         modif_file (str, optional): The filename where to write the
             modifications.
         stdout (bool): 'False' if stdout of the command should be dropped.
@@ -371,6 +375,7 @@ class Engine(object):
 
     def __init__(self, config, **kwargs):
         self.progressbar = kwargs.pop("progressbar", True)
+        self.display_results = kwargs.pop("display_results", True)
 
         # Build the generator for all mods
         in_ml = ModListGenerator(config.input)
@@ -486,8 +491,8 @@ class Engine(object):
         self._join_threads()
         self._remove_nfrules()
 
-    def display_results(self):
-        """Display a summary of which test passed and which did not."""
+    def print_results(self):
+        """Prints a summary of which test passed and which did not."""
         display_limit = 80 // len("n°ii_j, ")  # Max 80 chars
 
         nb_tests, nb_mods, nb_passed, nb_failed, nb_not_done = 0, 0, 0, 0, 0
@@ -532,7 +537,8 @@ class Engine(object):
         self.pre_run()
         self.run()
         self.post_run()
-        self.display_results()
+        if self.display_results:
+            self.print_results()
 
     def check_nfrules(self):
         """Checks that the NF rules should work without errors."""
