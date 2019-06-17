@@ -101,6 +101,7 @@ class EngineThread(threading.Thread):
 
     def __init__(self, nfqueue, *args, **kwargs):
         self._nfqueue = nfqueue
+        self._nfqueue_lock = threading.RLock()
         self._input_modlist = kwargs.pop("input_modlist", None)
         self._output_modlist = kwargs.pop("output_modlist", None)
         self._input_lock = threading.Lock()
@@ -252,11 +253,25 @@ class EngineThread(threading.Thread):
             EngineError: There is a modlist (input or output) missing.
         """
         # Process the queue infinitely
-        for packet in self._nfqueue:
-            if packet.is_input:
-                self._process_input(packet)
-            else:
-                self._process_output(packet)
+        if not self.is_stopped():
+            for packet in self._nfqueue:
+                with self._nfqueue_lock:
+                    if self.is_stopped():
+                        break
+                    if packet.is_input:
+                        self._process_input(packet)
+                    else:
+                        self._process_output(packet)
+
+    def is_stopped(self):
+        """Has the thread been stopped ?"""
+        with self._nfqueue_lock:
+            return self._nfqueue.is_stopped()
+
+    def stop(self):
+        """Stops the thread by stopping the nfqueue processing."""
+        with self._nfqueue_lock:
+            self._nfqueue.stop()
 
 
 # pylint: disable=too-many-instance-attributes
@@ -517,6 +532,11 @@ class Engine(object):
         for engine_thread in self._engine_threads:
             engine_thread.start()
 
+    def _stop_threads(self):
+        """Send the signal to stop the threads used to process the packets."""
+        for engine_thread in self._engine_threads:
+            engine_thread.stop()
+
     def _join_threads(self):
         """Joins the engine threads used to process the packets."""
         for engine_thread in self._engine_threads:
@@ -556,8 +576,9 @@ class Engine(object):
 
     def post_run(self):
         """Runs all the actions that need to be run after `.run()`."""
-        self._remove_nfrules()
+        self._stop_threads()
         self._join_threads()
+        self._remove_nfrules()
 
     def start(self):
         """Starts the test suite by running `.pre_run()`, `.run()` and
