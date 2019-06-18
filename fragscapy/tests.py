@@ -199,7 +199,7 @@ class TestPatterns(object):
         """Closes all open file descriptors."""
         for fname in self.open_fd:
             self.open_fd[fname].close()
-            del self.open_fd[fname]
+        self.open_fd = dict()
 
     def remove_all(self):
         """Removes all files that can match the patterns of `stdout_pattern`,
