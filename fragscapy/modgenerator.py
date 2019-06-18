@@ -586,6 +586,11 @@ class ModOptionNone(ModOption):
 class ModGenerator(object):
     """Generator for a modification.
 
+    It can also generate 'None' instead of a modification. This means that the
+    modification should not be used (e.g. not included in a modlist). This
+    "possibility" makes the length of the generator 1 bigger than what could be
+    expected.
+
     For dynamic and evolution purposes, the `Mod` object is imported based on
     the `mod_name` given. It can then be used to generate all the possible
     mods with all the possible combinations for the options, as described in
@@ -606,12 +611,13 @@ class ModGenerator(object):
 
         >>> for mod in ModGenerator("echo", ["seq_str foo bar"]):
         ...     print(repr(mod))
+        None
         Echo<string: foo>
         Echo<string: bar>
-        >>> print(ModGenerator("fragment6", ["range 1280 6000 50"])[50])
-        Fragment6 3780
+        >>> print(ModGenerator("ipv6_frag", ["range 1280 6000 50"])[50])
+        Ipv6Frag 3730
         >>> len(ModGenerator("select", [0, 2, "seq_int 3 4 5", "range 7 20"]))
-        42
+        43
     """
 
     def __init__(self, mod_name, mod_opts):
@@ -678,8 +684,11 @@ class ModGenerator(object):
             ModGeneratorError: `i` is out of bounds (i<0 or i>=len).
 
         Returns:
-            The i-th `Mod` instance.
+            The i-th `Mod` instance or 'None' if the instance of the mod is
+                the one with no mod at all. By implementation 'None' is always
+                returned by the 0-th instance.
         """
+        # Check the correctness of i
         if not isinstance(i, int):
             raise ModGeneratorError(
                 "Index is not an integer, got '{}'".format(i)
@@ -689,6 +698,13 @@ class ModGenerator(object):
                 "Error with mod '{}': 'i' should be between 0 and {}, got '{}'"
                 .format(self.mod_name, self.nb_mods()-1, i)
             )
+
+        # Handle the 'no-mod' possibility
+        if i==0:
+            return None
+        i -= 1
+
+        # Generate one of the other possibility
         opts = list()
         for opt in self._mod_opts:
             opts.append(opt[i % len(opt)])
@@ -700,11 +716,13 @@ class ModGenerator(object):
         """Returns the number of different mods possible.
 
         It is basically the multiplication of the length of the different
-        `ModOption` it is composed of.
+        `ModOption` it is composed of. And 1 more possibility for the
+        'no-mod' possibility.
         """
         ret = 1
         for opt in self._mod_opts:
             ret *= len(opt)
+        ret += 1   # The 'no-mod' possibility
         return ret
 
     def __getitem__(self, i):
@@ -751,19 +769,24 @@ class ModListGenerator(object):
 
     Examples:
         >>> modlist_gen = ModListGenerator([
-        ...     {"mod_name": "fragment6", "mod_opts": ["seq_str 1280 1500"]},
+        ...     {"mod_name": "ipv6_frag", "mod_opts": ["seq_str 1280 1500"]},
         ...     {"mod_name": "echo", "mod_opts": ["seq_str foo bar fuz ball"]},
         ...     {"mod_name": "select", "mod_opts": [1, 2, 3, 4, 5]}
         ... ])
         >>> print(repr(modlist_gen))
-        ModListGenerator(mods=[fragment6, echo, select])
+        ModListGenerator(mods=[ipv6_frag, echo, select])
         >>> len(modlist_gen)
-        8
+        30
         >>> modlist_gen[5]
         ModList [
-         - Fragment6<fragsize: 1500>
+         - Ipv6Frag<fragsize: 1500>
          - Echo<string: fuz>
-         - Select<sequence: [1, 2, 3, 4, 5]>
+        ]
+        >>> modlist_gen[25]
+        ModList [
+         - Ipv6Frag<fragsize=1280>
+         - Echo<string=fuz>
+         - Select<sequence=[1, 2, 3, 4, 5]>
         ]
     """
 
@@ -798,7 +821,9 @@ class ModListGenerator(object):
             )
         modlist = ModList()
         for mod_generator in self._mod_generators:
-            modlist.append(mod_generator[i % len(mod_generator)])
+            mod = mod_generator[i % len(mod_generator)]
+            if mod is not None:
+                modlist.append(mod)
             i -= i % len(mod_generator)
             i //= len(mod_generator)
         return modlist
