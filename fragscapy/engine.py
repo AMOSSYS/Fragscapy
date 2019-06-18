@@ -489,9 +489,12 @@ class Engine(object):
                 if not interrupted:
                     self._update_modlists(repeated_test_case)
                 for test_case in repeated_test_case:
-                    if not interrupted:
-                        self._update_pcap_files(test_case)
-                        test_case.run()
+                    try:
+                        if not interrupted:
+                            self._update_pcap_files(test_case)
+                            test_case.run()
+                    except (KeyboardInterrupt, ProcessLookupError):
+                        interrupted = True
             except (KeyboardInterrupt, ProcessLookupError):
                 interrupted = True
 
