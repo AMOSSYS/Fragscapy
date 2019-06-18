@@ -145,6 +145,11 @@ def command():
               "terminals")
     )
     parser_start.add_argument(
+        '--no-results',
+        action='store_true',
+        help=("Disable the display of the results at the end.")
+    )
+    parser_start.add_argument(
         '--local-pcap', '-W',
         type=str,
         metavar='<pcap_file>',
@@ -208,6 +213,7 @@ def start(args):
         ['modif_file', 'local_pcap', 'remote_pcap', 'append']
     )
     kwargs['progressbar'] = not args.no_progressbar
+    kwargs['display_results'] = not args.no_results
     # To distinguish between '', '-o' and '-o plop', we tricked the option
     # into default to 0 in the first case (None for the second and plop the
     # thrid).

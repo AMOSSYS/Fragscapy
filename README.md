@@ -35,7 +35,7 @@ is started (or not if using a global installation), the Makefile can do most
 of the common tasks.
 
 On Debian or Ubuntu:
-```
+```bash
 apt install -y git python3 python3-dev gcc cffi make python3-venv
 python3 -m venv venv
 source venv/bin/activate
@@ -44,7 +44,7 @@ source venv/bin/activate
 ### Install
 
 To install fragscapy, run:
-```
+```bash
 make install
 ```
 
@@ -53,14 +53,14 @@ make install
 Fragscapy can be installed in development mode. It means the changes made to
 the code will be taken into account without the need to rebuild everything
 each time:
-```
+```bash
 make install-dev
 ```
 
 ## Documentation
 
 To build the development documentation, run:
-```
+```bash
 make build-doc
 ```
 It is then accessible as HTML files under _docs/\_build/_
@@ -103,6 +103,19 @@ Various modifications are already available but more can be added. To list
 the modifications that are currently detected (and can be used), run
 `fragscapy list`. For the details about the options and how to use a specific
 modifications, run `fragscapy usage <mod>`.
+
+
+### Results
+
+At the end of the tests, a summary of the results is displayed based on the
+exit code of the command: `0` means the test succeeded and any other value
+means the test failed. To adapt any command that does not respect this
+convention, one the following can be appended to the command in the
+configuration file:
+```bash
+my_cmd; if [ $? -eq 4 ]; then return 0; else return 1; fi
+my_cmd; e=$?; if [ $e -eq 3 ] || [ $e -eq 2 ]; then return 0; else return $e; fi
+```
 
 
 ## Adding modifications
