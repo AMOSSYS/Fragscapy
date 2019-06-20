@@ -700,7 +700,7 @@ class ModGenerator(object):
             )
 
         # Handle the 'no-mod' possibility
-        if i==0:
+        if i == 0:
             return None
         i -= 1
 

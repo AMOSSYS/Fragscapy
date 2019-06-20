@@ -479,11 +479,24 @@ class Engine(object):
         Generates a modlist, run the command and do it over and over until all
         the possible modlists are exhausted.
         """
+        # When interrupted in the middle of the test_suite, we continue to
+        # generate all the TestCase so they will appear in the 'not done'
+        # sections of the results
+        interrupted = False
+
         for repeated_test_case in self.test_suite:
-            self._update_modlists(repeated_test_case)
-            for test_case in repeated_test_case:
-                self._update_pcap_files(test_case)
-                test_case.run()
+            try:
+                if not interrupted:
+                    self._update_modlists(repeated_test_case)
+                for test_case in repeated_test_case:
+                    try:
+                        if not interrupted:
+                            self._update_pcap_files(test_case)
+                            test_case.run()
+                    except (KeyboardInterrupt, ProcessLookupError):
+                        interrupted = True
+            except (KeyboardInterrupt, ProcessLookupError):
+                interrupted = True
 
     def post_run(self):
         """Runs all the actions that need to be run after `.run()`."""
