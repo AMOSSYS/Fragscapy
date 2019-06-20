@@ -13,7 +13,7 @@ import io
 __all__ = ["__version__"]
 
 # major, minor, -extra
-VERSION_INFO = 0, 1
+VERSION_INFO = 1, 0
 
 
 def get_version():
