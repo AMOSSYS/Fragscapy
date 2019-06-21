@@ -8,7 +8,6 @@ The `EngineThread` is a thread in charge of modifying the intercept packets
 and sending them back to the network.
 """
 
-import itertools
 import threading
 import warnings
 
@@ -47,6 +46,16 @@ def _append_to_display_list(display_list, i, j, limit):
         display_list.append("n°{}_{}".format(i, j))
     elif len(display_list) == limit:
         display_list.append("...")
+
+
+def mlgen_product(in_ml, out_ml):
+    """Optimized equivalent of `itertools.product`.
+
+    It yields the fact that the ModListGenerator objects can be iterated
+    over multiple times (which is not the cas for all iterables) to avoid
+    storing intermediate values.
+    """
+    return ((x, y) for x in in_ml for y in out_ml)
 
 
 # pylint: disable=too-many-instance-attributes
@@ -380,7 +389,7 @@ class Engine(object):
         # Build the generator for all mods
         in_ml = ModListGenerator(config.input)
         out_ml = ModListGenerator(config.output)
-        ml_iterator = itertools.product(in_ml, out_ml)
+        ml_iterator = mlgen_product(in_ml, out_ml)
         if self.progressbar:  # Use tqdm for showing progressbar
             ml_iterator = tqdm.tqdm(ml_iterator, total=len(in_ml)*len(out_ml))
 
