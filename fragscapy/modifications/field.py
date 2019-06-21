@@ -58,7 +58,7 @@ class Field(Mod):
                         "Parameter 3 must be beetween {} and {}. Got {}"
                         .format(self.randval.min, self.randval.max, self.value)
                     )
-            except TypeError:
+            except (TypeError, AttributeError):
                 # self.value cannot be compared
                 pass
 
