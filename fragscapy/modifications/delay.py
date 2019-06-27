@@ -42,7 +42,7 @@ class Delay(Mod):
     name = "Delay"
     doc = ("Add some delay (in seconds) before one of or all the packets.\n"
            "delay {first|last|random|all|<id>} <delay>")
-    _nb_args = 1
+    _nb_args = 2
 
     def parse_args(self, *args):
         """See base class."""
