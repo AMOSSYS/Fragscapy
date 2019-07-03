@@ -56,14 +56,20 @@ class Duplicate(Mod):
     def apply(self, pkt_list):
         """Duplicates one packet. See `Mod.apply` for more details."""
         l = len(pkt_list)
+        if not l:
+            return pkt_list
         i = self.duplicate_index
 
         if i is None:  # Random
-            i = random.randint(-l, l-1)
+            if l == 1:
+                i = 0
+            else:
+                i = random.randint(-l, l-1)
 
         if i < -l or i > l-1:
-            print("Unable to duplicate packet n°{}. PacketList too small."
-                  "Passing the modification".format(i))
+            #print("Unable to duplicate packet n°{}. PacketList too small."
+            #      "Passing the modification".format(i))
+            pass
         else:
             duplicate_packet = pkt_list[i].pkt.copy()
             pkt_list.insert_packet(i, duplicate_packet)

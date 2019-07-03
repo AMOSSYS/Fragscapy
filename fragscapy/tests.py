@@ -310,7 +310,7 @@ class RepeatedTestCase(object):
                 and self.output_modlist.is_deterministic()):
             self.repeat = 1
         else:
-            self.repeat = 100
+            self.repeat = 1
 
         self.tests_generated = list()
 

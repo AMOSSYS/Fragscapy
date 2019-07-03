@@ -55,14 +55,21 @@ class DropOne(Mod):
     def apply(self, pkt_list):
         """Drops one packet. See `Mod.apply` for more details."""
         l = len(pkt_list)
+        if not l:
+            return pkt_list
+
         i = self.drop_index
 
         if i is None:  # Random
-            i = random.randint(-l, l-1)
+            if l == 1:
+                i = 0
+            else:
+                i = random.randint(-l, l-1)
 
         if i < -l or i > l-1:
-            print("Unable to drop packet n°{}. PacketList too small."
-                  "Passing the modification".format(i))
+            #print("Unable to drop packet n°{}. PacketList too small."
+            #      "Passing the modification".format(i))
+            pass
         else:
             pkt_list.remove_packet(i)
 
