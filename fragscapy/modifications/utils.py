@@ -94,12 +94,16 @@ def ipv6_insert_frag_hdr(pkt):
         pass
     return pkt
 
-def tcp_segment(pkt, size):
+def tcp_segment(pkt, size, overlap=None, overlap_before=False):
     """Segment a TCP packet to a certain size.
 
     Args:
         pkt: The packet to segment
         size: The size of the TCP data after segmentation
+        overlap: A string of data at the beginning or the end that overlaps
+            the other fragments
+        overlap_before: Should the overlap data be added at the beginning.
+            Else it is added at the end. Default is False.
 
     Returns:
         A list of L2-packets with TCP segments
@@ -127,6 +131,14 @@ def tcp_segment(pkt, size):
     ret = []
     for i, segment in enumerate(segments):
         new_pkt = pkt.copy()
+        if overlap is not None:
+            # Add some data that overlaps the previous/next fragment
+            if overlap_before and i != 0:
+                # All segments except the first one
+                segment = overlap + segment
+            elif not overlap_before and i == len(segments) - 1:
+                # All segments except the last one
+                segment = segment + overlap
         new_pkt.getlayer('TCP').payload = scapy.packet.Raw(segment)
         new_pkt.getlayer('TCP').chksum = None
         new_pkt.getlayer('TCP').seq = pkt.getlayer('TCP').seq + i*size
