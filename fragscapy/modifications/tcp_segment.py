@@ -1,8 +1,5 @@
 """Segments the TCP packets at the L4-layer."""
 
-import scapy.layers.inet
-import scapy.packet
-
 from fragscapy.modifications.mod import Mod
 from fragscapy.modifications.utils import tcp_segment
 from fragscapy.packetlist import PacketList

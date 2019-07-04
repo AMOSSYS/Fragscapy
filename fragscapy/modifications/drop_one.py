@@ -66,7 +66,7 @@ class DropOne(Mod):
             else:
                 i = random.randint(-l, l-1)
 
-        if i >= -l and i <= l-1:
+        if -l <= i <= l-1:
             pkt_list.remove_packet(i)
 
         return pkt_list

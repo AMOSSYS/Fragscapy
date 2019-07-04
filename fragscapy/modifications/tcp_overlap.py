@@ -2,9 +2,6 @@
 
 import random
 
-import scapy.layers.inet
-import scapy.packet
-
 from fragscapy.modifications.mod import Mod
 from fragscapy.modifications.utils import tcp_segment
 from fragscapy.packetlist import PacketList
@@ -67,9 +64,9 @@ class TcpOverlap(Mod):
                              "Got '{}'".format(self.overlapsize))
 
         if args[2].lower() == "after":
-            self.overlap_before = False
+            self.append_before = False
         elif args[2].lower() == "before":
-            self.overalp_before = True
+            self.append_before = True
         else:
             raise ValueError("'overlap' should be either 'after' or 'before'. "
                              "Got '{}'".format(args[2]))
@@ -83,7 +80,7 @@ class TcpOverlap(Mod):
                 random_data = bytes(random.randrange(0, 0xff)
                                     for _ in range(self.overlapsize))
                 segments = tcp_segment(pkt.pkt, self.segmentsize,
-                                       random_data, self.overlap_before)
+                                       random_data, self.append_before)
 
                 index = len(new_pl) - 1
                 for segment in segments:
