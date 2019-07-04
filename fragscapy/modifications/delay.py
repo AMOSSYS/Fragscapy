@@ -94,7 +94,7 @@ class Delay(Mod):
                 else:
                     i = random.randint(-l, l-1)
 
-            if i >= -l and i <= l-1:
+            if -l <= i <= l-1:
                 pkt_list.edit_delay(i, self.delay)
 
         return pkt_list

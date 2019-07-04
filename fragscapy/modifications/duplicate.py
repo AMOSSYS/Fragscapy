@@ -67,7 +67,7 @@ class Duplicate(Mod):
             else:
                 i = random.randint(-l, l-1)
 
-        if i >= -l and i <= l-1:
+        if -l <= i <= l-1:
             duplicate_packet = pkt_list[i].pkt.copy()
             pkt_list.insert_packet(i, duplicate_packet)
 
