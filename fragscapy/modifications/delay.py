@@ -79,7 +79,7 @@ class Delay(Mod):
     def apply(self, pkt_list):
         """Delays the correct packet(s). See `Mod.apply` for more details."""
         l = len(pkt_list)
-        if not l:
+        if not l:  # Avoid the trivial case
             return pkt_list
 
         if self.delay_all:
@@ -89,16 +89,12 @@ class Delay(Mod):
             i = self.delay_index
 
             if i is None:  # Random
-                if l == 1:
+                if l == 1:  # Avoid the case of randint(0, 0)
                     i = 0
                 else:
                     i = random.randint(-l, l-1)
 
-            if i < -l or i > l-1:
-                #print("Unable to drop packet n°{}. PacketList too small."
-                #      "Passing the modification".format(i))
-                pass
-            else:
+            if i >= -l and i <= l-1:
                 pkt_list.edit_delay(i, self.delay)
 
         return pkt_list
