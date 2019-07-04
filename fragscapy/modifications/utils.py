@@ -2,6 +2,7 @@
 duplication."""
 
 import scapy.layers.inet6
+import scapy.packet
 
 # The IPv6 Headers that needs to be processed for routing
 IPV6_PROCESS_HEADERS = ("IPv6", "IPv6ExtHdrHopByHop", "IPv6ExtHdrRouting")
@@ -92,3 +93,49 @@ def ipv6_insert_frag_hdr(pkt):
     except AttributeError:
         pass
     return pkt
+
+def tcp_segment(pkt, size):
+    """Segment a TCP packet to a certain size.
+
+    Args:
+        pkt: The packet to segment
+        size: The size of the TCP data after segmentation
+
+    Returns:
+        A list of L2-packets with TCP segments
+
+    Examples:
+        >>> tcp_segment(IP()/TCP()/"PLOP", 3)
+        [
+          <IP  len=None frag=0 proto=tcp chksum=None |
+            <TCP  seq=0 chksum=None |
+              <Raw  load='PLO' |>>>,
+          <IP  len=None frag=0 proto=tcp chksum=None |
+            <TCP  seq=3 chksum=None |
+              <Raw  load='P' |>>>
+        ]
+    """
+
+    payload = bytes(pkt.getlayer('TCP').payload)
+    tcp_l = len(payload)
+    if not tcp_l:  # Trivial case
+        return [pkt]
+
+    nb_segments = (tcp_l-1)//size + 1
+    segments = [payload[i*size:(i+1)*size] for i in range(nb_segments)]
+
+    ret = []
+    for i, segment in enumerate(segments):
+        new_pkt = pkt.copy()
+        new_pkt.getlayer('TCP').payload = scapy.packet.Raw(segment)
+        new_pkt.getlayer('TCP').chksum = None
+        new_pkt.getlayer('TCP').seq = pkt.getlayer('TCP').seq + i*size
+        if new_pkt.haslayer('IP'):
+            new_pkt.getlayer('IP').len = None
+            new_pkt.getlayer('IP').chksum = None
+        elif new_pkt.haslayer('IPv6'):
+            new_pkt.getlayer('IPv6').plen = None
+            new_pkt.getlayer('IPv6').chksum = None
+        ret.append(new_pkt)
+
+    return ret
