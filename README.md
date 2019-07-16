@@ -36,7 +36,7 @@ of the common tasks.
 
 On Debian or Ubuntu:
 ```bash
-apt install -y git python3 python3-dev gcc cffi make python3-venv
+apt install -y git python3 python3-dev gcc python3-backend-cffi make python3-venv
 python3 -m venv venv
 source venv/bin/activate
 ```
