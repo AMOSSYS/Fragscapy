@@ -169,6 +169,15 @@ def command():
         help=("Do not delete the result files. Instead append the new results "
               "to them.")
     )
+    parser_start.add_argument(
+        '--repeat', '-r',
+        type=int,
+        metavar='<N>',
+        default='10',
+        help=("How many times should the non-deterministic tests be repeated. "
+              "Some tests have random behavior, they can be repeated multiple "
+              "times with the same configuration. Default is 10.")
+    )
 
     args = parser.parse_args()
 
@@ -210,7 +219,7 @@ def start(args):
     config = Config(args.config_file)
     kwargs = _filter_kwargs(
         args,
-        ['modif_file', 'local_pcap', 'remote_pcap', 'append']
+        ['modif_file', 'local_pcap', 'remote_pcap', 'append', 'repeat']
     )
     kwargs['progressbar'] = not args.no_progressbar
     kwargs['display_results'] = not args.no_results
