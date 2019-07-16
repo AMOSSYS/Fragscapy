@@ -238,6 +238,7 @@ def _parse_mod(mod):
 
     mod_name = None
     mod_opts = list()
+    optional = False
 
     for key, value in mod.items():
         if key == "mod_name":
@@ -246,6 +247,11 @@ def _parse_mod(mod):
             if not isinstance(value, list):
                 value = [value]
             mod_opts = value
+        elif key == "optional":
+            if not isinstance(value, bool):
+                raise ConfigError('.optional.not_bool')
+            else:
+                optional = value
         else:
             config_warning("Unrecognized option : {}".format(key))
 
@@ -254,5 +260,6 @@ def _parse_mod(mod):
 
     return {
         "mod_name": mod_name,
-        "mod_opts": mod_opts
+        "mod_opts": mod_opts,
+        "optional": optional,
     }

@@ -601,10 +601,13 @@ class ModGenerator(object):
             and improve error messages).
         mod_opts: A list with the options to use to build `ModOption`
             objects.
+        optional: True if the mod is optional (the modlist can be generated
+            without this mod). Default is 'False'.
 
     Attributes:
         mod_name: The name of the modification (for importing the correct mod
             and improve error messages).
+        optional: Is the mod optional.
 
     Examples:
         It can be used as a generator or as list-like object.
@@ -620,9 +623,10 @@ class ModGenerator(object):
         43
     """
 
-    def __init__(self, mod_name, mod_opts):
+    def __init__(self, mod_name, mod_opts, optional=False):
         self.mod_name = mod_name
         self._mod = get_mod(mod_name)
+        self.optional = optional
 
         self._mod_opts = list()
         for opt in mod_opts:
@@ -700,9 +704,10 @@ class ModGenerator(object):
             )
 
         # Handle the 'no-mod' possibility
-        if i == 0:
-            return None
-        i -= 1
+        if self.optional:
+            if i == 0:
+                return None
+            i -= 1
 
         # Generate one of the other possibility
         opts = list()
@@ -722,7 +727,8 @@ class ModGenerator(object):
         ret = 1
         for opt in self._mod_opts:
             ret *= len(opt)
-        ret += 1   # The 'no-mod' possibility
+        if self.optional:
+            ret += 1   # The 'no-mod' possibility
         return ret
 
     def __getitem__(self, i):
@@ -738,17 +744,20 @@ class ModGenerator(object):
         return (
             "{{ \n"
             "  \"mod_name\": \"{}\",\n"
-            "  \"mod_opts\": [{}]\n"
+            "  \"mod_opts\": [{}],\n"
+            "  \"optional\": \"{}\"\n"
             "}}"
         ).format(
             self.mod_name,
-            ", ".join("\""+str(opt)+"\"" for opt in self._mod_opts)
+            ", ".join("\""+str(opt)+"\"" for opt in self._mod_opts),
+            str(self.optional)
         )
 
     def __repr__(self):
-        return "ModGenerator({}, opts=[{}])".format(
+        return "ModGenerator({}, opts=[{}]{})".format(
             self.mod_name,
-            ", ".join(opt.opt_name for opt in self._mod_opts)
+            ", ".join(opt.opt_name for opt in self._mod_opts),
+            ", optional=True" if self.optional else ""
         )
 
 
@@ -792,7 +801,7 @@ class ModListGenerator(object):
 
     def __init__(self, mods):
         self._mod_generators = [
-            ModGenerator(mod['mod_name'], mod['mod_opts'])
+            ModGenerator(mod['mod_name'], mod['mod_opts'], mod['optional'])
             for mod in mods
         ]
 
