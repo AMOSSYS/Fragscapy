@@ -1,0 +1,40 @@
+{
+  "cmd": "/usr/bin/wget -T 1 -t 1 http://www.example.com",
+
+  "nfrules": [
+    {"host": "www.example.com", "port": 80, "input_chain": false}
+  ],
+
+  "input": [
+  ],
+
+  "output": [
+    {
+      "mod_name": "ipv4_frag",
+      "mod_opts": "range 1 1000"
+    },
+    {
+      "mod_name": "ipv6_frag",
+      "mod_opts": "range 1 1000"
+    },
+    {
+      "mod_name": "tcp_segment",
+      "mod_opts": "range 1 1000"
+    },
+    {
+      "mod_name": "drop_proba",
+      "mod_opts": "seq_float 0.1 0.2 0.3 0.4 0.5",
+      "optional": true
+    },
+    {
+      "mod_name": "duplicate",
+      "mod_opts": "seq_str first last random",
+      "optional": true
+    },
+    {
+      "mod_name": "reorder",
+      "mod_opts": "seq_str reverse random",
+      "optional": true
+    }
+  ]
+}

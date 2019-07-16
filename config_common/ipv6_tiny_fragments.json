@@ -1,0 +1,17 @@
+{
+  "cmd": "/usr/bin/wget -T 1 -t 1 http://www.example.com",
+
+  "nfrules": [
+    {"host": "www.example.com", "port": 80, "ipv4": false, "input_chain": false}
+  ],
+
+  "input": [
+  ],
+
+  "output": [
+    {
+      "mod_name": "ipv6_frag",
+      "mod_opts": "range 1 100"
+    }
+  ]
+}
