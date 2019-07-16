@@ -31,7 +31,7 @@ class TcpOverlap(Mod):
         True
     """
 
-    name = "TcpOverlay"
+    name = "TcpOverlap"
     doc = ("Creates overlapping TCP segments\n"
            "tcp_segment <segmentsize> <overlapsize> <append>\n"
            "  - 'segmentsize' is the segmentation size in octets to use\n"
