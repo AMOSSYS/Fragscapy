@@ -4,8 +4,8 @@
   "nfrules": [
     "This contains 1 object per rule to add",
     {
-      "output_chain": "Set to False to not add to the OUTPUT chain",
-      "input_chain": "Set to False to not add to the INPUT chain",
+      "output_chain": "Set to false to not add to the OUTPUT chain",
+      "input_chain": "Set to false to not add to the INPUT chain",
       "proto": "The proto to filter on, see iptables doc for format",
       "host": "The ipv4 or hostname to filter on, see iptables doc for format",
       "host6": "The ipv6 to filter on, see iptables doc for format",
@@ -20,7 +20,8 @@
     "This contains 1 object per modification to apply on the INPUT chain",
     {
       "mod_name": "Modification name (used to load the module)",
-      "mod_opts": "Some options to pass to the mod (see mod usage)"
+      "mod_opts": "Some options to pass to the mod (see mod usage)",
+      "optional": "Set to true to make the mod optional. The mod is required if not specified."
     },
     {
       "mod_name": "Mod with 1 integer as a parameter",

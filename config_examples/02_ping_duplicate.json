@@ -11,7 +11,8 @@
   "output": [
     {
       "mod_name": "duplicate",
-      "mod_opts": "first"
+      "mod_opts": "first",
+      "optional": true
     }
   ]
 }
