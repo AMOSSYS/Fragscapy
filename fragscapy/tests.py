@@ -287,7 +287,9 @@ class RepeatedTestCase(object):
         modif_file: The name of the modification file (the same for all
             repeated tests because it does not change)
         test_id: The number of this test a.k.a. 'i'.
-        test_pattern: The `TestPattern` object to use for each of the tests.
+        test_patterns: The `TestPattern` object to use for each of the tests.
+        repeat: The number of times the test case should be repeated (only
+            used if the tests are non-deterministic)
 
     Attributes:
         input_modlist: The modification list applied on INPUT chain.
@@ -299,18 +301,20 @@ class RepeatedTestCase(object):
         repeat: The number of times a test case must be repeated.
         test_generated: A list of all `TestCase` objects generated so far.
     """
-    def __init__(self, modlists, modif_file, test_id, test_patterns):
+    # pylint: disable=too-many-arguments
+    def __init__(self, modlists, modif_file, test_id, test_patterns, repeat):
         self.input_modlist = modlists[0]
         self.output_modlist = modlists[1]
         self.modif_file = modif_file
         self.test_id = test_id
         self.test_patterns = test_patterns
 
+        # Only repeat if the tests are non-deterministic
         if (self.input_modlist.is_deterministic()
                 and self.output_modlist.is_deterministic()):
             self.repeat = 1
         else:
-            self.repeat = 1
+            self.repeat = repeat
 
         self.tests_generated = list()
 
@@ -336,6 +340,8 @@ class TestSuite(object):
             `(input_modlist, output_modlist)` that needs to be tested.
         modif_file_pattern: The pattern for the modification file (separated
             from the others because it does not require the `j` argument).
+        repeat: The number of times a test case should be repeated (only used
+            if the tests are non-deterministic)
         **kwargs: All other arguments are passed to the constructor of
             `TestPatterns`.
 
@@ -344,6 +350,7 @@ class TestSuite(object):
             `(input_modlist, output_modlist)` that needs to be tested.
         modif_file_pattern: The pattern for the modification file (separated
             from the others because it does not require the `j` argument).
+        repeat: The number of times a test case must be repeated.
         test_patterns: The `TestPatterns` object that will be used to generate
             the filenames and commands of each test case.
         test_generated: A list of all `RepeatedTestCase` objects generated so
@@ -352,6 +359,7 @@ class TestSuite(object):
     def __init__(self, **kwargs):
         self.ml_iterator = kwargs.pop("ml_iterator")
         self.modif_file_pattern = kwargs.pop("modif_file_pattern")
+        self.repeat = kwargs.pop("repeat")
         self.test_patterns = TestPatterns(**kwargs)
         self.tests_generated = list()
 
@@ -378,6 +386,7 @@ class TestSuite(object):
                 modif_file,
                 test_id,
                 self.test_patterns,
+                self.repeat,
             )
             self.tests_generated.append(repeated_test_case)
             yield repeated_test_case

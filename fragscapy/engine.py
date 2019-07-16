@@ -398,6 +398,7 @@ class Engine(object):
             ml_iterator=ml_iterator,
             cmd_pattern=config.cmd,
             modif_file_pattern=kwargs.pop("modif_file", MODIF_FILE),
+            repeat=kwargs.pop("repeat", 10),
             stdout="stdout" in kwargs,
             stdout_pattern=kwargs.pop("stdout", None),
             stderr="stderr" in kwargs,
