@@ -11,7 +11,7 @@
   "output": [
     {
       "mod_name": "ipv6_atomic_frag",
-      "mod_opts": "range 1 100"
+      "mod_opts": 65535
     }
   ]
 }
