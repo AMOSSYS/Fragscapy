@@ -1,5 +1,5 @@
 {
-  "cmd": "/usr/bin/wget -T 1 -t 1 http://www.example.com",
+  "cmd": "/usr/bin/curl -f -m 1 http://www.example.com -o results/index_{i}_{j}.html",
 
   "nfrules": [
     {"host": "www.example.com", "port": 80, "ipv4": false, "input_chain": false}
