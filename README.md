@@ -90,7 +90,7 @@ These config files have a predefined syntax that needs to be respected, else
 errors will be thrown.
 
 Examples of possible configuration files and templates can be found under the
-_config\_examples_ directory.
+[_config\_examples_ directory](config_examples) and the [_config\_common_ directory](config_common).
 
 The command `fragscapy checkconfig` can be used to verify a config file is
 valid and understandable. It checks that a maximum of operations will run
