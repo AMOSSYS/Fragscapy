@@ -84,7 +84,7 @@ Run `fragscapy [-h | --help]` for displaying the usage.
 ### Configuration files
 
 The main way (except if using fragscapy as an imported python package) to
-test suite is to describe everything in a config file and pass it to the
+run a test suite is to describe everything in a config file and pass it to the
 command line as an argument.  
 These config files have a predefined syntax that needs to be respected, else
 errors will be thrown.
