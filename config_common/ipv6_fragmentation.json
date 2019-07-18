@@ -1,0 +1,32 @@
+{
+  "cmd": "/usr/bin/curl -6 -f -m 1 http://www.example.com -o results/index_{i}_{j}.html",
+
+  "nfrules": [
+    {"host": "www.example.com", "port": 80, "ipv4": false, "input_chain": false}
+  ],
+
+  "input": [
+  ],
+
+  "output": [
+    {
+      "mod_name": "ipv6_frag",
+      "mod_opts": "range 1 1000"
+    },
+    {
+      "mod_name": "drop_proba",
+      "mod_opts": "seq_float 0.1 0.2 0.3 0.4 0.5",
+      "optional": true
+    },
+    {
+      "mod_name": "duplicate",
+      "mod_opts": "seq_str first last random",
+      "optional": true
+    },
+    {
+      "mod_name": "reorder",
+      "mod_opts": "seq_str reverse random",
+      "optional": true
+    }
+  ]
+}

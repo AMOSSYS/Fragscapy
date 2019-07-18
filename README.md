@@ -84,13 +84,13 @@ Run `fragscapy [-h | --help]` for displaying the usage.
 ### Configuration files
 
 The main way (except if using fragscapy as an imported python package) to
-test suite is to describe everything in a config file and pass it to the
+run a test suite is to describe everything in a config file and pass it to the
 command line as an argument.  
 These config files have a predefined syntax that needs to be respected, else
 errors will be thrown.
 
 Examples of possible configuration files and templates can be found under the
-_config\_examples_ directory.
+[_config\_examples_ directory](config_examples) and the [_config\_common_ directory](config_common).
 
 The command `fragscapy checkconfig` can be used to verify a config file is
 valid and understandable. It checks that a maximum of operations will run

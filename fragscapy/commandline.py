@@ -68,7 +68,8 @@ def command():
         help="Parse and check a config file without running the test suite"
     )
     parser_checkconfig.add_argument(
-        'config_file',
+        'config_files',
+        nargs='+',
         type=str,
         metavar='<config_file>',
         help="The config file to use"
@@ -100,7 +101,8 @@ def command():
     # fragscapy start
     parser_start = subparsers.add_parser('start', help="Start the tests")
     parser_start.add_argument(
-        'config_file',
+        'config_files',
+        nargs='+',
         type=str,
         metavar='<config file>',
         help="The config file to use"
@@ -216,22 +218,26 @@ def start(args):
         # Removes verbose send messages
         scapy.config.conf.verb = 0
 
-    config = Config(args.config_file)
-    kwargs = _filter_kwargs(
-        args,
-        ['modif_file', 'local_pcap', 'remote_pcap', 'append', 'repeat']
-    )
-    kwargs['progressbar'] = not args.no_progressbar
-    kwargs['display_results'] = not args.no_results
-    # To distinguish between '', '-o' and '-o plop', we tricked the option
-    # into default to 0 in the first case (None for the second and plop the
-    # thrid).
-    if args.stdout != 0:
-        kwargs['stdout'] = args.stdout
-    if args.stderr != 0:
-        kwargs['stderr'] = args.stderr
-    engine = Engine(config, **kwargs)
-    engine.start()
+    for i, config_file in enumerate(args.config_files):
+        print("[{}]".format(config_file))
+        config = Config(config_file)
+        kwargs = _filter_kwargs(
+            args,
+            ['modif_file', 'local_pcap', 'remote_pcap', 'append', 'repeat']
+        )
+        kwargs['progressbar'] = not args.no_progressbar
+        kwargs['display_results'] = not args.no_results
+        # To distinguish between '', '-o' and '-o plop', we tricked the option
+        # into default to 0 in the first case (None for the second and plop the
+        # thrid).
+        if args.stdout != 0:
+            kwargs['stdout'] = args.stdout
+        if args.stderr != 0:
+            kwargs['stderr'] = args.stderr
+        kwargs = _format_config_name(kwargs, i)
+        engine = Engine(config, **kwargs)
+        engine.start()
+        print()
 
 
 def usage(args):
@@ -258,22 +264,35 @@ def checkconfig(args):
     Args:
         args: The arguments found in the `argparse.ArgumentParser`
     """
-    try:
-        print(">>> Loading config file")
-        config = Config(args.config_file)
-        print(">>> Loading engine")
-        kwargs = _filter_kwargs(args, ['modif_file', 'append'])
-        kwargs['progressbar'] = not args.no_progressbar
-        engine = Engine(config, **kwargs)
-        print(">>> Checking Netfilter rules")
-        engine.check_nfrules()
-        print(">>> Checking mod list generation (output to '{}')"
-              .format(args.modif_file))
-        engine.check_modlist_generation()
-    except BaseException as e:  # pylint: disable=broad-except
-        if args.traceback:
-            traceback.print_tb(e.__traceback__)
-        print("{name}: {msg}".format(name=e.__class__.__name__, msg=e))
+    for i, config_file in enumerate(args.config_files):
+        print("[{}]".format(config_file))
+        try:
+            print(">>> Loading config file")
+            config = Config(config_file)
+            print(">>> Loading engine")
+            kwargs = _filter_kwargs(args, ['modif_file', 'append'])
+            kwargs['progressbar'] = not args.no_progressbar
+            kwargs = _format_config_name(kwargs, i)
+            engine = Engine(config, **kwargs)
+            print(">>> Checking Netfilter rules")
+            engine.check_nfrules()
+            print(">>> Checking mod list generation (output to '{}')"
+                  .format(args.modif_file))
+            engine.check_modlist_generation()
+            engine.unbind_queues()
+        except BaseException as e:  # pylint: disable=broad-except
+            if args.traceback:
+                traceback.print_tb(e.__traceback__)
+            print("{name}: {msg}".format(name=e.__class__.__name__, msg=e))
+        print()
+
+
+def _format_config_name(kwargs, config):
+    for key, value in kwargs.items():
+        if key in ['modif_file', 'stdout', 'stderr', 'local_pcap',
+                   'remote_pcap']:
+            kwargs[key] = value.replace('{conf}', str(config))
+    return kwargs
 
 
 def _filter_kwargs(args, keys):

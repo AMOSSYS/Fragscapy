@@ -510,9 +510,15 @@ class Engine(object):
 
     def post_run(self):
         """Runs all the actions that need to be run after `.run()`."""
+        self.unbind_queues()
         self._stop_threads()
         self._join_threads()
         self._remove_nfrules()
+
+    def unbind_queues(self):
+        """Unbind any NFQUEUE open by the engine previously."""
+        for nfqueue in self._nfqueues:
+            nfqueue.unbind()
 
     def print_results(self):
         """Prints a summary of which test passed and which did not."""

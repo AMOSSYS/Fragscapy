@@ -334,6 +334,11 @@ class NFQueue(object):
         self._stopped = True
         self._conn.close()
 
+    def unbind(self):
+        """Unbind all the NFQUEUES."""
+        for queue in list(self._conn.queue.values()):
+            queue.unbind()
+
 
 class PacketWrapper(abc.ABC):
     """
