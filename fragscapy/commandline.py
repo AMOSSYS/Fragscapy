@@ -227,7 +227,6 @@ def start(args):
         )
         kwargs['progressbar'] = not args.no_progressbar
         kwargs['display_results'] = not args.no_results
-        kwargs = _format_config_name(kwargs, i)
         # To distinguish between '', '-o' and '-o plop', we tricked the option
         # into default to 0 in the first case (None for the second and plop the
         # thrid).
@@ -235,6 +234,7 @@ def start(args):
             kwargs['stdout'] = args.stdout
         if args.stderr != 0:
             kwargs['stderr'] = args.stderr
+        kwargs = _format_config_name(kwargs, i)
         engine = Engine(config, **kwargs)
         engine.start()
         print()
