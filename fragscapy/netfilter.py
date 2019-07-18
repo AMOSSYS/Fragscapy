@@ -336,11 +336,8 @@ class NFQueue(object):
 
     def unbind(self):
         """Unbind all the NFQUEUES."""
-        for queue in self._conn.queue.values():
-            try:
-                queue.unbind()
-            except AttributeError:
-                pass  # See https://github.com/notti/fnfqueue/issues/3
+        for queue in list(self._conn.queue.values()):
+            queue.unbind()
 
 
 class PacketWrapper(abc.ABC):

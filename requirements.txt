@@ -1,4 +1,4 @@
 scapy
-fnfqueue >= 1.1.0
+fnfqueue >= 1.1.1
 tqdm
 inflection
