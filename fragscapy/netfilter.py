@@ -257,6 +257,7 @@ class NFQueueRule(object):  # pylint: disable=too-many-instance-attributes
 
     def remove(self):
         """Removes the previously inserted rules in iptables and ip6tables.
+
         Raises:
             CalledProcessError: exception is raised if an error occurs in the
                 process.
