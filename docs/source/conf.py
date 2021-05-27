@@ -20,6 +20,7 @@
 project = 'FragScapy'
 copyright = '2019, Maël KERVELLA'
 author = 'Maël KERVELLA'
+master_doc = 'index'
 
 # The full version, including alpha/beta/rc tags
 from fragscapy._version import __version__
